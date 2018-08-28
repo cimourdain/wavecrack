@@ -54,7 +54,6 @@ def register_routes(app):
                 # get module name (folder_name)_(file_name)
                 module_name = import_path[import_path.rfind('.', 0, import_path.rfind('.'))+1:].replace('.', '_')
 
-                print("from " + str(import_path) + " import "+str(module_name))
                 loaded_module = importlib.import_module(import_path)
                 module_var = getattr(loaded_module, module_name)
                 app.register_blueprint(module_var)

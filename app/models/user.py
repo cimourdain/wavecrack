@@ -1,7 +1,7 @@
 # local imports
-from app import db
+from app import db, login_manager
 
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -36,3 +36,15 @@ class User(UserMixin, db.Model):
                 new_user.password = u["password"]
                 db.session.add(new_user)
                 db.session.commit()
+
+
+class AnonymousUser(AnonymousUserMixin):
+    pass
+
+
+login_manager.anonymous_user = AnonymousUser
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))

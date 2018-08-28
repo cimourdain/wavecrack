@@ -47,12 +47,14 @@ Requirements
 Installation
 ------------
 * Install the RabbitMQ server and `python-ldap` requirements
+Debian :
 ```
-$ apt-get install libsasl2-dev libldap2-dev libssl-dev rabbitmq-server
+# apt-get install libsasl2-dev libldap2-dev libssl-dev rabbitmq-server
 ```
 
+Arch:
 ```
-$ yaourt -S libsm libsasl2 rabbitmq
+# yaourt -S libsm libsasl2 rabbitmq
 ```
 
   

@@ -1,6 +1,8 @@
 # coding: utf8
 # standard imports
 import os
+import glob
+import importlib
 
 # third party imports
 from flask import Flask
@@ -43,7 +45,18 @@ def check_app_folders(app):
 
 
 def register_routes(app):
-    from app.routes.home.get import home_get
-    app.register_blueprint(home_get)
+    for root, dirnames, filenames in os.walk("app/routes"):
+        for path in glob.glob(os.path.join(root, '*.py')):
+            folders, filename = os.path.split(path)
+            if filename != '__init__.py':
+                # set import path in import format ( "." instead of "/" in path)
+                import_path = path[:-3].replace(os.sep, '.')
+                # get module name (folder_name)_(file_name)
+                module_name = import_path[import_path.rfind('.', 0, import_path.rfind('.'))+1:].replace('.', '_')
+
+                print("from " + str(import_path) + " import "+str(module_name))
+                loaded_module = importlib.import_module(import_path)
+                module_var = getattr(loaded_module, module_name)
+                app.register_blueprint(module_var)
 
     return True

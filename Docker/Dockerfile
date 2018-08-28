@@ -15,7 +15,7 @@ RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
 
 ENV LC_ALL en_US.UTF-8
 
-ADD docker_requirements.txt /app/docker_requirements.txt
+ADD ../requirements.txt /app/docker_requirements.txt
 
 WORKDIR /app/
 

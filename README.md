@@ -49,8 +49,13 @@ Installation
 ```
 $ apt-get install libsasl2-dev libldap2-dev libssl-dev rabbitmq-server
 ```
+
+```
+$ yaourt -S libsm libsasl2 rabbitmq
+```
+
   
-* Install the python [requirements](setup_resources/requirements.txt)
+* Install the python [requirements](requirements.txt)
 ```
 $ pip install -r requirements.txt
 ```
@@ -69,12 +74,17 @@ $ pip install -r requirements.txt
   
 * Initialize the local database linked in the `cracker/app_settings.py` configuration file
 ```
-$ sqlite3 base.db < base_schema.sql
+$ sqlite3 base.db < setup_resources/base_schema.sql
 ```
   
 * Start the RabbitMQ server
 ```
-$ sudo service rabbitmq-server start
+# service rabbitmq-server start
+```
+or
+```
+# systemctl enable rabbitmq 
+# systemctl start rabbitmq
 ```
   
 * Start Celery from the application folder

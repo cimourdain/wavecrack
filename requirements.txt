@@ -2,4 +2,6 @@ flask>=0.10.1
 celery>=3.1.18
 python-ldap
 python-slugify
-sqlalchemy
+flask-sqlalchemy
+flask-migrate
+flask-login

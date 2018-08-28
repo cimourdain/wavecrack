@@ -1,3 +1,9 @@
 app_settings.py
 *.pyc
 app.wsgi
+database/
+cracker/app_settings.py
+migrations/
+*.sqlite
+words/
+hashcat/

@@ -35,6 +35,7 @@ A limit to the amount of **concurrent cracks** can be defined in the settings in
   
 Requirements
 ------------
+* python 2.7
 * [hashcat](https://hashcat.net/hashcat/): follow [these instructions](https://bugs.kali.org/view.php?id=3432#c6062) for CPU only usage on a Kali linux host 
 * flask (>=0.10.1)
 * celery (>=3.1.18)

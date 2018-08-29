@@ -29,8 +29,19 @@
     <div class="logo"> </div>
   <div class=metanav>
   </div>
-  {% for message in get_flashed_messages() %}
-    <div class=flash>{{ message }}</div>
+  {% for category, message in get_flashed_messages(with_categories=True) %}
+
+    {% if category == 'error' %}
+      <div class="alert alert-danger" role="alert">
+    {%  elif category == 'warning' %}
+        <div class="alert alert-warning" role="alert">
+    {%  elif category == 'success' %}
+        <div class="alert alert-success" role="alert">
+    {%  else %}
+        <div class="alert alert-info" role="alert">
+    {% endif %}
+        {{ message }}
+    </div>
   {% endfor %}
   
   <div id="navigation"> 
@@ -40,6 +51,13 @@
         <h1>Password recovery platform</h1> </a>
     </div>
   {% endblock %}
+  </div>
+  <div id="current_user">
+      {% if current_user.is_authenticated %}
+          Logged as {{ current_user.name }} <a href="{{ url_for("user_get.logout") }}">Logout</a>
+      {% else %}
+          Anonymous User
+      {% endif %}
   </div>
 
   {% block body %}

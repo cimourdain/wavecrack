@@ -26,10 +26,24 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     @staticmethod
+    def get_user(user_id=None, login=None, email=None, name=None):
+        if user_id:
+            return User.query.filter(User.id == user_id).first()
+        elif login:
+            return User.query.filter((User.email == login) | (User.name == login)).first()
+        elif email:
+            return User.query.filter(User.email == email).first()
+        elif name:
+            return User.query.filter(User.name == name).first()
+
+        return None
+
+    @staticmethod
     def insert_default_users():
         from server import app
         if "DEFAULT_USERS" in app.config:
             for u in app.config['DEFAULT_USERS']:
+
                 new_user = User()
                 new_user.name = u["name"]
                 new_user.email = u["email"]

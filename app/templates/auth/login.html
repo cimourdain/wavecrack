@@ -1,0 +1,22 @@
+{% extends "common/layout.html" %}
+{% block body %}
+<form action="./login" method="post">
+  <div class="form-group">
+    <label for="login">Name or email</label>
+    <input type="text" class="form-control" name="login" id="login" placeholder="">
+  </div>
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="password" class="form-control" name="password" id="password" placeholder="">
+  </div>
+  <div class="form-group">
+    <label class="form-check-label">
+        <input class="form-check-input" type="checkbox" name="remember_me" id="remember_me" value="1">Remember me
+    </label>
+  </div>
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>
+{% if version %}<div class="version">Cracking server version {{ version }}</div>{% endif %}
+{% endblock %}

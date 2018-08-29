@@ -26,7 +26,7 @@ class Config(object):
     CELERY_IGNORE_RESULT = False
 
     # ???
-    MAX_CONTENT_LENGTH =  30 * 1024 * 1024
+    MAX_CONTENT_LENGTH = 30 * 1024 * 1024
 
     # app locations
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
@@ -36,7 +36,7 @@ class Config(object):
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
         'hashcat_rules': BASE_DIR + '/hashcat/rules/',
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
-        'wordlist': BASE_DIR + '/words/',
+        'wordlists': BASE_DIR + '/words/',
         # hashes
         'hashes': BASE_DIR + '/hashes/written/',
         # Output hashcat directory path
@@ -53,12 +53,6 @@ class Config(object):
 
     # Hashcat rules list
     rule_name_list = ["rockyou-30000.rule"]
-
-    # Dictonary of available wordlists
-    wordlist_dictionary = OrderedDict([
-        ('English dictionary', 'EngDict.txt'),
-        ('French dictionary', 'FrDict.txt')
-    ])
 
     ###################################################################################
     ### ADDITIONAL SETTINGS
@@ -83,7 +77,7 @@ class Config(object):
     LDAP_SEARCH_FILTER = "(&(sAMAccountName=%s)(memberOf=CN=xxx,OU=xxx,OU=xxx,DC=xxx,DC=xxx))"
 
     # Separator char for hashlists/outfile
-    separator = '~'
+    HASHLIST_OUTFILE_SEPARATOR = '~'
 
     # Maximal parallel cracking sessions
     MAX_CRACKSESSIONS = 8

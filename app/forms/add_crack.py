@@ -1,5 +1,7 @@
+import os
 
 # third party imports
+from flask import flash
 from flask_wtf import FlaskForm
 from wtforms import TextAreaField, FileField, SelectField, BooleanField, RadioField, StringField, SubmitField
 
@@ -11,7 +13,7 @@ from app.ref.hashes_list import HASHS_LIST
 def get_durations_as_tuple():
     duration_tuples = []
     for d in app.config["CRACK_DURATIONS"]:
-        duration_tuples.append((d, d))
+        duration_tuples.append((str(d), str(d)))
 
     return duration_tuples
 
@@ -28,7 +30,7 @@ class WordListCheckBox(FlaskForm):
 
 
 class AddCrackForm(FlaskForm):
-    hashes = TextAreaField("Enter the hash list (one per line)", render_kw={
+    hashes = TextAreaField("Enter the hash list (one per line)",render_kw={
         "placeholder": "Enter the hash list (one per line)"
     })
     hashes_file = FileField("Upload file with hashes")
@@ -46,9 +48,9 @@ class AddCrackForm(FlaskForm):
         "placeholder": "Enter keyword(s) (one per line)"
     })
     wordlist_attack_type = RadioField("attack type", choices=[
-        (0, "Classic wordlist attack"),
-        (1, "Wordlist attack with variations"),
-        (2, "Mask")
+        ("0", "Classic wordlist attack"),
+        ("1", "Wordlist attack with variations"),
+        ("2", "Mask")
     ])
     mask = StringField("Mask", render_kw={
         "placeholder": "Enter the mask"
@@ -62,5 +64,3 @@ class AddCrackForm(FlaskForm):
     )
 
     submit_btn = SubmitField(label='Sumbit')
-
-

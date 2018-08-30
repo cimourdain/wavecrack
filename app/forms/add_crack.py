@@ -34,7 +34,7 @@ class AddCrackForm(FlaskForm):
         "placeholder": "Enter the hash list (one per line)"
     })
     hashes_file = FileField("Upload file with hashes")
-    hashed_file_contains_usernames = BooleanField("The hash list contains usernames")
+    hashed_file_contains_usernames = BooleanField("The hash file contains usernames")
     hash_type = SelectField(
         "Select the hash type.",
         choices=get_hashes_list_as_tuples(),
@@ -42,16 +42,18 @@ class AddCrackForm(FlaskForm):
             "onChange": "UpdateHashExample()"
         }
     )
-    keywords = BooleanField("Keyword(s)")
+
+    wordlist_attack_type = RadioField("attack type", choices=[
+        ("0", "Classic wordlist attack"),
+        ("1", "Wordlist attack with variations"),
+        ("2", "Mask"),
+        ("3", "Keywords")
+    ])
 
     chosen_keywords = TextAreaField("Enter keyword(s) (one per line)", render_kw={
         "placeholder": "Enter keyword(s) (one per line)"
     })
-    wordlist_attack_type = RadioField("attack type", choices=[
-        ("0", "Classic wordlist attack"),
-        ("1", "Wordlist attack with variations"),
-        ("2", "Mask")
-    ])
+
     mask = StringField("Mask", render_kw={
         "placeholder": "Enter the mask"
     })

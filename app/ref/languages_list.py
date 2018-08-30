@@ -1,6 +1,7 @@
 # coding: utf8
 
 ALL_LANGUAGES = {
+    "misc": "Miscellaneous",
     "aa": "Afar",
     "ab": "Abkhazian",
     "af": "Afrikaans",

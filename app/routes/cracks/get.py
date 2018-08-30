@@ -7,8 +7,8 @@ from flask_login import login_required
 
 # local imports
 from server import app
-from app.helpers.hashes import HashesHelper
-from app.helpers.words import WordsHelper
+from app.forms.add_crack import AddCrackForm
+from app.ref.hashes_list import HASHS_LIST
 
 cracks_get = Blueprint('cracks_get', __name__, template_folder='templates')
 
@@ -19,9 +19,8 @@ def add_new_crack():
     return render_template(
         'cracks/add.html',
         title="Add new crack",
-        HASHS_LIST=HashesHelper.HASHS_LIST,
-        wordlist_languages=WordsHelper.get_available_languages(),
-        separator=app.config["HASHLIST_OUTFILE_SEPARATOR"],
-        max_size=app.config['MAX_CONTENT_LENGTH'],
-        CRACK_DURATIONS=app.config["CRACK_DURATIONS"]
+        form=AddCrackForm(),
+        separator=app.config["HASHLIST_FILE_SEPARATOR"],
+        hashes_list=HASHS_LIST[:10],  # used to populate javascript function
+        max_len=app.config["MAX_CONTENT_LENGTH"]
     )

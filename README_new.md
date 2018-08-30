@@ -33,7 +33,7 @@ A limit to the amount of **concurrent cracks** can be defined in the settings in
 * python 2.7 (not compatible with python 3)
 * [hashcat](https://hashcat.net/hashcat/): follow [these instructions](https://bugs.kali.org/view.php?id=3432#c6062) for CPU only usage on a Kali linux host 
 * Rules for hashcat ([examples](https://hashcat.net/wiki/doku.php?id=rule_based_attack))
-* Wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
+
 
 ## Modules
 * Install the RabbitMQ server and `python-ldap` requirements
@@ -65,6 +65,17 @@ $ flask db init
 $ flask db migrate
 $ flask deploy # create default users from config DEFAULT_USERS
 ```
+### Words dictionaries
+# Setup Wordlists Folder
+Setup words folder in config.py (APP_LOCATIONS/wordlists)
+
+# Add Dictionaries
+* Download wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
+* Add downloaded wordlists files in the wordlist folder.
+    - Wordlists files must be inserted in folders using ISO language codes (cf. app/ref/languages_list)
+    - Wordlists files with multi languages must be inserted into a folder called misc
+    
+Note: Wordlists languages folders names can be either upper or lowercases. 
 
 # Launch
 # Rabbit

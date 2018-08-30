@@ -14,6 +14,7 @@ class Config(object):
 
     # Complex random value use to sign cookies and other things by Flask
     SECRET_KEY = "xxx"
+    WTF_CSRF_SECRET_KEY = 'zzz'
 
     # SQL Alchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -54,21 +55,21 @@ class Config(object):
     # Hashcat rules list
     rule_name_list = ["rockyou-30000.rule"]
 
-    ###################################################################################
-    ### ADDITIONAL SETTINGS
-    ### Default values work, but can be adjusted to your needs
-    ###################################################################################
+    """
+    ADDITIONAL SETTINGS
+    Default values work, but can be adjusted to your needs
+    """
 
     # Authentication settings, choose between "None", "Basic" and "LDAP"
     AUTH_TYPE = "None"
 
-    ## Basic Auth settings, define the sha256 password of the allowed users
+    # Basic Auth settings, define the sha256 password of the allowed users
     BASIC_AUTH_USERS = [
         ["user1", "89e01536ac207279409d4de1e5253e01f4a1769e696db0d6062ca9b8f56767c8", "email1@email.com"],  # user1/toto
         ["user2", "89e01536ac207279409d4de1e5253e01f4a1769e696db0d6062ca9b8f56767c8", "email2@email.com"]
     ]
 
-    ## LDAP settings
+    # LDAP settings
     LDAP_HOST = "1.1.1.1"
     LDAP_TLS = True
     LDAP_PORT = 636
@@ -77,7 +78,7 @@ class Config(object):
     LDAP_SEARCH_FILTER = "(&(sAMAccountName=%s)(memberOf=CN=xxx,OU=xxx,OU=xxx,DC=xxx,DC=xxx))"
 
     # Separator char for hashlists/outfile
-    HASHLIST_OUTFILE_SEPARATOR = '~'
+    HASHLIST_FILE_SEPARATOR = '~'
 
     # Maximal parallel cracking sessions
     MAX_CRACKSESSIONS = 8

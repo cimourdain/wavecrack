@@ -147,13 +147,12 @@ body {
 }
 
 .display-keywords {
-    display: none;
     margin-top: 5px;
     margin-bottom: -15px;
     margin-left: 20px;
 }
 
-#keyword:checked ~ .display-keywords {
+#keyword:checked ~ .chosen_keywords {
     display: block;
 }
 
@@ -421,4 +420,10 @@ li.currentlyrunning {
 li.cracked {
     color: #66C605;
     font-weight: bold;
+}
+
+.help-block{
+    font-weight: lighter;
+    color:   #566573;
+    font-size: 0.9em;
 }

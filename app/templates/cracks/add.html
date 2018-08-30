@@ -13,23 +13,21 @@ function UpdateHashExample()
     $("#hash_example").text(hashes_list[$("#hash_type  option:selected").val()]);
 }
 
-function markContent(classe) {
-    if (document.getElementById(classe).className == "opacity") {
-        var inputList = document.getElementsByClassName(classe + "-display")[0].getElementsByTagName("input");
-        for (var i = 0; i < inputList.length; i++) {
-            if (inputList[i].type == 'checkbox')
-                inputList[i].checked = false;
-        }
-        document.getElementById(classe).className = ""
-    } else {
-        var inputList = document.getElementsByClassName(classe + "-display")[0].getElementsByTagName("input");
-        for (var i = 0; i < inputList.length; i++) {
-            if (inputList[i].type == 'checkbox')
-                inputList[i].checked = true;
-        }
-        document.getElementById(classe).className = "opacity"
-    }
-}
+$(document).ready(function () {
+    $("input[type=radio][name='wordlist_attack_type']").change(function () {
+        // hide all
+        $("#wordlist_files").hide();
+        $("#mask").hide();
+        var current_value =  $("input[type=radio][name='wordlist_attack_type']:checked").val();
+        console.log("New value is "+current_value)
+        if (current_value == 0 || current_value == 1)
+            $("#wordlist_files").show();
+        else
+            $("#mask").show();
+
+    });
+});
+
 </script>
 <form method="POST" action="{{ url_for("cracks_post.validate_new_crack") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}
@@ -67,11 +65,62 @@ function markContent(classe) {
     </div>
 
     <h2>Select one or more attack modes</h2>
-     <div class="form-group">
-
+    <h3>Keywords</h3>
+    <div class="form-group">
         {{ form.keywords() }}
-         {{ form.keywords.label}}
+        {{ form.keywords.label}}
     </div>
-    <input type="submit" value="Go">
+
+    <div class="form-group">
+        {{ form.chosen_keywords.label}}
+        {{ form.chosen_keywords(class_="form-control") }}
+    </div>
+
+    <h3>Word lists</h3>
+    {% for subfield in form.wordlist_attack_type %}
+        <div class="form-group">
+            <td>{{ subfield }}</td>
+            <td>{{ subfield.label }}</td>
+        </div>
+    {% endfor %}
+
+    <div id="wordlist_files">
+        {% for wf in wordlist_files %}
+            <div class="form-group">
+                {{ wordlist_cb.wordlist_file(value=wf) }} {{ wf }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="mask">
+        <div class="form-group">
+            {{ form.mask.label}}
+            {{ form.mask(class_="form-control") }}
+            <small class="form-text text-muted">
+              Expected mask format &laquo;&nbsp;<code>?u?l?l?l?l?d?s?a</code>&nbsp;&raquo;, or :
+              <ul>
+                  <li><code>?u</code> = ABCDEFGHIJKLMNOPQRSTUVWXYZ</li>
+                  <li><code>?l</code> = abcdefghijklmnopqrstuvwxyz</li>
+                  <li><code>?d</code> = 0123456789</li>
+                  <li><code>?s</code> = «space»!"#$%&'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~</li>
+                  <li><code>?a</code> = <code>?l?u?d?s</code> (All character type)</li>
+              </ul>
+            </small>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        {{ form.bruteforce() }}
+        {{ form.bruteforce.label}}
+    </div>
+
+    <div class="form-group">
+        {{ form.duration.label}}
+        {{ form.duration(class_="form-control") }}
+    </div>
+
+
+    {{ form.submit_btn(class_="btn btn-primary") }}
 </form>
 {% endblock %}

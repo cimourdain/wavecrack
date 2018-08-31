@@ -13,33 +13,46 @@ function UpdateHashExample()
     $("#hash_example").text(hashes_list[$("#hash_type  option:selected").val()]);
 }
 
-function updateAttackType(){
-    // hide all
-    $("#wordlist_files").hide();
-    $("#mask").hide();
-    $("#keywords").hide();
-
+function collapseAttackModeDetails(){
+    console.log("update collapse")
     // get new value
-    var current_value =  $("input[type=radio][name='wordlist_attack_type']:checked").val();
+    if ($("#attack_mode_keywords_cb").prop("checked")) {
+        console.log("keywords is checked")
+        $("#attack_mode_keywords_details").show();
+    }
+    else {
+        console.log("keywords is not checked")
+        $("#attack_mode_keywords_details").hide();
+    }
 
-    // update attack details to show
-    if (current_value == 0 || current_value == 1)
-        $("#wordlist_files").show();
-    else if (current_value == 2)
-        $("#mask").show();
-    else
-        $("#keywords").show()
+    if ($("#attack_mode_dict_classic_cb").prop("checked")) {
+        $("#attack_mode_dict_classic_details").show();
+    }
+    else {
+        $("#attack_mode_dict_classic_details").hide();
+    }
+
+    if ($("#attack_mode_dict_variations_cb").prop("checked")) {
+        $("#attack_mode_dict_variations_details").show();
+    }
+    else {
+        $("#attack_mode_dict_variations_details").hide();
+    }
+
+
 }
 
 $(document).ready(function () {
-    updateAttackType()
+    collapseAttackModeDetails()
 
-    $("input[type=radio][name='wordlist_attack_type']").change(function(){
-        updateAttackType()
+    $("input[type=checkbox][class='attack_mode']").change(function(){
+        collapseAttackModeDetails()
     });
 });
 
 </script>
+
+
 <form method="POST" action="{{ url_for("cracks_post.add_new_crack") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}
     <h2>Hash(es) options</h2>
@@ -77,6 +90,68 @@ $(document).ready(function () {
 
     <h2>Select one or more attack modes</h2>
 
+    <div class="card">
+      <div class="card-header">
+        <div class="form-group">
+            <input
+                    id="attack_mode_keywords_cb"
+                    name="attack_mode_keywords"
+                    class="attack_mode"
+                    type="checkbox"
+                    value="1">
+            <label for="attack_mode_keywords">Keywords</label>
+        </div>
+      </div>
+      <div class="card-body" id="attack_mode_keywords_details">
+        <div class="form-group">
+            {{ form.keywords.label}}
+            {{ form.keywords(class_="form-control") }}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="form-group">
+            <input
+                    id="attack_mode_dict_classic_cb"
+                    name="attack_mode_dict_classic"
+                    class="attack_mode"
+                    type="checkbox"
+                    value="1">
+            <label for="attack_mode_keywords">Classic dictionnary</label>
+        </div>
+      </div>
+      <div class="card-body" id="attack_mode_dict_classic_details">
+        {% for wf in wordlist_files %}
+            <div class="form-group">
+                {{ wordlist_cb.wordlist_file(value=wf) }} {{ wf }}
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="form-group">
+            <input
+                    id="attack_mode_dict_variations_cb"
+                    name="attack_mode_dict_variations"
+                    class="attack_mode"
+                    type="checkbox"
+                    value="1">
+            <label for="attack_mode_variations">Dictionnary with variations</label>
+        </div>
+      </div>
+      <div class="card-body" id="attack_mode_dict_variations_details">
+        {% for wf in wordlist_files %}
+            <div class="form-group">
+                {{ wordlist_cb.wordlist_file(value="rule_"+wf) }} {{ wf }}
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+
     {% for subfield in form.wordlist_attack_type %}
         <div class="form-group">
             <td>{{ subfield }}</td>
@@ -86,8 +161,8 @@ $(document).ready(function () {
 
     <div id="keywords">
         <div class="form-group">
-            {{ form.chosen_keywords.label}}
-            {{ form.chosen_keywords(class_="form-control") }}
+            {{ form.keywords.label}}
+            {{ form.keywords(class_="form-control") }}
         </div>
     </div>
 
@@ -116,11 +191,6 @@ $(document).ready(function () {
         </div>
     </div>
 
-
-    <div class="form-group">
-        {{ form.bruteforce(value="1") }}
-        {{ form.bruteforce.label}}
-    </div>
 
     <div class="form-group">
         {{ form.duration.label}}

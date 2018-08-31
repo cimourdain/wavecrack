@@ -38,10 +38,17 @@ def add_new_crack():
 
         # check attack_type
         attack_type = int(request.form.get("wordlist_attack_type"))
-
-        if attack_type in [0, 1] and not request.form.get("wordlist_file", None):
+        if not attack_type:
+            flash("Select one attack type.")
             form_is_valid = False
 
+        attack_details = None
+        if attack_type in [0, 1] :
+            if not request.form.get("wordlist_file", None):
+                flash("Select at least one word list for a wordlist attack")
+                form_is_valid = False
+            else:
+                attack_details = request.form.get("wordlist_file", None)
         elif attack_type == 2:
             if not request.form.get("mask", None):
                 flash("mask required", "error")
@@ -49,12 +56,17 @@ def add_new_crack():
             elif not FormHelper.check_mask(request.form["mask"]):
                 flash("mask invalid", "error")
                 form_is_valid = False
+            else:
+                attack_details = request.form.get("mask", None)
 
-        elif attack_type == 3 and not request.form.get("chosen_keywords", None):
-            flash("Keywords required", "error")
-            form_is_valid = False
-
-        bruteforce = int(request.form.get("bruteforce", 0))
+        elif attack_type == 3:
+            if not request.form.get("chosen_keywords", None):
+                flash("Keywords required", "error")
+                form_is_valid = False
+            else:
+                attack_details = request.form.get("keywords", None)
+        elif attack_type == 4:
+            bruteforce = int(request.form.get("bruteforce", 0))
 
         duration = int(request.form.get("duration", 3))
 

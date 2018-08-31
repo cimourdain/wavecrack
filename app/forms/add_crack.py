@@ -47,18 +47,17 @@ class AddCrackForm(FlaskForm):
         ("0", "Classic wordlist attack"),
         ("1", "Wordlist attack with variations"),
         ("2", "Mask"),
-        ("3", "Keywords")
+        ("3", "Keywords"),
+        ("4", "BruteForce")
     ])
 
-    chosen_keywords = TextAreaField("Enter keyword(s) (one per line)", render_kw={
+    keywords = TextAreaField("Enter keyword(s) (one per line)", render_kw={
         "placeholder": "Enter keyword(s) (one per line)"
     })
 
     mask = StringField("Mask", render_kw={
         "placeholder": "Enter the mask"
     })
-
-    bruteforce = BooleanField("Bruteforce ?", default="checked")
 
     duration = SelectField(
         "Select duration (days)",

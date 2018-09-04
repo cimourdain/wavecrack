@@ -11,7 +11,7 @@ ntds_upload_get = Blueprint('ntds_upload_get', __name__, template_folder='templa
 
 
 @ntds_upload_get.route('/ntds_upload', methods=["GET"])
-def render_homepage():
+def render_ndts_upload():
     return render_template(
         "ntds_upload.html",
         title="Uploading NTDS files"

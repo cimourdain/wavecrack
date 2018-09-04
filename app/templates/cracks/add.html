@@ -1,6 +1,6 @@
 {% extends "common/layout.html" %}
-{% block body %}
-<script language="javascript">
+{% block extra_js %}
+    <script language="javascript">
 function UpdateHashExample()
 {
     // declare and populate hash_list
@@ -57,7 +57,8 @@ $(document).ready(function () {
 });
 
 </script>
-
+{% endblock %}
+{% block body %}
 
 <form method="POST" action="{{ url_for("cracks_post.add_new_crack") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}

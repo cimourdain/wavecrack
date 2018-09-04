@@ -1,16 +1,4 @@
 {% extends "common/layout.html" %}
 {% block body %}
-<div class="home-menu">
-  {% if not current_user.is_authenticated %}
-      <p><img src="{{ url_for('static', filename='img/user.png') }}"><a href="{{ url_for("user_post.login") }}">Login</a></p>
-  {% else %}
-      <p><img src="{{ url_for('static', filename='img/plus.png') }}"><a href="/add">Submit hashes</a></p>
-      <p><img src="{{ url_for('static', filename='img/list.png') }}"><a href="/user/cracks">List of your current and past cracks</a></p>
-      <p><img src="{{ url_for('static', filename='img/load.png') }}"><a href="/status">Server load status</a></p>
-      <p><img src="{{ url_for('static', filename='img/file.png') }}"><a href="/upload">Upload of a specific password protected file</a></p>
-  {% endif %}
-
-  <p><img src="{{ url_for('static', filename='img/file.png') }}"><a href="/ntds_upload">How to upload a NTDS file ?</a></p>
-</div>
-{% if version %}<div class="version">Cracking server version {{ version }}</div>{% endif %}
+Bonjour
 {% endblock %}

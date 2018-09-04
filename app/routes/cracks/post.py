@@ -96,12 +96,8 @@ def add_new_crack():
         attack_classic_dict_files = request.form.get('attack_classic_dict_files', None)
         if attack_dict_classic and not attack_classic_dict_files:
             return render_add_page("List of dict required for classic dict attack")
-
-        # variation dict attack
-        attack_dict_variation = request.form.get('attack_mode_dict_variations_cb', None)
+        # variations
         attack_variations_dict_files = request.form.get('attack_variations_dict_files', None)
-        if attack_dict_variation and not attack_variations_dict_files:
-            return render_add_page("List of dict required for variations dict attack")
 
         # mask attack
         attack_mask = request.form.get('attack_mode_mask_cb', None)
@@ -114,14 +110,14 @@ def add_new_crack():
 
         # check that at least one attack mode was selected
         if not attack_keywords and not attack_dict_classic \
-                and not attack_dict_variation and not attack_mask and not attack_bruteforce:
+                and not attack_mask and not attack_bruteforce:
             return render_add_page("select at least one attack mode")
 
         # duration
         duration = int(request.form.get("duration", 3))
 
         if not request.form.get("confirm_btn", None):
-            # render confirmation page if confirm button not sumblitted
+            # render confirmation page if confirm button not submitted
             return render_add_page(confirmation=True, current_hashes=hashes)
         else:
             return jsonify({"message": "ok"})

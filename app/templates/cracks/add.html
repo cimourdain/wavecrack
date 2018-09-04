@@ -32,13 +32,6 @@ function collapseAttackModeDetails(){
         $("#attack_mode_dict_classic_details").hide();
     }
 
-    if ($("#attack_mode_dict_variations_cb").prop("checked")) {
-        $("#attack_mode_dict_variations_details").show();
-    }
-    else {
-        $("#attack_mode_dict_variations_details").hide();
-    }
-
     if ($("#attack_mode_mask_cb").prop("checked")) {
         $("#attack_mode_mask_details").show();
     }
@@ -123,6 +116,8 @@ $(document).ready(function () {
         </div>
       </div>
       <div class="card-body" id="attack_mode_dict_classic_details">
+        <h4>Dictionaries files</h4>
+        <small>Select at least one dictionary file.</small>
         {% for cb in wordlist_files_list %}
             <div class="form-group">
                 <input
@@ -135,29 +130,29 @@ $(document).ready(function () {
                 {{ cb['label'] }}
             </div>
         {% endfor %}
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="form-group">
-            {{ form.attack_mode_dict_variations_cb(class_="attack_mode", disabled=confirmation) }}
-            {{ form.attack_mode_dict_variations_cb.label }}
-        </div>
-      </div>
-      <div class="card-body" id="attack_mode_dict_variations_details">
-        {% for cb in variations_files_list %}
-            <div class="form-group">
-                <input
-                        type="checkbox"
-                        name="{{ cb['name'] }}"
-                        value="{{ cb['value'] }}"
-                        {{ "checked" if cb["checked"] else "" }}
-                        {{ "disabled" if confirmation else "" }}
-                />
-                {{ cb['label'] }}
-            </div>
-        {% endfor %}
+        <h4>Dictionaries Variations</h4>
+          <div class="form-group">
+                        <input
+                                type="checkbox"
+                                name="attack_variations_dict_files"
+                                value="default"
+                                {{ "checked" if "default" in request.form.get("attack_variations_dict_files", []) else "" }}
+                                {{ "disabled" if confirmation else "" }}
+                        />
+                        Default
+          </div>
+          {% for cb in variations_files_list %}
+                <div class="form-group">
+                    <input
+                            type="checkbox"
+                            name="{{ cb['name'] }}"
+                            value="{{ cb['value'] }}"
+                            {{ "checked" if cb["checked"] else "" }}
+                            {{ "disabled" if confirmation else "" }}
+                    />
+                    {{ cb['label'] }}
+                </div>
+            {% endfor %}
       </div>
     </div>
 

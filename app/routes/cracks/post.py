@@ -12,8 +12,80 @@ from app.ref.hashes_list import HASHS_LIST
 from app.helpers.words import WordsHelper
 from app.helpers.rules import RulesHelper
 from app.helpers.forms import FormHelper
+from app.helpers.crack import CrackHelper
+
+from app.tasks.hashcat import launch_new_crack
 
 cracks_post = Blueprint('cracks_post', __name__, template_folder='templates')
+
+
+def get_check_keywords_attack_details():
+    result = None
+    if request.form.get('attack_mode_keywords_cb', None):
+        keywords = request.form.get('keywords', None)
+        if not keywords:
+            return render_add_page("Keywords list required")
+        result = {"keywords": keywords}
+    return result
+
+def get_check_dict_attack_details():
+    result = None
+    if request.form.get('attack_mode_dict_classic_cb', None):
+        # check at least one dict is selected
+        attack_classic_dict_files = request.form.get('attack_classic_dict_files', None)
+        if not attack_classic_dict_files:
+            return render_add_page("List of dict required for classic dict attack")
+
+        attack_variations_dict_files = request.form.get('attack_variations_dict_files', None)
+        result = {
+            "dict": {
+                "files": attack_classic_dict_files,
+                "variations": attack_variations_dict_files
+            }
+        }
+    return result
+
+
+def get_check_mask_attack_details():
+    result = None
+    if request.form.get('attack_mode_mask_cb', None):
+        mask = request.form.get('mask', None)
+        if not mask or not FormHelper.check_mask(mask):
+            return render_add_page("Empty or invalid mask")
+        result = {"mask": mask}
+
+    return result
+
+def get_check_bruteforce_attack_details():
+    result = None
+    if request.form.get('attack_mode_bruteforce_cb', None):
+        result = {"bruteforce": True}
+    return result
+
+def get_check_attack_details():
+    attack_details = []
+
+    keyword_attack_details = get_check_keywords_attack_details()
+    if keyword_attack_details:
+        attack_details.append(keyword_attack_details)
+
+    dict_attack_details = get_check_dict_attack_details()
+    if dict_attack_details:
+        attack_details.append(dict_attack_details)
+
+    mask_attak_details = get_check_mask_attack_details()
+    if mask_attak_details:
+        attack_details.append(mask_attak_details)
+
+    bruteforce_attack_details = get_check_bruteforce_attack_details()
+    if bruteforce_attack_details:
+        attack_details.append(bruteforce_attack_details)
+
+    if not attack_details:
+        return render_add_page("Choose at least one type of attack")
+
+    return attack_details
+
 
 
 def get_wordlists_cb(name, files_list):
@@ -69,8 +141,6 @@ def add_new_crack():
     if request.method == "POST" and FormHelper.check_fields_in_form(
             ["hashes", "hashes_file"]
     ):
-        form_is_valid = True
-
         # get hashes
         hashes = request.form.get("hashes", "")
         if "hashes_file" in request.files and FormHelper.uploaded_file_is_valid("hashes_file", [".txt"]):
@@ -84,34 +154,8 @@ def add_new_crack():
         # contains_usernames
         hashed_file_contains_usernames = request.form.get("hashed_file_contains_usernames", 'n')
 
-        # check selected attack_types
-        # keywords
-        attack_keywords = request.form.get('attack_mode_keywords_cb', None)
-        keywords = request.form.get('keywords', None)
-        if attack_keywords and not keywords:
-            return render_add_page("Keywords list required")
-
-        # classic dict attack
-        attack_dict_classic = request.form.get('attack_mode_dict_classic_cb', None)
-        attack_classic_dict_files = request.form.get('attack_classic_dict_files', None)
-        if attack_dict_classic and not attack_classic_dict_files:
-            return render_add_page("List of dict required for classic dict attack")
-        # variations
-        attack_variations_dict_files = request.form.get('attack_variations_dict_files', None)
-
-        # mask attack
-        attack_mask = request.form.get('attack_mode_mask_cb', None)
-        mask = request.form.get('mask', None)
-        if attack_mask and not mask:
-            return render_add_page("mask required")
-
-        # bruteforce attack
-        attack_bruteforce = request.form.get('attack_mode_bruteforce_cb', None)
-
-        # check that at least one attack mode was selected
-        if not attack_keywords and not attack_dict_classic \
-                and not attack_mask and not attack_bruteforce:
-            return render_add_page("select at least one attack mode")
+        # attack_details
+        attack_details = get_check_attack_details()
 
         # duration
         duration = int(request.form.get("duration", 3))
@@ -120,7 +164,19 @@ def add_new_crack():
             # render confirmation page if confirm button not submitted
             return render_add_page(confirmation=True, current_hashes=hashes)
         else:
-            return jsonify({"message": "ok"})
+            output_file_path = os.path.join(
+                app.config["APP_LOCATIONS"]["hashcat_outputs"],
+                CrackHelper.get_output_file_name()
+            )
+
+            launch_new_crack.delay(
+                hashes=hashes,
+                hash_type_code=hash_type_code,
+                output_file_path=output_file_path,
+                hashed_file_contains_usernames=hashed_file_contains_usernames,
+                duration=duration,
+                attack_details=attack_details
+            )
 
     # render add crack page
     return render_add_page()

@@ -42,7 +42,7 @@ class Config(object):
         # hashes
         'hashes': BASE_DIR + '/hashes/written/',
         # Output hashcat directory path
-        'hashcat_ouputs': BASE_DIR + '/outputs/hashcat/',
+        'hashcat_outputs': BASE_DIR + '/outputs/hashcat/',
         # Output logfiles directory path
         'log': BASE_DIR + '/outputs/logs/',
         # Upload user files directory

@@ -65,17 +65,19 @@ $(document).ready(function () {
 
     <div class="form-group">
         {{ form.hashes.label}}
-        {{ form.hashes(class_="form-control") }}
+        {{ form.hashes(class_="form-control", disabled=confirmation) }}
     </div>
 
+    {% if not confirmtion %}
     <div class="form-group">
         {{ form.hashes_file.label}}
         {{ form.hashes_file(class_="form-control-file")}}
         <small class="form-text text-muted">txt extension only and the maximum supported size is {{ max_len/(1024*1024) }} MB</small>
     </div>
+    {% endif %}
 
     <div class="form-group">
-        {{ form.hashed_file_contains_usernames() }}
+        {{ form.hashed_file_contains_usernames(disabled=confirmation) }}
         {{ form.hashed_file_contains_usernames.label }}
 
         <small class="form-text text-muted">"In this case, usernames have to be separated from hashes by {{ separator }}.
@@ -84,7 +86,7 @@ $(document).ready(function () {
 
     <div class="form-group">
         {{ form.hash_type.label }}
-        {{ form.hash_type(class_="form-control") }}
+        {{ form.hash_type(class_="form-control", disabled=confirmation) }}
         <p>
         Example: <span class="hash_example" id="hash_example">&lt;Select hash type in the drop-down box&gt;</span>
         </p>
@@ -99,19 +101,15 @@ $(document).ready(function () {
     <div class="card">
       <div class="card-header">
         <div class="form-group">
-            <input
-                    id="attack_mode_keywords_cb"
-                    name="attack_mode_keywords"
-                    class="attack_mode"
-                    type="checkbox"
-                    value="1">
-            <label for="attack_mode_keywords">Keywords</label>
+            {{ form.attack_mode_keywords_cb(class_="attack_mode", disabled=confirmation) }}
+            {{ form.attack_mode_keywords_cb.label }}
+
         </div>
       </div>
       <div class="card-body" id="attack_mode_keywords_details">
         <div class="form-group">
             {{ form.keywords.label}}
-            {{ form.keywords(class_="form-control") }}
+            {{ form.keywords(class_="form-control", disabled=confirmation) }}
         </div>
       </div>
     </div>
@@ -119,19 +117,21 @@ $(document).ready(function () {
     <div class="card">
       <div class="card-header">
         <div class="form-group">
-            <input
-                    id="attack_mode_dict_classic_cb"
-                    name="attack_mode_dict_classic"
-                    class="attack_mode"
-                    type="checkbox"
-                    value="1">
-            <label for="attack_mode_keywords">Classic dictionnary</label>
+            {{ form.attack_mode_dict_classic_cb(class_="attack_mode", disabled=confirmation) }}
+            {{ form.attack_mode_dict_classic_cb.label }}
         </div>
       </div>
       <div class="card-body" id="attack_mode_dict_classic_details">
-        {% for wf in wordlist_files %}
+        {% for cb in wordlist_cb_classic %}
             <div class="form-group">
-                {{ wordlist_cb.wordlist_file(value=wf) }} {{ wf }}
+                <input
+                        type="checkbox"
+                        name="{{ cb['name'] }}"
+                        value="{{ cb['value'] }}"
+                        {{ "checked" if cb["checked"] else "" }}
+                        {{ "disabled" if confirmation else "" }}
+                />
+                {{ cb['label'] }}
             </div>
         {% endfor %}
       </div>
@@ -140,19 +140,21 @@ $(document).ready(function () {
     <div class="card">
       <div class="card-header">
         <div class="form-group">
-            <input
-                    id="attack_mode_dict_variations_cb"
-                    name="attack_mode_dict_variations"
-                    class="attack_mode"
-                    type="checkbox"
-                    value="1">
-            <label for="attack_mode_variations">Dictionnary with variations</label>
+            {{ form.attack_mode_dict_variations_cb(class_="attack_mode", disabled=confirmation) }}
+            {{ form.attack_mode_dict_variations_cb.label }}
         </div>
       </div>
       <div class="card-body" id="attack_mode_dict_variations_details">
-        {% for wf in wordlist_files %}
+        {% for cb in wordlist_cb_variations %}
             <div class="form-group">
-                {{ wordlist_cb.wordlist_file(value="rule_"+wf) }} {{ wf }}
+                <input
+                        type="checkbox"
+                        name="{{ cb['name'] }}"
+                        value="{{ cb['value'] }}"
+                        {{ "checked" if cb["checked"] else "" }}
+                        {{ "disabled" if confirmation else "" }}
+                />
+                {{ cb['label'] }}
             </div>
         {% endfor %}
       </div>
@@ -162,19 +164,14 @@ $(document).ready(function () {
     <div class="card">
       <div class="card-header">
         <div class="form-group">
-            <input
-                    id="attack_mode_mask_cb"
-                    name="attack_mode_mask"
-                    class="attack_mode"
-                    type="checkbox"
-                    value="1">
-            <label for="attack_mode_variations">Mask</label>
+            {{ form.attack_mode_mask_cb(class_="attack_mode", disabled=confirmation) }}
+            {{ form.attack_mode_mask_cb.label }}
         </div>
       </div>
       <div class="card-body" id="attack_mode_mask_details">
         <div class="form-group">
             {{ form.mask.label}}
-            {{ form.mask(class_="form-control") }}
+            {{ form.mask(class_="form-control", disabled=confirmation) }}
             <small class="form-text text-muted">
               Expected mask format &laquo;&nbsp;<code>?u?l?l?l?l?d?s?a</code>&nbsp;&raquo;, or :
               <ul>
@@ -192,13 +189,8 @@ $(document).ready(function () {
     <div class="card">
       <div class="card-header">
         <div class="form-group">
-            <input
-                    id="attack_mode_bruteforce_cb"
-                    name="attack_mode_bruteforce"
-                    class="attack_mode"
-                    type="checkbox"
-                    value="1">
-            <label for="attack_mode_bruteforce">Bruteforce</label>
+            {{ form.attack_mode_bruteforce_cb(class_="attack_mode", disabled=confirmation) }}
+            {{ form.attack_mode_bruteforce_cb.label }}
         </div>
       </div>
     </div>
@@ -206,10 +198,14 @@ $(document).ready(function () {
 
     <div class="form-group">
         {{ form.duration.label}}
-        {{ form.duration(class_="form-control") }}
+        {{ form.duration(class_="form-control", disabled=confirmation) }}
     </div>
 
-
-    {{ form.submit_btn(class_="btn btn-primary") }}
+    {% if not confirmation %}
+        {{ form.submit_btn(class_="btn btn-primary") }}
+    {% else %}
+        {{ form.confirm_btn(class_="btn btn-primary") }}
+        <a class="btn btn-primary" href="{{ url_for("cracks_post.add_new_crack") }}" role="button">Cancel</a>
+    {% endif %}
 </form>
 {% endblock %}

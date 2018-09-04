@@ -3,7 +3,7 @@ import os
 # third party imports
 from flask import flash
 from flask_wtf import FlaskForm
-from wtforms import TextAreaField, FileField, SelectField, BooleanField, RadioField, StringField, SubmitField
+from wtforms import TextAreaField, FileField, SelectField, BooleanField, RadioField, StringField, SubmitField, FormField, FieldList
 
 # local imports
 from server import app
@@ -25,10 +25,6 @@ def get_hashes_list_as_tuples():
     return rst
 
 
-class WordListCheckBox(FlaskForm):
-    wordlist_file = BooleanField(default="checked")
-
-
 class AddCrackForm(FlaskForm):
     hashes = TextAreaField("Enter the hash list (one per line)",render_kw={
         "placeholder": "Enter the hash list (one per line)"
@@ -43,21 +39,20 @@ class AddCrackForm(FlaskForm):
         }
     )
 
-    wordlist_attack_type = RadioField("attack type", choices=[
-        ("0", "Classic wordlist attack"),
-        ("1", "Wordlist attack with variations"),
-        ("2", "Mask"),
-        ("3", "Keywords"),
-        ("4", "BruteForce")
-    ])
-
+    attack_mode_keywords_cb = BooleanField("Keywords")
     keywords = TextAreaField("Enter keyword(s) (one per line)", render_kw={
         "placeholder": "Enter keyword(s) (one per line)"
     })
 
+    attack_mode_dict_classic_cb = BooleanField("Classic dictionnary")
+    attack_mode_dict_variations_cb = BooleanField("Dictionnary with variations")
+
+    attack_mode_mask_cb = BooleanField("Mask")
     mask = StringField("Mask", render_kw={
         "placeholder": "Enter the mask"
     })
+
+    attack_mode_bruteforce_cb = BooleanField("Bruteforce")
 
     duration = SelectField(
         "Select duration (days)",
@@ -65,3 +60,4 @@ class AddCrackForm(FlaskForm):
     )
 
     submit_btn = SubmitField(label='Sumbit')
+    confirm_btn = SubmitField(label='Confirm')

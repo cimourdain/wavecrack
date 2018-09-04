@@ -62,7 +62,7 @@ $(document).ready(function () {
 
 <form method="POST" action="{{ url_for("cracks_post.add_new_crack") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}
-    <h2>Hash(es) options</h2>
+    <h3>Hash(es) options</h3>
 
     <div class="form-group">
         {{ form.hashes.label}}
@@ -123,7 +123,7 @@ $(document).ready(function () {
         </div>
       </div>
       <div class="card-body" id="attack_mode_dict_classic_details">
-        {% for cb in wordlist_cb_classic %}
+        {% for cb in wordlist_files_list %}
             <div class="form-group">
                 <input
                         type="checkbox"
@@ -146,7 +146,7 @@ $(document).ready(function () {
         </div>
       </div>
       <div class="card-body" id="attack_mode_dict_variations_details">
-        {% for cb in wordlist_cb_variations %}
+        {% for cb in variations_files_list %}
             <div class="form-group">
                 <input
                         type="checkbox"

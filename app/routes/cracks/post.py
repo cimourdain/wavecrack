@@ -10,12 +10,13 @@ from server import app
 from app.forms.add_crack import AddCrackForm
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.words import WordsHelper
+from app.helpers.rules import RulesHelper
 from app.helpers.forms import FormHelper
 
 cracks_post = Blueprint('cracks_post', __name__, template_folder='templates')
 
 
-def get_wordlists_cb(name):
+def get_wordlists_cb(name, files_list):
     """
     function used to create a list of dictionary based on list of word files
 
@@ -23,16 +24,16 @@ def get_wordlists_cb(name):
 
     name parameter is either used to build file list for classic dict attack or for variation dict attack
     """
-    wordlist_cb = []
-    for wordfile in WordsHelper.get_available_wordlists():
+    result_files_list = []
+    for f in files_list:
         sumbitted_values = request.form.get(name, None)
-        wordlist_cb.append({
+        result_files_list.append({
             'name': name,
-            'label': wordfile,
-            'value': wordfile,
-            'checked': True if sumbitted_values and wordfile in sumbitted_values else False
+            'label': f,
+            'value': f,
+            'checked': True if sumbitted_values and f in sumbitted_values else False
         })
-    return wordlist_cb
+    return result_files_list
 
 
 def render_add_page(message=None, current_hashes="", confirmation=False):
@@ -56,8 +57,8 @@ def render_add_page(message=None, current_hashes="", confirmation=False):
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
         hashes_list=HASHS_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
-        wordlist_cb_classic=get_wordlists_cb('attack_classic_dict_files'),
-        wordlist_cb_variations=get_wordlists_cb('attack_variations_dict_files'),
+        wordlist_files_list=get_wordlists_cb('attack_classic_dict_files', WordsHelper.get_available_wordlists()),
+        variations_files_list=get_wordlists_cb('attack_variations_dict_files', RulesHelper.get_available_wordlists()),
         confirmation=confirmation
     )
 

@@ -10,6 +10,13 @@ from app.models.user import User
 user_post = Blueprint('user_post', __name__, template_folder='templates')
 
 
+def get_page_to_redirect():
+    next = request.args.get('next', None)
+    if not next or not next.startswith('/'):
+        next = url_for('home_get.render_homepage')
+    return redirect(next)
+
+
 @user_post.route('/login', methods=["GET", "POST"])
 def login():
     login_message = ""
@@ -27,18 +34,11 @@ def login():
             login_user(user, remember_user)
 
             # redirect user
-            next = request.args.get('next')
-            if next is None or not next.startswith('/'):
-                next = url_for('home_get.render_homepage')
-            return redirect(next)
+            return get_page_to_redirect()
 
     # define login message if form submitted
     if request.method == "POST":
         flash('Invalid login', 'error')
 
     # render login page
-    return render_template(
-        'auth/login.html',
-        title="Login",
-        login_message=login_message
-    )
+    return get_page_to_redirect()

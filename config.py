@@ -38,6 +38,7 @@ class Config(object):
         'hashcat_rules': BASE_DIR + '/hashcat/rules/',
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
         'wordlists': BASE_DIR + '/words/',
+        'rules': BASE_DIR + '/rules/',
         # hashes
         'hashes': BASE_DIR + '/hashes/written/',
         # Output hashcat directory path

@@ -39,6 +39,12 @@ function collapseAttackModeDetails(){
         $("#attack_mode_dict_variations_details").hide();
     }
 
+    if ($("#attack_mode_mask_cb").prop("checked")) {
+        $("#attack_mode_mask_details").show();
+    }
+    else {
+        $("#attack_mode_mask_details").hide();
+    }
 
 }
 
@@ -152,29 +158,20 @@ $(document).ready(function () {
       </div>
     </div>
 
-    {% for subfield in form.wordlist_attack_type %}
+
+    <div class="card">
+      <div class="card-header">
         <div class="form-group">
-            <td>{{ subfield }}</td>
-            <td>{{ subfield.label }}</td>
+            <input
+                    id="attack_mode_mask_cb"
+                    name="attack_mode_mask"
+                    class="attack_mode"
+                    type="checkbox"
+                    value="1">
+            <label for="attack_mode_variations">Mask</label>
         </div>
-    {% endfor %}
-
-    <div id="keywords">
-        <div class="form-group">
-            {{ form.keywords.label}}
-            {{ form.keywords(class_="form-control") }}
-        </div>
-    </div>
-
-    <div id="wordlist_files">
-        {% for wf in wordlist_files %}
-            <div class="form-group">
-                {{ wordlist_cb.wordlist_file(value=wf) }} {{ wf }}
-            </div>
-        {% endfor %}
-    </div>
-
-    <div id="mask">
+      </div>
+      <div class="card-body" id="attack_mode_mask_details">
         <div class="form-group">
             {{ form.mask.label}}
             {{ form.mask(class_="form-control") }}
@@ -189,6 +186,21 @@ $(document).ready(function () {
               </ul>
             </small>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="form-group">
+            <input
+                    id="attack_mode_bruteforce_cb"
+                    name="attack_mode_bruteforce"
+                    class="attack_mode"
+                    type="checkbox"
+                    value="1">
+            <label for="attack_mode_bruteforce">Bruteforce</label>
+        </div>
+      </div>
     </div>
 
 

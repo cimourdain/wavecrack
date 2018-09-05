@@ -9,9 +9,7 @@ from flask_login import login_required
 from server import app
 from app.forms.add_crack import AddCrackForm
 from app.ref.hashes_list import HASHS_LIST
-from app.helpers.words import WordsHelper
-from app.helpers.rules import RulesHelper
-from app.helpers.forms import FormHelper
+from app.helpers.files import FilesHelper
 from app.helpers.crack import CrackHelper
 
 from app.tasks.hashcat import launch_new_crack
@@ -19,76 +17,7 @@ from app.tasks.hashcat import launch_new_crack
 cracks_post = Blueprint('cracks_post', __name__, template_folder='templates')
 
 
-def get_check_keywords_attack_details():
-    result = None
-    if request.form.get('attack_mode_keywords_cb', None):
-        keywords = request.form.get('keywords', None)
-        if not keywords:
-            return render_add_page("Keywords list required")
-        result = {"keywords": keywords}
-    return result
-
-def get_check_dict_attack_details():
-    result = None
-    if request.form.get('attack_mode_dict_classic_cb', None):
-        # check at least one dict is selected
-        attack_classic_dict_files = request.form.get('attack_classic_dict_files', None)
-        if not attack_classic_dict_files:
-            return render_add_page("List of dict required for classic dict attack")
-
-        attack_variations_dict_files = request.form.get('attack_variations_dict_files', None)
-        result = {
-            "dict": {
-                "files": attack_classic_dict_files,
-                "variations": attack_variations_dict_files
-            }
-        }
-    return result
-
-
-def get_check_mask_attack_details():
-    result = None
-    if request.form.get('attack_mode_mask_cb', None):
-        mask = request.form.get('mask', None)
-        if not mask or not FormHelper.check_mask(mask):
-            return render_add_page("Empty or invalid mask")
-        result = {"mask": mask}
-
-    return result
-
-def get_check_bruteforce_attack_details():
-    result = None
-    if request.form.get('attack_mode_bruteforce_cb', None):
-        result = {"bruteforce": True}
-    return result
-
-def get_check_attack_details():
-    attack_details = []
-
-    keyword_attack_details = get_check_keywords_attack_details()
-    if keyword_attack_details:
-        attack_details.append(keyword_attack_details)
-
-    dict_attack_details = get_check_dict_attack_details()
-    if dict_attack_details:
-        attack_details.append(dict_attack_details)
-
-    mask_attak_details = get_check_mask_attack_details()
-    if mask_attak_details:
-        attack_details.append(mask_attak_details)
-
-    bruteforce_attack_details = get_check_bruteforce_attack_details()
-    if bruteforce_attack_details:
-        attack_details.append(bruteforce_attack_details)
-
-    if not attack_details:
-        return render_add_page("Choose at least one type of attack")
-
-    return attack_details
-
-
-
-def get_wordlists_cb(name, files_list):
+def get_filelist_checkbox_builder_dict(name, files_list):
     """
     function used to create a list of dictionary based on list of word files
 
@@ -108,17 +37,14 @@ def get_wordlists_cb(name, files_list):
     return result_files_list
 
 
-def render_add_page(message=None, current_hashes="", confirmation=False):
+def render_add_page(confirmation=False):
     """
     function used to render add template page
     """
-    if message:
-        # if error message flash it
-        flash(message, 'error')
 
     form = AddCrackForm(request.form)
+    current_hashes = AddCrackForm.get_hashes()
     if current_hashes:
-        print("set hashes to "+str(current_hashes))
         form.hashes.data = current_hashes
 
     # render add form
@@ -129,8 +55,14 @@ def render_add_page(message=None, current_hashes="", confirmation=False):
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
         hashes_list=HASHS_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
-        wordlist_files_list=get_wordlists_cb('attack_classic_dict_files', WordsHelper.get_available_wordlists()),
-        variations_files_list=get_wordlists_cb('attack_variations_dict_files', RulesHelper.get_available_wordlists()),
+        wordlist_files_list=get_filelist_checkbox_builder_dict(
+            'attack_classic_dict_files',
+            FilesHelper.get_available_files(folder=app.config["APP_LOCATIONS"]["wordlists"])
+        ),
+        variations_files_list=get_filelist_checkbox_builder_dict(
+            'attack_variations_dict_files',
+            FilesHelper.get_available_files(folder=app.config["APP_LOCATIONS"]["rules"])
+        ),
         confirmation=confirmation
     )
 
@@ -138,31 +70,33 @@ def render_add_page(message=None, current_hashes="", confirmation=False):
 @cracks_post.route('/add', methods=["GET", "POST"])
 @login_required
 def add_new_crack():
-    if request.method == "POST" and FormHelper.check_fields_in_form(
-            ["hashes", "hashes_file"]
-    ):
+    if request.method == "POST":
+
+        # validate form content
+        form_is_valid, messages = AddCrackForm.validate_custom()
+        if not form_is_valid:
+            for m in messages:
+                flash(m, 'error')
+            return render_add_page()
+
         # get hashes
-        hashes = request.form.get("hashes", "")
-        if "hashes_file" in request.files and FormHelper.uploaded_file_is_valid("hashes_file", [".txt"]):
-            print("Upload file")
-            hashes = request.files["hashes_file"].read()
-            print("Hashes : "+str(hashes))
+        hashes = AddCrackForm.get_hashes()
 
         # get hashtype code
-        hash_type_code = int(request.form.get("hash_type"))
+        hash_type_code = AddCrackForm.get_hash_type_code()
 
         # contains_usernames
-        hashed_file_contains_usernames = request.form.get("hashed_file_contains_usernames", 'n')
+        hashed_file_contains_usernames = AddCrackForm.get_file_contains_username()
 
         # attack_details
-        attack_details = get_check_attack_details()
+        attack_details = AddCrackForm.get_attack_details()
 
         # duration
-        duration = int(request.form.get("duration", 3))
+        duration = AddCrackForm.get_duration()
 
-        if not request.form.get("confirm_btn", None):
+        if not AddCrackForm.is_confirmation():
             # render confirmation page if confirm button not submitted
-            return render_add_page(confirmation=True, current_hashes=hashes)
+            return render_add_page(confirmation=True)
         else:
             output_file_path = os.path.join(
                 app.config["APP_LOCATIONS"]["hashcat_outputs"],
@@ -178,5 +112,5 @@ def add_new_crack():
                 attack_details=attack_details
             )
 
-    # render add crack page
+    # render add crack page on GET request
     return render_add_page()

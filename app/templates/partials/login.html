@@ -1,0 +1,41 @@
+{% if current_user.is_authenticated %}
+              <ul class="nav flex-column mb-2">
+                  <li class="nav-item">
+                    <div class="nav-link media" href="">
+                      <i class="far fa-user align-self-center mr-2"></i>
+                      <div class="media-body">
+                          {{ current_user.name }}
+                          <a href="{{ url_for("user_get.logout") }}">Logout</a>
+                      </div>
+                    </div>
+                  </li>
+              </ul>
+
+          {% else %}
+            {# Render login form#}
+            <form class="form-inline" method="post" action="{{ url_for("user_post.login") }}?next={{ url_for(request.endpoint) }}">
+                  <label class="sr-only" for="inlineFormInputLogin">Login</label>
+                  <input type="text"
+                         class="form-control mb-2 mr-sm-2"
+                         id="inlineFormInputLogin"
+                         placeholder="Username"
+                         name="login">
+
+                  <label class="sr-only" for="inlineFormInputPassword">Password</label>
+                  <input type="password"
+                         class="form-control mb-2 mr-sm-2"
+                         id="inlineFormInputPassword"
+                         placeholder="password"
+                         name="password">
+
+                  <div class="form-check mb-2 mr-sm-2">
+                    <input class="form-check-input" type="checkbox" id="inlineFormRememberMe" name="remember_me">
+                    <label class="form-check-label" for="inlineFormRememberMe" >
+                      Remember me
+                    </label>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary mb-2">Login</button>
+            </form>
+
+          {% endif %}

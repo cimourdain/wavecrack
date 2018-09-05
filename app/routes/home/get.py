@@ -14,7 +14,7 @@ home_get = Blueprint('home_get', __name__, template_folder='templates')
 def render_homepage():
     server_details = os.popen("uname -a").read() if app.config['DEBUG'] else None
     return render_template(
-        "homepage.html",
+        "pages/home.html",
         title="Homepage",
         version=server_details
     )

@@ -49,7 +49,7 @@ def render_add_page(confirmation=False):
 
     # render add form
     return render_template(
-        'cracks/add.html',
+        'pages/add_crack.html',
         title="Add new crack" if not confirmation else "Confirm new crack",
         form=form,
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
@@ -76,7 +76,8 @@ def add_new_crack():
         form_is_valid, messages = AddCrackForm.validate_custom()
         if not form_is_valid:
             for m in messages:
-                flash(m, 'error')
+                if m:
+                    flash(m, 'error')
             return render_add_page()
 
         # get hashes

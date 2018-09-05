@@ -110,6 +110,7 @@ class AddCrackForm(FlaskForm):
                 and not request.form.get('attack_mode_dict_classic_cb', None) \
                 and not request.form.get('attack_mode_mask_cb', None) \
                 and not request.form.get('attack_mode_bruteforce_cb', None):
+            print("Not one attack mode selected")
             return False, "Select at least one attack type"
         return True, ""
 
@@ -153,7 +154,7 @@ class AddCrackForm(FlaskForm):
         messages = [
             hashes_message,
             hashes_code_message,
-            at_least_one_attack_selected,
+            nb_attacks_message,
             keywords_message,
             dict_message,
             mask_message

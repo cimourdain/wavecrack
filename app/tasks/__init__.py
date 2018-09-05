@@ -1,0 +1,1 @@
+from app.tasks.hashcat import *

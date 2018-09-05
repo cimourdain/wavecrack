@@ -66,12 +66,21 @@ class AddCrackForm(FlaskForm):
 
     # custom get method
     @staticmethod
-    def get_hashes():
-        hashes = request.form.get("hashes", "")
-        if "hashes_file" in request.files and FormHelper.uploaded_file_is_valid("hashes_file", [".txt"]):
-            hashes = request.files["hashes_file"].read()
+    def set_hashes(form):
+        hashes = AddCrackForm.get_hashes()
+        form.hashes.data = hashes
 
-        return hashes
+        return True
+
+    @staticmethod
+    def get_hashes(form=None):
+        if form and form.hashes.data:
+            return form.hashes.data
+
+        if "hashes_file" in request.files and FormHelper.uploaded_file_is_valid("hashes_file", [".txt"]):
+            return str(request.files["hashes_file"].read())
+
+        return request.form.get("hashes", "")
 
     @staticmethod
     def get_hash_type_code():
@@ -91,8 +100,8 @@ class AddCrackForm(FlaskForm):
 
     # custom validation method
     @staticmethod
-    def validate_hashes():
-        if not AddCrackForm.get_hashes():
+    def validate_hashes(form=None):
+        if not AddCrackForm.get_hashes(form):
             return False, "Hashes or hash file required"
 
         return True, ""
@@ -110,7 +119,7 @@ class AddCrackForm(FlaskForm):
                 and not request.form.get('attack_mode_dict_classic_cb', None) \
                 and not request.form.get('attack_mode_mask_cb', None) \
                 and not request.form.get('attack_mode_bruteforce_cb', None):
-            print("Not one attack mode selected")
+
             return False, "Select at least one attack type"
         return True, ""
 
@@ -142,8 +151,8 @@ class AddCrackForm(FlaskForm):
         return True, ""
 
     @staticmethod
-    def validate_custom():
-        hashes_valid, hashes_message = AddCrackForm.validate_hashes()
+    def validate_custom(form=None):
+        hashes_valid, hashes_message = AddCrackForm.validate_hashes(form)
         hashes_code_valid, hashes_code_message = AddCrackForm.validate_hash_type_code()
         keywords_valid, keywords_message = AddCrackForm.validate_keywords()
         dict_valid, dict_message = AddCrackForm.validate_dict_attack()

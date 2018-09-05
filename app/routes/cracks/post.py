@@ -37,15 +37,10 @@ def get_filelist_checkbox_builder_dict(name, files_list):
     return result_files_list
 
 
-def render_add_page(confirmation=False):
+def render_add_page(form, confirmation=False):
     """
     function used to render add template page
     """
-
-    form = AddCrackForm(request.form)
-    current_hashes = AddCrackForm.get_hashes()
-    if current_hashes:
-        form.hashes.data = current_hashes
 
     # render add form
     return render_template(
@@ -70,15 +65,19 @@ def render_add_page(confirmation=False):
 @cracks_post.route('/add', methods=["GET", "POST"])
 @login_required
 def add_new_crack():
+    form = AddCrackForm(request.form)
+
     if request.method == "POST":
+        # set hashes from file content to hashes textarea if required
+        AddCrackForm.set_hashes(form)
 
         # validate form content
-        form_is_valid, messages = AddCrackForm.validate_custom()
+        form_is_valid, messages = AddCrackForm.validate_custom(form)
         if not form_is_valid:
             for m in messages:
                 if m:
                     flash(m, 'error')
-            return render_add_page()
+            return render_add_page(form)
 
         # get hashes
         hashes = AddCrackForm.get_hashes()
@@ -97,7 +96,7 @@ def add_new_crack():
 
         if not AddCrackForm.is_confirmation():
             # render confirmation page if confirm button not submitted
-            return render_add_page(confirmation=True)
+            return render_add_page(form=form, confirmation=True)
         else:
             output_file_path = os.path.join(
                 app.config["APP_LOCATIONS"]["hashcat_outputs"],
@@ -106,12 +105,13 @@ def add_new_crack():
 
             launch_new_crack.delay(
                 hashes=hashes,
-                hash_type_code=hash_type_code,
+                hashes_type_code=hash_type_code,
                 output_file_path=output_file_path,
                 hashed_file_contains_usernames=hashed_file_contains_usernames,
                 duration=duration,
                 attack_details=attack_details
             )
+            return jsonify({"message": "sent"})
 
     # render add crack page on GET request
-    return render_add_page()
+    return render_add_page(form=form)

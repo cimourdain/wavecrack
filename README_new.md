@@ -92,7 +92,7 @@ or
 # Celery
 * Start Celery from the application folder
 ```
-$ celery worker -A cracker.celery
+$ celery -A worker.celery worker
 ```
 
 # App

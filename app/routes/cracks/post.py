@@ -52,11 +52,11 @@ def render_add_page(form, confirmation=False):
         max_len=app.config["MAX_CONTENT_LENGTH"],
         wordlist_files_list=get_filelist_checkbox_builder_dict(
             'attack_classic_dict_files',
-            FilesHelper.get_available_files(folder=app.config["APP_LOCATIONS"]["wordlists"])
+            FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["wordlists"])
         ),
         variations_files_list=get_filelist_checkbox_builder_dict(
             'attack_variations_dict_files',
-            FilesHelper.get_available_files(folder=app.config["APP_LOCATIONS"]["rules"])
+            FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["rules"])
         ),
         confirmation=confirmation
     )
@@ -99,7 +99,7 @@ def add_new_crack():
             return render_add_page(form=form, confirmation=True)
         else:
             output_file_path = os.path.join(
-                app.config["APP_LOCATIONS"]["hashcat_outputs"],
+                app.config["DIR_LOCATIONS"]["hashcat_outputs"],
                 CrackHelper.get_output_file_name()
             )
 

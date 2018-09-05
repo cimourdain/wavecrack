@@ -15,3 +15,16 @@ class FilesHelper(object):
             available_files.extend(files)
 
         return available_files
+
+    @staticmethod
+    def file_exists(file_path, create=True):
+        if not os.path.isfile(file_path):
+            if create:
+                try:
+                    open(file_path, 'a').close()
+                except Exception as _:
+                    return False
+            else:
+                return False
+
+        return True

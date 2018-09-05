@@ -67,7 +67,7 @@ $ flask deploy # create default users from config DEFAULT_USERS
 ```
 ### Words dictionaries
 # Setup Wordlists Folder
-Setup words folder in config.py (APP_LOCATIONS/wordlists)
+Setup words folder in config.py (DIR_LOCATIONS/wordlists)
 
 # Add Dictionaries
 * Download wordlists ([examples](https://hashcat.net/forum/thread-1236.html))

@@ -1,9 +1,9 @@
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.attack_modes import ATTACK_MODES
 from app.helpers.text import TextHelper
 
 
-class HashesHelper(object):
-    HASHS_LIST = HASHS_LIST
+class AttackModeHelper(object):
+    ATTACK_MODES = ATTACK_MODES
 
     @staticmethod
     def validate_code(code):
@@ -11,7 +11,7 @@ class HashesHelper(object):
             return False
 
         code = int(code)
-        for h in HASHS_LIST:
-            if int(h['code']) == code:
+        for a in ATTACK_MODES:
+            if int(a['code']) == code:
                 return True
         return False

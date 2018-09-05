@@ -41,7 +41,7 @@ def create_app(config_name):
 
 
 def check_app_folders(app):
-    for k, folder in app.config['APP_LOCATIONS'].items():
+    for k, folder in app.config['DIR_LOCATIONS'].items():
         if not os.path.exists(folder):
             if not os.makedirs(folder):
                 raise OSError(

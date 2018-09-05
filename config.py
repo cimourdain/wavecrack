@@ -31,9 +31,7 @@ class Config(object):
 
     # app locations
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
-    APP_LOCATIONS = {
-        # Hashcat executable path, by default '/usr/bin/hashcat' on Kali
-        'hashcat': BASE_DIR + '/hashcat/',
+    DIR_LOCATIONS = {
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
         'hashcat_rules': BASE_DIR + '/hashcat/rules/',
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
@@ -51,6 +49,10 @@ class Config(object):
         # by default '/usr/sbin/john' on Kali
         'john': BASE_DIR + '/john/'
 
+    }
+
+    APP_LOCATIONS = {
+        "hashcat": BASE_DIR + '/hashcat/hashcat64.bin',
     }
 
     # Hashcat rules list

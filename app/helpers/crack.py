@@ -15,9 +15,5 @@ class CrackHelper(object):
         return output_file_name_prefix + output_file_name_suffix
 
     @staticmethod
-    def crack_pwdump():
-        pass
-
-    @staticmethod
-    def crack_non_pwdump():
+    def crack(options):
         pass

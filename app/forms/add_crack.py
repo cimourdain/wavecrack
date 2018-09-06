@@ -10,6 +10,7 @@ from server import app
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.forms import FormHelper
 from app.helpers.hashes import HashesHelper
+from app.helpers.text import TextHelper
 
 
 def get_durations_as_tuple():
@@ -145,7 +146,7 @@ class AddCrackForm(FlaskForm):
     def validate_mask():
         if request.form.get('attack_mode_mask_cb', None):
             mask = request.form.get('mask', None)
-            if not mask or not FormHelper.check_mask(mask):
+            if not mask or not TextHelper.check_mask(mask):
                 return False, "Empty or invalid mask"
 
         return True, ""

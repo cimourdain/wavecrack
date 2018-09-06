@@ -1,61 +1,101 @@
+from app.ref.hashes_list import HASHS_LIST
+from app.helpers.rules import RulesHelper
+
+ATTACK_MODES = {
+    "0": "Straight",
+    "1": "Combination",
+    "3": "Brute-force",
+    "6": "Hybrid Wordlist + Mask",
+    "7": "Hybrid Mask + Wordlist",
+}
+
+OUTFILES_FORMAT = {
+    "1": "hash[:salt]",
+    "2": "plain",
+    "3": "hash[:salt]:plain",
+    "4": "hex_plain",
+    "5": "hash[:salt]:hex_plain",
+    "6": "plain:hex_plain",
+    "7": "hash[:salt]:plain:hex_plain",
+    "8": "crackpos",
+    "9": "hash[:salt]:crack_pos",
+    "10": "plain:crack_pos",
+    "11": "hash[:salt]:plain:crack_pos",
+    "12": "hex_plain:crack_pos",
+    "13": "hash[:salt]:hex_plain:crack_pos",
+    "14": "plain:hex_plain:crack_pos",
+    "15": "hash[:salt]:plain:hex_plain:crack_pos",
+}
+
+RULES_FILES = RulesHelper.get_rules_files()
+
+DEBUG_MODES ={
+    "1": "Finding - Rule",
+    "2": "Original - Word",
+    "3": "Original - Word:Finding - Rule",
+    "4": "Original - Word:Finding - Rule:Processed - Word",
+}
+
 HASHCAT_OPTIONS = {
         "--hash-type": {
                 "short": "-m",
                 "type": "Num",
+                "values": HASHS_LIST,
                 "description": "Hash-type, see references below",
                 "example": "-m 1000",
         },
         "--attack-mode": {
                 "short": "-a",
                 "type": "Num",
+                "values": ATTACK_MODES,
                 "description": "Attack-mode, see references below",
                 "example": "-a 3",
         },
         "--version": {
                 "short": "-V",
-                "type": "",
+                "type": None,
                 "description": "Print version",
                 "example": "",
         },
         "--help": {
                 "short": "-h",
-                "type": "",
+                "type": None,
                 "description": "Print help",
                 "example": "",
         },
         "--quiet": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Suppress output",
                 "example": "",
         },
         "--hex-charset": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Assume charset is given in hex",
                 "example": "",
         },
         "--hex-salt": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Assume salt is given in hex",
                 "example": "",
         },
         "--hex-wordlist": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Assume words in wordlist are given in hex",
                 "example": "",
         },
         "--force": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Ignore warnings",
                 "example": "",
         },
         "--status": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Enable automatic update of the status screen",
                 "example": "",
         },
@@ -67,25 +107,25 @@ HASHCAT_OPTIONS = {
         },
         "--machine-readable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Display the status view in a machine-readable format",
                 "example": "",
         },
         "--keep-guessing": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Keep guessing the hash after it has been cracked",
                 "example": "",
         },
         "--self-test-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disable self-test functionality on startup",
                 "example": "",
         },
         "--loopback": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Add new plains to induct directory",
                 "example": "",
         },
@@ -97,13 +137,13 @@ HASHCAT_OPTIONS = {
         },
         "--markov-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disables markov-chains, emulates classic brute-force",
                 "example": "",
         },
         "--markov-classic": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Enables classic markov-chains, no per-position",
                 "example": "",
         },
@@ -127,13 +167,13 @@ HASHCAT_OPTIONS = {
         },
         "--restore": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Restore session from --session",
                 "example": "",
         },
         "--restore-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Do not write restore file",
                 "example": "",
         },
@@ -152,12 +192,13 @@ HASHCAT_OPTIONS = {
         "--outfile-format": {
                 "short": None,
                 "type": "Num",
+                "values": OUTFILES_FORMAT,
                 "description": "Define outfile-format X for recovered hash",
                 "example": "--outfile-format=7",
         },
         "--outfile-autohex-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disable the use of $HEX[] in output plains",
                 "example": "",
         },
@@ -169,7 +210,7 @@ HASHCAT_OPTIONS = {
         },
         "--wordlist-autohex-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disable the conversion of $HEX[] from the wordlist",
                 "example": "",
         },
@@ -181,31 +222,31 @@ HASHCAT_OPTIONS = {
         },
         "--stdout": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Do not crack a hash, instead print candidates only",
                 "example": "",
         },
         "--show": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Compare hashlist with potfile; show cracked hashes",
                 "example": "",
         },
         "--left": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Compare hashlist with potfile; show uncracked hashes",
                 "example": "",
         },
         "--username": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Enable ignoring of usernames in hashfile",
                 "example": "",
         },
         "--remove": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Enable removal of hashes once they are cracked",
                 "example": "",
         },
@@ -217,7 +258,7 @@ HASHCAT_OPTIONS = {
         },
         "--potfile-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Do not write potfile",
                 "example": "",
         },
@@ -227,21 +268,22 @@ HASHCAT_OPTIONS = {
                 "description": "Specific path to potfile",
                 "example": "--potfile-path=my.pot",
         },
-        "--encoding-from": {
-                "short": None,
-                "type": "Code",
-                "description": "Force internal wordlist encoding from X",
-                "example": "--encoding-from=iso-8859-15",
-        },
-        "--encoding-to": {
-                "short": None,
-                "type": "Code",
-                "description": "Force internal wordlist encoding to X",
-                "example": "--encoding-to=utf-32le",
-        },
+        # "--encoding-from": {
+        #         "short": None,
+        #         "type": "Code",
+        #         "description": "Force internal wordlist encoding from X",
+        #         "example": "--encoding-from=iso-8859-15",
+        # },
+        # "--encoding-to": {
+        #         "short": None,
+        #         "type": "Code",
+        #         "description": "Force internal wordlist encoding to X",
+        #         "example": "--encoding-to=utf-32le",
+        # },
         "--debug-mode": {
                 "short": None,
                 "type": "Num",
+                "values": DEBUG_MODES,
                 "description": "Defines the debug mode (hybrid only by using rules)",
                 "example": "--debug-mode=4",
         },
@@ -265,7 +307,7 @@ HASHCAT_OPTIONS = {
         },
         "--logfile-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disable the logfile",
                 "example": "",
         },
@@ -301,25 +343,25 @@ HASHCAT_OPTIONS = {
         },
         "--benchmark": {
                 "short": "-b",
-                "type": "",
+                "type": None,
                 "description": "Run benchmark of selected hash-modes",
                 "example": "",
         },
         "--benchmark-all": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Run benchmark of all hash-modes (requires -b)",
                 "example": "",
         },
         "--speed-only": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Return expected speed of the attack, then quit",
                 "example": "",
         },
         "--progress-only": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Return ideal progress step size and time to process",
                 "example": "",
         },
@@ -349,13 +391,13 @@ HASHCAT_OPTIONS = {
         },
         "--example-hashes": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Show an example hash for each hash-mode",
                 "example": "",
         },
         "--opencl-info": {
                 "short": "-I",
-                "type": "",
+                "type": None,
                 "description": "Show info about detected OpenCL platforms/devices",
                 "example": "-I",
         },
@@ -385,7 +427,7 @@ HASHCAT_OPTIONS = {
         },
         "--optimized-kernel-enable": {
                 "short": "-O",
-                "type": "",
+                "type": None,
                 "description": "Enable optimized kernels (limits password length)",
                 "example": "",
         },
@@ -415,7 +457,7 @@ HASHCAT_OPTIONS = {
         },
         "--gpu-temp-disable": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Disable temperature and fanspeed reads and triggers",
                 "example": "",
         },
@@ -445,7 +487,7 @@ HASHCAT_OPTIONS = {
         },
         "--keyspace": {
                 "short": None,
-                "type": "",
+                "type": None,
                 "description": "Show keyspace base:mod values and quit",
                 "example": "",
         },
@@ -464,6 +506,7 @@ HASHCAT_OPTIONS = {
         "--rules-file": {
                 "short": "-r",
                 "type": "File",
+                "values": RULES_FILES,
                 "description": "Multiple rules applied to each word from wordlists",
                 "example": "-r rules/best64.rule",
         },
@@ -517,7 +560,7 @@ HASHCAT_OPTIONS = {
         },
         "--increment": {
                 "short": "-i",
-                "type": "",
+                "type": None,
                 "description": "Enable mask increment mode",
                 "example": "",
         },

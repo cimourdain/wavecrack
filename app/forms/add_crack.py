@@ -42,20 +42,18 @@ class AddCrackForm(FlaskForm):
         }
     )
 
-    attack_mode_keywords_cb = BooleanField("Keywords")
-    keywords = TextAreaField("Enter keyword(s) (one per line)", render_kw={
-        "placeholder": "Enter keyword(s) (one per line)"
+    keywords = TextAreaField("And/Or Enter keywords(one per line)", render_kw={
+        "placeholder": "Enter keywords(one per line)"
+    })
+    keywords_file = FileField("And/Or upload keywords file")
+
+    mask = TextAreaField("Enter masks(one per line)", render_kw={
+        "placeholder": "Enter keywords(one per line)"
     })
 
-    attack_mode_dict_classic_cb = BooleanField("Classic dictionnary")
-    attack_mode_dict_variations_cb = BooleanField("Dictionnary with variations")
+    # note: rules generated manually
 
-    attack_mode_mask_cb = BooleanField("Mask")
-    mask = StringField("Mask", render_kw={
-        "placeholder": "Enter the mask"
-    })
-
-    attack_mode_bruteforce_cb = BooleanField("Bruteforce")
+    bruteforce = BooleanField("Perform a bruteforce attack")
 
     duration = SelectField(
         "Select duration (days)",
@@ -65,14 +63,9 @@ class AddCrackForm(FlaskForm):
     submit_btn = SubmitField(label='Sumbit')
     confirm_btn = SubmitField(label='Confirm')
 
-    # custom get method
-    @staticmethod
-    def set_hashes(form):
-        hashes = AddCrackForm.get_hashes()
-        form.hashes.data = hashes
-
-        return True
-
+    """
+    CUSTOM VALIDATION METHODS
+    """
     @staticmethod
     def get_hashes(form=None):
         if form and form.hashes.data:
@@ -82,6 +75,29 @@ class AddCrackForm(FlaskForm):
             return str(request.files["hashes_file"].read())
 
         return request.form.get("hashes", "")
+
+    @staticmethod
+    def set_hashes(form):
+        hashes = AddCrackForm.get_hashes()
+        form.hashes.data = hashes
+
+        return True
+
+    @staticmethod
+    def get_keywords(form=None):
+        if form and form.keywords.data:
+            return form.keywords.data
+
+        if "keywords_file" in request.files and FormHelper.uploaded_file_is_valid("keywords_file", [".txt"]):
+            return str(request.files["keywords_file"].read())
+
+        return request.form.get("keywords", "")
+
+    @staticmethod
+    def set_keywords(form):
+        form.keywords.data = AddCrackForm.get_keywords()
+
+        return True
 
     @staticmethod
     def get_hash_type_code():
@@ -115,39 +131,20 @@ class AddCrackForm(FlaskForm):
         return True, ""
 
     @staticmethod
-    def validate_one_attack_selected():
-        if not request.form.get('attack_mode_keywords_cb', None) \
-                and not request.form.get('attack_mode_dict_classic_cb', None) \
-                and not request.form.get('attack_mode_mask_cb', None) \
-                and not request.form.get('attack_mode_bruteforce_cb', None):
+    def validate_one_attack_selected(form=None):
+        if not request.form.get('wordlist_files', None) \
+                and not AddCrackForm.get_keywords(form) \
+                and not request.form.get('mask', None) \
+                and not request.form.get('bruteforce', None):
 
             return False, "Select at least one attack type"
         return True, ""
 
     @staticmethod
-    def validate_keywords():
-        if request.form.get('attack_mode_keywords_cb', None):
-            keywords = request.form.get('keywords', None)
-            if not keywords:
-                return False, "keywords required for a keyword attack"
-
-        return True, ""
-
-    @staticmethod
-    def validate_dict_attack():
-        if request.form.get('attack_mode_dict_classic_cb', None):
-            # check at least one dict is selected
-            if not request.form.get('attack_classic_dict_files', None):
-                return False, "List of dict required for classic dict attack"
-
-        return True, ""
-
-    @staticmethod
     def validate_mask():
-        if request.form.get('attack_mode_mask_cb', None):
-            mask = request.form.get('mask', None)
-            if not mask or not TextHelper.check_mask(mask):
-                return False, "Empty or invalid mask"
+        mask = request.form.get('mask', None)
+        if mask and not TextHelper.check_mask(mask):
+            return False, "Empty or invalid mask"
 
         return True, ""
 
@@ -155,26 +152,21 @@ class AddCrackForm(FlaskForm):
     def validate_custom(form=None):
         hashes_valid, hashes_message = AddCrackForm.validate_hashes(form)
         hashes_code_valid, hashes_code_message = AddCrackForm.validate_hash_type_code()
-        keywords_valid, keywords_message = AddCrackForm.validate_keywords()
-        dict_valid, dict_message = AddCrackForm.validate_dict_attack()
         mask_valid, mask_message = AddCrackForm.validate_mask()
 
-        at_least_one_attack_selected, nb_attacks_message = AddCrackForm.validate_one_attack_selected()
+        at_least_one_attack_selected, nb_attacks_message = AddCrackForm.validate_one_attack_selected(form)
 
         messages = [
             hashes_message,
             hashes_code_message,
             nb_attacks_message,
-            keywords_message,
-            dict_message,
             mask_message
         ]
 
         if not hashes_valid \
                 or not hashes_code_valid \
                 or not at_least_one_attack_selected \
-                or not keywords_valid \
-                or not dict_valid or not mask_valid:
+                or not mask_valid:
             return False, messages
 
         return True, []

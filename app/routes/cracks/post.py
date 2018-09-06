@@ -30,7 +30,7 @@ def get_filelist_checkbox_builder_dict(name, files_list):
         sumbitted_values = request.form.get(name, None)
         result_files_list.append({
             'name': name,
-            'label': f,
+            'label': os.path.splitext(os.path.basename(f))[0],
             'value': f,
             'checked': True if sumbitted_values and f in sumbitted_values else False
         })
@@ -51,11 +51,11 @@ def render_add_page(form, confirmation=False):
         hashes_list=HASHS_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
         wordlist_files_list=get_filelist_checkbox_builder_dict(
-            'attack_classic_dict_files',
+            'wordlist_files',
             FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["wordlists"])
         ),
-        variations_files_list=get_filelist_checkbox_builder_dict(
-            'attack_variations_dict_files',
+        rules_files_list=get_filelist_checkbox_builder_dict(
+            'rules_files',
             FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["rules"])
         ),
         confirmation=confirmation
@@ -70,6 +70,7 @@ def add_new_crack():
     if request.method == "POST":
         # set hashes from file content to hashes textarea if required
         AddCrackForm.set_hashes(form)
+        AddCrackForm.set_keywords(form)
 
         # validate form content
         form_is_valid, messages = AddCrackForm.validate_custom(form)

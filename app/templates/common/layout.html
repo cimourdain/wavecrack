@@ -30,51 +30,7 @@
             {% include 'partials/login.html' %}
 
 
-            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-              <span>Menu</span>
-            </h6>
-            <ul class="nav flex-column mb-2">
-                {% if  current_user.is_authenticated %}
-              <li class="nav-item">
-                <a class="nav-link media" href="{{ url_for('cracks_post.add_new_crack') }}">
-                  <i class="far fa-plus-square align-self-center mr-2"></i>
-                    <div class="media-body">New crack</div>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link media" href="">
-                  <i class="fas fa-list-ol align-self-center mr-2"></i>
-                    <div class="media-body">
-                        Current and past cracks
-                    </div>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link media" href="">
-                  <i class="fas fa-thermometer-half align-self-center mr-2"></i>
-                    <div class="media-body">
-                        Server status
-                    </div>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link media" href="">
-                  <i class="fas fa-file-archive align-self-center mr-2"></i>
-                    <div class="media-body">
-                        Upload protected file
-                    </div>
-                </a>
-              </li>
-                {% endif %}
-              <li class="nav-item">
-                <a class="nav-link media" href="{{ url_for('ntds_upload_get.render_ndts_upload') }}">
-                  <i class="far fa-file-alt align-self-center mr-2"></i>
-                    <div class="media-body">
-                        How to upload NDTS file?
-                    </div>
-                </a>
-              </li>
-            </ul>
+            {% include 'partials/menu.html' %}
           </div>
         </nav>
 
@@ -83,35 +39,13 @@
             <h1>{{ title }}</h1>
 
           </div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              {% if category == 'error' %}
-                  <div class="alert alert-danger" role="alert">
-                {% elif category == 'warning' %}
-                  <div class="alert alert-warning" role="alert">
-                {% elif category == 'success' %}
-                  <div class="alert alert-success" role="alert">
-                {% else %}
-                  <div class="alert alert-primary" role="alert">
-                {% endif %}
-                    {{ message }}
-                </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
+            {% include 'partials/alerts.html' %}
 
         {% block body %}
         {% endblock %}
         </main>
     </div>
-    {% if version %}
-    <footer class="footer">
-      <div class="container">
-        <span class="text-muted">Cracking server version {{ version }}</span>
-      </div>
-    </footer>
-    {% endif %}
+    {% include 'partials/footer.html' %}
 </div>
 
 <!-- Bootstrap core JavaScript -->

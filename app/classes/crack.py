@@ -6,7 +6,7 @@ import os
 from server import app
 from app.classes.cmd import Cmd
 from app.helpers.files import FilesHelper
-from app.ref.hashcat_options import HASHCAT_OPTIONS
+from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
 from app.helpers.word_dict import WordDictHelper
 
@@ -38,7 +38,7 @@ from app.helpers.word_dict import WordDictHelper
 
 class Crack(object):
 
-    def __init__(self, options, input_hashfile, output_file="output.txt", dictionaries=None, mask=None, log=False):
+    def __init__(self, options, input_hashfile, attack_mode_code, attack_files, output_file="output.txt", log=False):
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
         self.input_hashfile = None
         self.output_file = None
@@ -46,15 +46,14 @@ class Crack(object):
         self.options = []
         self.attack_mode_code = 0
         self.session_id = uuid.uuid4()
-        self.dictionaries = []
-        self.mask = []
+        self.attack_files = []
 
         self.set_input_hashfile(input_hashfile)
         self.set_output_file(output_file)
         self.set_options(options)
         self.set_log_file(log)
-        self.dictionaries = dictionaries
-        self.mask = mask
+        self.set_attack_mode_code(attack_mode_code)
+        self.set_attack_files(attack_files)
 
     """
     SET HASHFILE
@@ -71,22 +70,29 @@ class Crack(object):
 
     def set_log_file(self, log):
         if log:
-            self.log_file = os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], "log.txt")
+            self.log_file = os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id, "log.txt")
 
-    def set_dictionaries(self, dicts):
-        if isinstance(dicts, basestring):
-            self.set_dictionary(dicts)
-        elif isinstance(dicts, list):
-            for d in dicts:
-                self.set_dictionary(d)
+    def set_attack_files(self, files_list):
+        if isinstance(files_list, basestring):
+            self.set_attack_file(files_list)
+        elif isinstance(files_list, list):
+            for f in files_list:
+                self.set_attack_file(f)
 
-    def set_dictionary(self, d):
-        if WordDictHelper.is_valid_wordlist_file(d):
-            self.dictionaries.apppend(d)
+    def set_attack_mode_code(self, attack_mode_code):
+        if str(attack_mode_code) in ATTACK_MODES:
+            self.attack_mode_code = int(attack_mode_code)
 
-    def set_mask(self, mask):
-        if mask and isinstance(mask, basestring):
-            self.mask = mask
+    def set_attack_file(self, f):
+        """
+        check if file exists either in list of wordlists or in crack folder
+        """
+        if WordDictHelper.is_valid_wordlist_file(f):
+            self.attack_files.append(f)
+        elif FilesHelper.file_exists(
+                file_path=f,
+                folder=os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id)):
+            self.attack_files.append(f)
 
     """
     SET OPTIONS
@@ -108,35 +114,15 @@ class Crack(object):
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
 
-    def build_final_cmd(self):
-        if self.attack_mode_code == 0: # Straight
-            return self.dictionaries[0]
-
-        elif self.attack_mode_code == 1: # Combination
-            return "{} {} ".format(self.dictionaries[0], self.dictionaries[1])
-
-        elif self.attack_mode_code == 3: # Brute-force
-            if self.mask:
-                return self.mask + " "
-            return ""
-
-        elif self.attack_mode_code == 6: # Hybrid Wordlist + Mask
-            if self.dictionaries and self.mask:
-                return self.dictionaries[0] + " "+self.mask+" "
-
-        elif self.attack_mode_code == 7: # Hybrid Mask + Wordlist
-            if self.dictionaries and self.mask:
-                return self.mask + " " + self.dictionaries[0] + " "
-
-        return ""
 
     def build_run_cmd(self):
-        cmd = "{} -o {} {} {}".format(
+        cmd = "{} -a {} -o {} {} {}".format(
             self.hashcat_cmd,
+            self.attack_mode_code,
             self.output_file,
             self.build_cmd_options(),
             self.input_hashfile,
-            self.build_final_cmd()
+            " ".join(self.attack_files)
         )
 
         return cmd

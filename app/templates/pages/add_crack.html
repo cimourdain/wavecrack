@@ -13,112 +13,92 @@ function UpdateHashExample()
     $("#hash_example").text(hashes_list[$("#hash_type  option:selected").val()]);
 }
 
-function collapseAttackModeDetails(){
-    console.log("update collapse")
-    // get new value
-    if ($("#attack_mode_keywords_cb").prop("checked")) {
-        console.log("keywords is checked")
-        $("#attack_mode_keywords_details").show();
-    }
-    else {
-        console.log("keywords is not checked")
-        $("#attack_mode_keywords_details").hide();
-    }
-
-    if ($("#attack_mode_dict_classic_cb").prop("checked")) {
-        $("#attack_mode_dict_classic_details").show();
-    }
-    else {
-        $("#attack_mode_dict_classic_details").hide();
-    }
-
-    if ($("#attack_mode_mask_cb").prop("checked")) {
-        $("#attack_mode_mask_details").show();
-    }
-    else {
-        $("#attack_mode_mask_details").hide();
-    }
-
-}
-
-$(document).ready(function () {
-    collapseAttackModeDetails()
-
-    $("input[type=checkbox][class='attack_mode']").change(function(){
-        collapseAttackModeDetails()
-    });
-});
 
 </script>
 {% endblock %}
 {% block body %}
-
 <form method="POST" action="{{ url_for("cracks_post.add_new_crack") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}
-    <h3>Hash(es) options</h3>
 
-    <div class="form-group">
+    {% if not confirmation %}
+        {{ form.submit_btn(class_="btn btn-primary") }}
+    {% else %}
+        {{ form.confirm_btn(class_="btn btn-primary") }}
+        <a class="btn btn-primary" href="{{ url_for("cracks_post.add_new_crack") }}" role="button">Cancel</a>
+    {% endif %}
+<nav>
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+    <a class="nav-item nav-link active"
+       id="nav-input-tab"
+       data-toggle="tab"
+       href="#nav-input"
+       role="tab"
+       aria-controls="nav-input"
+       aria-selected="true">Hashes
+    </a>
+    <a class="nav-item nav-link"
+       id="nav-main-tab"
+       data-toggle="tab"
+       href="#nav-main"
+       role="tab"
+       aria-controls="nav-main"
+       aria-selected="false">Attack</a>
+    <a class="nav-item nav-link"
+       id="nav-options-tab"
+       data-toggle="tab"
+       href="#nav-options"
+       role="tab"
+       aria-controls="nav-options"
+       aria-selected="false">Options</a>
+  </div>
+</nav>
+
+<div class="tab-content" id="nav-tabContent">
+  <!-- INPUT -->
+  <div class="tab-pane fade show active" id="nav-input" role="tabpanel" aria-labelledby="nav-input-tab">
+
+      <div class="form-group">
         {{ form.hashes.label}}
         {{ form.hashes(class_="form-control", readonly=confirmation) }}
-    </div>
+      </div><!-- //form-group -->
 
-    {% if not confirmtion %}
-    <div class="form-group">
-        {{ form.hashes_file.label}}
-        {{ form.hashes_file(class_="form-control-file")}}
-        <small class="form-text text-muted">txt extension only and the maximum supported size is {{ max_len/(1024*1024) }} MB</small>
-    </div>
-    {% endif %}
+      {% if not confirmation %}
+      <div class="form-group">
+            {{ form.hashes_file.label}}
+            {{ form.hashes_file(class_="form-control-file", readonly=confirmation)}}
+            <small class="form-text text-muted">txt extension only and the maximum supported size is {{ max_len/(1024*1024) }} MB</small>
+      </div><!-- //form-group -->
+      {% endif %}
 
-    <div class="form-group">
-        {{ form.hashed_file_contains_usernames(readonly=confirmation) }}
+      <div class="form-group">
+        {{ form.hashed_file_contains_usernames(class_="form-control", readonly=confirmation) }}
         {{ form.hashed_file_contains_usernames.label }}
 
         <small class="form-text text-muted">"In this case, usernames have to be separated from hashes by {{ separator }}.
                  For example, a compliant input if the box it ticked is: user{{ separator }}hash"</small>
-    </div>
+      </div> <!-- //form-group -->
 
-    <div class="form-group">
+      <div class="form-group">
         {{ form.hash_type.label }}
         {{ form.hash_type(class_="form-control", readonly=confirmation) }}
         <p>
         Example: <span class="hash_example" id="hash_example">&lt;Select hash type in the drop-down box&gt;</span>
         </p>
-        <div class="identify">
-              <img src="{{ url_for('static', filename='img/question-mark.png') }}">
-              <a href="{{ url_for('hashes_get.identify_hash') }}" target="_blank"> Hash type identification assistant </a>
-          </div><!-- // identify -->
-    </div>
 
-    <h2>Select one or more attack modes</h2>
+        <div class="media">
+          <i class="fas fa-question-circle align-self-center mr-2"></i>
+          <div class="media-body">
+            <a href="{{ url_for('hashes_get.identify_hash') }}" target="_blank"> Hash type identification assistant </a>
+          </div>
+        </div><!-- //media -->
+       </div><!-- //form-group -->
+  </div>
 
-    <div class="card">
-      <div class="card-header">
-        <div class="form-group">
-            {{ form.attack_mode_keywords_cb(class_="attack_mode", readonly=confirmation) }}
-            {{ form.attack_mode_keywords_cb.label }}
+  <!-- ATTACK -->
+  <div class="tab-pane fade" id="nav-main" role="tabpanel" aria-labelledby="nav-main">
+      <h3>Dictionaries</h3>
 
-        </div>
-      </div>
-      <div class="card-body" id="attack_mode_keywords_details">
-        <div class="form-group">
-            {{ form.keywords.label}}
-            {{ form.keywords(class_="form-control", readonly=confirmation) }}
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="form-group">
-            {{ form.attack_mode_dict_classic_cb(class_="attack_mode", readonly=confirmation) }}
-            {{ form.attack_mode_dict_classic_cb.label }}
-        </div>
-      </div>
-      <div class="card-body" id="attack_mode_dict_classic_details">
-        <h4>Dictionaries files</h4>
-        <small>Select at least one dictionary file.</small>
-        {% for cb in wordlist_files_list %}
+      {% for cb in wordlist_files_list %}
             <div class="form-group">
                 <input
                         type="checkbox"
@@ -130,18 +110,43 @@ $(document).ready(function () {
                 {{ cb['label'] }}
             </div>
         {% endfor %}
-        <h4>Dictionaries Variations</h4>
-          <div class="form-group">
-                        <input
-                                type="checkbox"
-                                name="attack_variations_dict_files"
-                                value="default"
-                                {{ "checked" if "default" in request.form.get("attack_variations_dict_files", []) else "" }}
-                                {{ "readonly" if confirmation else "" }}
-                        />
-                        Default
-          </div>
-          {% for cb in variations_files_list %}
+
+      <div class="form-group">
+        {{ form.keywords.label}}
+        {{ form.keywords(class_="form-control", readonly=confirmation) }}
+      </div><!-- //form-group -->
+
+      {% if not confirmation %}
+      <div class="form-group">
+        {{ form.keywords_file.label}}
+        {{ form.keywords_file(class_="form-control-file", readonly=confirmation) }}
+      </div><!-- //form-group -->
+      {% endif %}
+
+      <h3>Mask</h3>
+      <div class="form-group">
+        {{ form.mask.label}}
+        {{ form.mask(class_="form-control", readonly=confirmation) }}
+          <small class="form-text text-muted">
+              Expected mask format &laquo;&nbsp;<code>?u?l?l?l?l?d?s?a</code>&nbsp;&raquo;, or :
+              <ul>
+                  <li><code>?u</code> = ABCDEFGHIJKLMNOPQRSTUVWXYZ</li>
+                  <li><code>?l</code> = abcdefghijklmnopqrstuvwxyz</li>
+                  <li><code>?d</code> = 0123456789</li>
+                  <li><code>?s</code> = «space»!"#$%&'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~</li>
+                  <li><code>?a</code> = <code>?l?u?d?s</code> (All character type)</li>
+              </ul>
+            </small>
+      </div><!-- //form-group -->
+
+      <h3>Brute Force</h3>
+      <div class="form-group">
+            {{ form.bruteforce(class_="attack_mode", readonly=confirmation) }}
+            {{ form.bruteforce.label }}
+      </div>
+
+      <h3>Rules</h3>
+        {% for cb in rules_files_list %}
                 <div class="form-group">
                     <input
                             type="checkbox"
@@ -152,56 +157,22 @@ $(document).ready(function () {
                     />
                     {{ cb['label'] }}
                 </div>
-            {% endfor %}
-      </div>
-    </div>
+        {% endfor %}
 
 
-    <div class="card">
-      <div class="card-header">
-        <div class="form-group">
-            {{ form.attack_mode_mask_cb(class_="attack_mode", readonly=confirmation) }}
-            {{ form.attack_mode_mask_cb.label }}
-        </div>
-      </div>
-      <div class="card-body" id="attack_mode_mask_details">
-        <div class="form-group">
-            {{ form.mask.label}}
-            {{ form.mask(class_="form-control", readonly=confirmation) }}
-            <small class="form-text text-muted">
-              Expected mask format &laquo;&nbsp;<code>?u?l?l?l?l?d?s?a</code>&nbsp;&raquo;, or :
-              <ul>
-                  <li><code>?u</code> = ABCDEFGHIJKLMNOPQRSTUVWXYZ</li>
-                  <li><code>?l</code> = abcdefghijklmnopqrstuvwxyz</li>
-                  <li><code>?d</code> = 0123456789</li>
-                  <li><code>?s</code> = «space»!"#$%&'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~</li>
-                  <li><code>?a</code> = <code>?l?u?d?s</code> (All character type)</li>
-              </ul>
-            </small>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="form-group">
-            {{ form.attack_mode_bruteforce_cb(class_="attack_mode", readonly=confirmation) }}
-            {{ form.attack_mode_bruteforce_cb.label }}
-        </div>
-      </div>
-    </div>
-
-
-    <div class="form-group">
+      <h3>Duration</h3>
+      <div class="form-group">
         {{ form.duration.label}}
         {{ form.duration(class_="form-control", readonly=confirmation) }}
-    </div>
+      </div>
 
-    {% if not confirmation %}
-        {{ form.submit_btn(class_="btn btn-primary") }}
-    {% else %}
-        {{ form.confirm_btn(class_="btn btn-primary") }}
-        <a class="btn btn-primary" href="{{ url_for("cracks_post.add_new_crack") }}" role="button">Cancel</a>
-    {% endif %}
+
+  </div>
+
+  <!-- OPTIONS -->
+  <div class="tab-pane fade" id="nav-options" role="tabpanel" aria-labelledby="nav-options">
+      No extra option available.
+  </div>
+
 </form>
 {% endblock %}

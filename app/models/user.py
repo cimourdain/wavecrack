@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.Text)
     password_hash = db.Column(db.Text)
 
-    cracks = db.relationship('Crack', backref='user', lazy=True)
+    cracks_requests = db.relationship('CrackRequest', backref='user', lazy=True)
 
     @property
     def password(self):

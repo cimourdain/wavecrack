@@ -108,6 +108,24 @@ class AddCrackForm(FlaskForm):
         return request.form.get("hashed_file_contains_usernames", 'n')
 
     @staticmethod
+    def get_wordlists_files():
+        return request.form.get('wordlist_files', None)
+
+    @staticmethod
+    def get_mask():
+        return request.form.get("mask", None)
+
+    @staticmethod
+    def get_rules_files():
+        return request.form.get('rules_files', None)
+
+    @staticmethod
+    def get_bruteforce():
+        if request.form.get('bruteforce', 'n') == 'y':
+            return 1
+        return 0
+
+    @staticmethod
     def get_duration():
         return int(request.form.get("duration", 3))
 
@@ -132,7 +150,7 @@ class AddCrackForm(FlaskForm):
 
     @staticmethod
     def validate_one_attack_selected(form=None):
-        if not request.form.get('wordlist_files', None) \
+        if not AddCrackForm.get_wordlists_files() \
                 and not AddCrackForm.get_keywords(form) \
                 and not request.form.get('mask', None) \
                 and not request.form.get('bruteforce', None):
@@ -170,66 +188,6 @@ class AddCrackForm(FlaskForm):
             return False, messages
 
         return True, []
-
-    """
-    Custom methods to build a dictionary with attack details
-    """
-    @staticmethod
-    def get_keywords_attack_details():
-        if request.form.get('attack_mode_keywords_cb', None):
-            keywords = request.form.get('keywords', None)
-            return {"keywords": keywords}
-        return None
-
-    @staticmethod
-    def get_dict_attack_details():
-        if request.form.get('attack_mode_dict_classic_cb', None):
-            # check at least one dict is selected
-            attack_classic_dict_files = request.form.get('attack_classic_dict_files', None)
-            attack_variations_dict_files = request.form.get('attack_variations_dict_files', None)
-            return {
-                "dict": {
-                    "files": attack_classic_dict_files,
-                    "variations": attack_variations_dict_files
-                }
-            }
-        return None
-
-    @staticmethod
-    def get_mask_attack_details():
-        if request.form.get('attack_mode_mask_cb', None):
-            mask = request.form.get('mask', None)
-            return {"mask": mask}
-
-        return None
-
-    @staticmethod
-    def get_bruteforce_attack_details():
-        if request.form.get('attack_mode_bruteforce_cb', None):
-            return {"bruteforce": True}
-        return None
-
-    @staticmethod
-    def get_attack_details():
-        attack_details = []
-
-        keyword_attack_details = AddCrackForm.get_keywords_attack_details()
-        if keyword_attack_details:
-            attack_details.append(keyword_attack_details)
-
-        dict_attack_details = AddCrackForm.get_dict_attack_details()
-        if dict_attack_details:
-            attack_details.append(dict_attack_details)
-
-        mask_attak_details = AddCrackForm.get_mask_attack_details()
-        if mask_attak_details:
-            attack_details.append(mask_attak_details)
-
-        bruteforce_attack_details = AddCrackForm.get_bruteforce_attack_details()
-        if bruteforce_attack_details:
-            attack_details.append(bruteforce_attack_details)
-
-        return attack_details
 
 
 

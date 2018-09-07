@@ -89,8 +89,12 @@ def add_new_crack():
         # contains_usernames
         hashed_file_contains_usernames = AddCrackForm.get_file_contains_username()
 
-        # attack_details
-        attack_details = AddCrackForm.get_attack_details()
+
+        wordlist_files = AddCrackForm.get_wordlists_files()
+        keywords = AddCrackForm.get_keywords()
+        mask = AddCrackForm.get_mask()
+        rules = AddCrackForm.get_rules_files()
+        bruteforce = AddCrackForm.get_bruteforce()
 
         # duration
         duration = AddCrackForm.get_duration()
@@ -99,18 +103,17 @@ def add_new_crack():
             # render confirmation page if confirm button not submitted
             return render_add_page(form=form, confirmation=True)
         else:
-            output_file_path = os.path.join(
-                app.config["DIR_LOCATIONS"]["hashcat_outputs"],
-                CrackHelper.get_output_file_name()
-            )
 
             launch_new_crack.delay(
                 hashes=hashes,
                 hashes_type_code=hash_type_code,
-                output_file_path=output_file_path,
                 hashed_file_contains_usernames=hashed_file_contains_usernames,
                 duration=duration,
-                attack_details=attack_details
+                wordlist_files=wordlist_files,
+                keywords=keywords,
+                mask=mask,
+                rules=rules,
+                bruteforce=bruteforce
             )
             return jsonify({"message": "sent"})
 

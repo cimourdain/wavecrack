@@ -10,8 +10,9 @@ from flask_migrate import Migrate, upgrade
 # local imports
 from app import create_app, db, register_routes, make_celery
 from app.models.user import User
+from app.models.cracks.request import CrackRequest # do not remove
 from app.models.cracks.entity import Crack # do not remove
-from app.models.cracks.options import CracksOption # do not remove
+
 
 # initialize app
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')

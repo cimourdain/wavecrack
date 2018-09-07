@@ -16,7 +16,8 @@ from app.models.cracks.entity import Crack # do not remove
 
 # initialize app
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-
+# init migration
+migrate = Migrate(app, db)
 
 # Celery initalization
 celery = make_celery(app)
@@ -28,8 +29,7 @@ def deploy():
     Delare commande to perform db deployment
     usage : $ flask deploy
     """
-    # init migration
-    migrate = Migrate(app, db)
+
 
     # upragde db
     upgrade()

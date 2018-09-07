@@ -11,6 +11,7 @@ from app.forms.add_crack import AddCrackForm
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
 from app.helpers.crack import CrackHelper
+from flask_login import current_user
 
 from app.tasks.hashcat import launch_new_crack
 
@@ -105,6 +106,7 @@ def add_new_crack():
         else:
 
             launch_new_crack.delay(
+                user_id=current_user.id,
                 hashes=hashes,
                 hashes_type_code=hash_type_code,
                 hashed_file_contains_usernames=hashed_file_contains_usernames,

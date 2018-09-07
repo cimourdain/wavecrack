@@ -38,20 +38,21 @@ from app.helpers.word_dict import WordDictHelper
 
 class Crack(object):
 
-    def __init__(self, options, input_hashfile, attack_mode_code, attack_files, output_file="output.txt", log=False):
+    def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options, output_file="output.txt", log=False):
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
         self.input_hashfile = None
+        self.hashes_type_code = 0
         self.output_file = None
-        self.log_file = None
         self.options = []
         self.attack_mode_code = 0
         self.session_id = uuid.uuid4()
         self.attack_files = []
 
         self.set_input_hashfile(input_hashfile)
+        self.set_hashes_type_code(hashes_type_code)
         self.set_output_file(output_file)
         self.set_options(options)
-        self.set_log_file(log)
+        self.set_log(log)
         self.set_attack_mode_code(attack_mode_code)
         self.set_attack_files(attack_files)
 
@@ -63,14 +64,21 @@ class Crack(object):
         if FilesHelper.file_exists(input_hashfile_path, folder=app.config["DIR_LOCATIONS"]["hashcat_outputs"]):
             self.input_hashfile = input_hashfile_path
 
+    def set_hashes_type_code(self, code):
+        self.hashes_type_code = int(code)
+
     def set_output_file(self, output_file):
         output_path = os.path.join(self.session_id, output_file)
         if FilesHelper.file_exists(output_path, folder=app.config["DIR_LOCATIONS"]["hashcat_outputs"]):
             self.output_file = output_path
 
-    def set_log_file(self, log):
+    def set_log(self, log):
         if log:
-            self.log_file = os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id, "log.txt")
+            log_file = os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], str(self.session_id), "log.txt")
+            self.set_option({
+                "option": "--debug-file",
+                "value": log_file
+            })
 
     def set_attack_files(self, files_list):
         if isinstance(files_list, basestring):
@@ -89,17 +97,16 @@ class Crack(object):
         """
         if WordDictHelper.is_valid_wordlist_file(f):
             self.attack_files.append(f)
-        elif FilesHelper.file_exists(
-                file_path=f,
-                folder=os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id)):
+        elif FilesHelper.file_exists(file_path=f):
             self.attack_files.append(f)
 
     """
     SET OPTIONS
     """
     def set_options(self, options):
-        for option in options:
-            self.set_option(option)
+        if options:
+            for option in options:
+                self.set_option(option)
 
     def set_option(self, option):
         new_option = CrackOption(option.get("option", None), option.get("value", None))
@@ -114,12 +121,15 @@ class Crack(object):
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
 
+        return options_cmd_str
 
     def build_run_cmd(self):
-        cmd = "{} -a {} -o {} {} {}".format(
+        cmd = "{} -m {} -a {} -o {} --show --session={} {} {} {}".format(
             self.hashcat_cmd,
+            self.hashes_type_code,
             self.attack_mode_code,
             self.output_file,
+            self.session_id,
             self.build_cmd_options(),
             self.input_hashfile,
             " ".join(self.attack_files)
@@ -129,10 +139,12 @@ class Crack(object):
 
     def run(self):
         # prepare hashcat shell cmd as string
-        hashcat_shell_cmd = app.config["APP_LOCATIONS"]["hashcat"]
 
         # run shell cmd
-        return_code, output, errors = Cmd.run_cmd(hashcat_shell_cmd)
+        cmd_raw = self.build_run_cmd()
+        cmd_array = cmd_raw.split(" ")
+        code, output, errors = Cmd.run_cmd(cmd_raw)
+        return code, output, errors
 
 
 class CrackOption(object):

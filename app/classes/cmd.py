@@ -2,6 +2,7 @@
 import subprocess
 import shlex
 
+
 class Cmd(object):
 
     @staticmethod

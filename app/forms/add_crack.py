@@ -105,7 +105,7 @@ class AddCrackForm(FlaskForm):
 
     @staticmethod
     def get_file_contains_username():
-        return request.form.get("hashed_file_contains_usernames", 'n')
+        return request.form.get("hashed_file_contains_usernames", 'n') == 'y'
 
     @staticmethod
     def get_wordlists_files():
@@ -122,8 +122,8 @@ class AddCrackForm(FlaskForm):
     @staticmethod
     def get_bruteforce():
         if request.form.get('bruteforce', 'n') == 'y':
-            return 1
-        return 0
+            return True
+        return False
 
     @staticmethod
     def get_duration():

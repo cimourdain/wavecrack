@@ -41,9 +41,15 @@ class FilesHelper(object):
     @staticmethod
     def create_new_file(file_path, file_name, content):
         new_file_name = os.path.join(file_path, file_name)
-        print("open/create: "+str(new_file_name))
+
         f = open(new_file_name, "w+")
         f.write(content)
         f.close()
         os.chmod(new_file_name, 0o777)
         return new_file_name
+
+    @staticmethod
+    def get_file_content(file_path):
+        if FilesHelper.file_exists(file_path, create=False):
+            for line in open(file_path):
+                yield line

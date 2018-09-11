@@ -58,12 +58,18 @@ $ pip install -r requirements.txt
 Setup your project var in config.py
 
 ### Database
-Migrate databases
+Db initialization
 ```
-$ export FLASK_APP=server
-$ flask db init
-$ flask db migrate
-$ flask deploy # create default users from config DEFAULT_USERS
+$ export FLASK_APP=migrate
+$ flask db init # if no database exists
+$ flask db migrate # for every update in models > generate alembic files
+$ flask deploy # update model and create default users from config DEFAULT_USERS
+```
+
+After model update
+```
+$ export FLASK_APP=migrate
+$ flask db migrate # for every update in models > generate alembic files
 ```
 ### Words dictionaries
 # Setup Wordlists Folder

@@ -36,49 +36,63 @@ from app.helpers.word_dict import WordDictHelper
 #  3 = aborted by checkpoint
 #  4 = aborted by runtime
 
+DEFAULT_OPTIONS = [
+    {
+        "option": "--show"
+    },
+    {
+        "option": "--remove"
+    }
+]
+
 class Crack(object):
 
-    def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options, output_file="output.txt", log=False):
+    def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options,
+                 output_file="output.txt", log=False, session_id=None):
+
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
-        self.input_hashfile = None
+        self.working_folder = None
+        self.input_hashfile_abs_path = None
         self.hashes_type_code = 0
-        self.output_file = None
+        self.output_abs_path = None
         self.options = []
         self.attack_mode_code = 0
-        self.session_id = uuid.uuid4()
         self.attack_files = []
+        self.session_id = None
 
-        self.set_input_hashfile(input_hashfile)
+        self.set_input_hashfile(input_hashfile, output_filename=output_file, log=log)
         self.set_hashes_type_code(hashes_type_code)
-        self.set_output_file(output_file)
+        self.set_options(DEFAULT_OPTIONS)
         self.set_options(options)
-        self.set_log(log)
         self.set_attack_mode_code(attack_mode_code)
         self.set_attack_files(attack_files)
+        self.set_session_id(session_id)
 
     """
     SET HASHFILE
     """
-    def set_input_hashfile(self, input_hashfile):
-        input_hashfile_path = os.path.join(self.session_id, input_hashfile)
-        if FilesHelper.file_exists(input_hashfile_path, folder=app.config["DIR_LOCATIONS"]["hashcat_outputs"]):
-            self.input_hashfile = input_hashfile_path
+    def set_input_hashfile(self, input_hashfile, output_filename, log):
+        self.working_folder = os.path.dirname(os.path.abspath(input_hashfile))
 
-    def set_hashes_type_code(self, code):
-        self.hashes_type_code = int(code)
+        self.input_hashfile_abs_path = input_hashfile
+        self.output_abs_path = FilesHelper.file_exists(
+            file_path=os.path.join(self.working_folder, output_filename),
+            create=True
+        )
 
-    def set_output_file(self, output_file):
-        output_path = os.path.join(self.session_id, output_file)
-        if FilesHelper.file_exists(output_path, folder=app.config["DIR_LOCATIONS"]["hashcat_outputs"]):
-            self.output_file = output_path
-
-    def set_log(self, log):
         if log:
-            log_file = os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], str(self.session_id), "log.txt")
+            log_file = os.path.join(self.working_folder, "hashcat_log.txt")
             self.set_option({
                 "option": "--debug-file",
                 "value": log_file
             })
+
+    def set_hashes_type_code(self, code):
+        self.hashes_type_code = int(code)
+
+    def set_attack_mode_code(self, attack_mode_code):
+        if str(attack_mode_code) in ATTACK_MODES:
+            self.attack_mode_code = int(attack_mode_code)
 
     def set_attack_files(self, files_list):
         if isinstance(files_list, basestring):
@@ -86,10 +100,6 @@ class Crack(object):
         elif isinstance(files_list, list):
             for f in files_list:
                 self.set_attack_file(f)
-
-    def set_attack_mode_code(self, attack_mode_code):
-        if str(attack_mode_code) in ATTACK_MODES:
-            self.attack_mode_code = int(attack_mode_code)
 
     def set_attack_file(self, f):
         """
@@ -99,6 +109,13 @@ class Crack(object):
             self.attack_files.append(f)
         elif FilesHelper.file_exists(file_path=f):
             self.attack_files.append(f)
+
+    def set_session_id(self, session_id):
+        if session_id:
+            self.set_option({
+                "option": "--session",
+                "value": session_id
+            })
 
     """
     SET OPTIONS
@@ -124,27 +141,17 @@ class Crack(object):
         return options_cmd_str
 
     def build_run_cmd(self):
-        cmd = "{} -m {} -a {} -o {} --show --session={} {} {} {}".format(
+        cmd = "{} -m {} -a {} -o {} {} {} {}".format(
             self.hashcat_cmd,
             self.hashes_type_code,
             self.attack_mode_code,
-            self.output_file,
-            self.session_id,
+            self.output_abs_path,
             self.build_cmd_options(),
-            self.input_hashfile,
+            self.input_hashfile_abs_path,
             " ".join(self.attack_files)
         )
 
         return cmd
-
-    def run(self):
-        # prepare hashcat shell cmd as string
-
-        # run shell cmd
-        cmd_raw = self.build_run_cmd()
-        cmd_array = cmd_raw.split(" ")
-        code, output, errors = Cmd.run_cmd(cmd_raw)
-        return code, output, errors
 
 
 class CrackOption(object):
@@ -181,7 +188,7 @@ class CrackOption(object):
     def get_option_cmd(self):
         if HASHCAT_OPTIONS[self.option]["type"]:
             if self.value:
-                if HASHCAT_OPTIONS[self.option]["type"] != "Char":
+                if HASHCAT_OPTIONS[self.option]["type"] == "Char":
                     return "{}='{}' ".format(self.option, self.value)
                 else:
                     return "{}={} ".format(self.option, self.value)

@@ -2,6 +2,8 @@
 from datetime import datetime
 import uuid
 import os
+import json
+
 # third party imports
 from sqlalchemy.orm import relationship
 
@@ -10,12 +12,14 @@ from server import app
 from app import db
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
+from app.models.cracks.entity import Crack
 
 
 class CrackRequest(db.Model):
     __tablename__ = 'cracks_requests'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    celery_request_id = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     session_id = db.Column(db.Text, nullable=False, default=str(uuid.uuid4()))
     _hashes_type_code = db.Column(db.Integer, nullable=False)
@@ -23,8 +27,8 @@ class CrackRequest(db.Model):
     hashes_path = db.Column(db.Text, nullable=False)
     _dictionary_paths = db.Column(db.Text, nullable=False)
     mask_path = db.Column(db.Text, nullable=True)
-    rules = db.Column(db.Text, nullable=True)
     bruteforce = db.Column(db.Boolean, nullable=False, default=False)
+    _extra_options = db.Column(db.Text, nullable=True)
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     duration = db.Column(db.Integer, nullable=False)
     email_end_job_sent = db.Column(db.Boolean, nullable=False, default=False)
@@ -36,7 +40,7 @@ class CrackRequest(db.Model):
 
     @property
     def hashes_type_code(self):
-        return self.hashes_type_code
+        return self._hashes_type_code
 
     @hashes_type_code.setter
     def hashes_type_code(self, code):
@@ -112,4 +116,71 @@ class CrackRequest(db.Model):
             file_name="mask.hcmask",
             content=mask
         )
+
+    @property
+    def rules(self):
+        for d in self.rules_path.split(','):
+            yield d
+
+    @rules.setter
+    def rules(self, rules_paths):
+        if isinstance(rules_paths, basestring):
+            rules_paths = [rules_paths]
+
+        current_options = self.extra_options
+        for rp in rules_paths:
+            current_options.append({
+                "option": "--rules-file",
+                "value": os.path.join(app.config["DIR_LOCATIONS"]["rules"], str(rp))
+            })
+
+        self._extra_options = json.dumps(current_options, indent=4)
+
+    @property
+    def extra_options(self):
+        if self._extra_options:
+            print("extra options: "+str(self._extra_options))
+            return json.loads(self._extra_options)
+
+        return []
+
+    def prepare_cracks(self):
+
+        for wordlist_file_path in self.dictionary_paths.split(','):
+            # create new crack
+            new_dict_crack = Crack()
+            new_dict_crack.working_folder = self.crack_folder
+            db.session.add(new_dict_crack)
+            self.cracks.append(new_dict_crack)
+            new_dict_crack.build_crack_cmd(
+                attack_mode=0,
+                attack_file=wordlist_file_path
+            )
+
+        if self.mask:
+            new_mask_crack = Crack()
+            new_mask_crack.working_folder = self.crack_folder
+            db.session.add(new_mask_crack)
+            self.cracks.append(new_mask_crack)
+            new_mask_crack.build_crack_cmd(
+                attack_mode=3,
+                attack_file=new_mask_crack
+            )
+
+        if self.bruteforce:
+            new_bf_crack = Crack()
+            new_bf_crack.working_folder = self.crack_folder
+            db.session.add(new_bf_crack)
+            self.cracks.append(new_bf_crack)
+            new_bf_crack.build_crack_cmd(
+                attack_mode=3,
+                attack_file=None
+            )
+
+        db.session.commit()
+
+    def run_cracks(self):
+        for c in self.cracks:
+            c.run()
+
 

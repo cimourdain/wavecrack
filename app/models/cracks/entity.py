@@ -1,8 +1,12 @@
 # standard imports
+import os
+import time
 from datetime import datetime
 
 # local imports
 from app import db
+from app.classes.crack import Crack as CrackClass
+from app.classes.cmd import Cmd
 
 
 class Crack(db.Model):
@@ -10,5 +14,37 @@ class Crack(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     crack_request_id = db.Column(db.Integer, db.ForeignKey('cracks_requests.id'))
-    cmd = db.Column(db.Text, nullable=False)
-    start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    cmd = db.Column(db.Text, nullable=True)
+    process_id = db.Column(db.Integer, nullable=True)
+    start_date = db.Column(db.DateTime, nullable=True)
+    running = db.Column(db.Boolean, nullable=False, default=False)
+    working_folder = db.Column(db.Text, nullable=False)
+
+    def build_crack_cmd(self, attack_mode, attack_file):
+        new_crack_class = CrackClass(
+            input_hashfile=self.request.hashes_path,
+            hashes_type_code=self.request.hashes_type_code,
+            attack_mode_code=attack_mode,
+            attack_files=attack_file,
+            options=self.request.extra_options,
+            log=True,
+            output_file=str(self.id)+".txt"
+        )
+        self.cmd = new_crack_class.build_run_cmd()
+
+    def run(self):
+        print("crack :: run new crack ("+str(self.id)+")")
+        self.start_date = datetime.now()
+        db.session.commit()
+        cmd = Cmd(
+            cmd=self.cmd,
+            out_file=os.path.join(self.working_folder, "cmd_output.txt"),
+            err_file=os.path.join(self.working_folder, "cmd_err.txt"),
+        )
+        self.process_id = cmd.run()
+        self.running = True
+        db.session.commit()
+
+        print("wait for process to finish")
+
+        return cmd

@@ -147,35 +147,41 @@ class CrackRequest(db.Model):
     def prepare_cracks(self):
 
         for wordlist_file_path in self.dictionary_paths.split(','):
+            print("request :: add crack for wordlist")
             # create new crack
             new_dict_crack = Crack()
             new_dict_crack.working_folder = self.crack_folder
             db.session.add(new_dict_crack)
+            db.session.commit()
             self.cracks.append(new_dict_crack)
             new_dict_crack.build_crack_cmd(
                 attack_mode=0,
                 attack_file=wordlist_file_path
             )
 
-        if self.mask:
-            new_mask_crack = Crack()
-            new_mask_crack.working_folder = self.crack_folder
-            db.session.add(new_mask_crack)
-            self.cracks.append(new_mask_crack)
-            new_mask_crack.build_crack_cmd(
-                attack_mode=3,
-                attack_file=new_mask_crack
-            )
-
-        if self.bruteforce:
-            new_bf_crack = Crack()
-            new_bf_crack.working_folder = self.crack_folder
-            db.session.add(new_bf_crack)
-            self.cracks.append(new_bf_crack)
-            new_bf_crack.build_crack_cmd(
-                attack_mode=3,
-                attack_file=None
-            )
+        # if self.mask:
+        #     print("request :: add crack for mask")
+        #     new_mask_crack = Crack()
+        #     new_mask_crack.working_folder = self.crack_folder
+        #     db.session.add(new_mask_crack)
+        #     db.session.commit()
+        #     self.cracks.append(new_mask_crack)
+        #     new_mask_crack.build_crack_cmd(
+        #         attack_mode=3,
+        #         attack_file=new_mask_crack
+        #     )
+        #
+        # if self.bruteforce:
+        #     print("request :: add crack for bruteforce")
+        #     new_bf_crack = Crack()
+        #     new_bf_crack.working_folder = self.crack_folder
+        #     db.session.add(new_bf_crack)
+        #     db.session.commit()
+        #     self.cracks.append(new_bf_crack)
+        #     new_bf_crack.build_crack_cmd(
+        #         attack_mode=3,
+        #         attack_file=None
+        #     )
 
         db.session.commit()
 

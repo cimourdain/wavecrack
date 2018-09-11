@@ -39,7 +39,8 @@ class Cmd(object):
 
     def is_running(self):
         if self.process:
-            if not self.process.poll():
+            if self.process.poll() is None:
+                print("cmd :: process ("+str(self.pid)+") is still running")
                 return True
         return False
 

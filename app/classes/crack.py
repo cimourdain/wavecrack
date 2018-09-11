@@ -10,40 +10,13 @@ from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
 from app.helpers.word_dict import WordDictHelper
 
-# Hashcat options details :
-#     Call the program through hashcat_location
-#     . Option -a 0 or -a 3 : Attack-mode. 0 Straight or 3 Brute-force
-#     . Option -m hashtype_selected : Hash-type
-#     . Option --session "".join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6) : Assign different name to cracks to be able to launch them concurrently
-#     . Option -p separator : Define separator character between hash and password in output files. By default, it's hash:password
-#     . Option -o output_file_name : Output file path
-#     . Option --potfile-disable : Disable .pot file
-#     . Option --status et --status-timer: Write crack status in a file regularly
-#     . Option --remove et --remove-timer: Remove of hash once it is cracked in input file
-#     . Option hashfile : Specify input hashes file
-#     . Option wordlists_location + "wordlist.txt" :	 Specify wordlist to use
-
-
-# https://github.com/hashcat/hashcat/blob/master/docs/status_codes.txt
-# status codes on exit:
-# =====================
-#
-# -2 = gpu-watchdog alarm
-# -1 = error
-#  0 = OK/cracked
-#  1 = exhausted
-#  2 = aborted
-#  3 = aborted by checkpoint
-#  4 = aborted by runtime
 
 DEFAULT_OPTIONS = [
     {
         "option": "--show"
-    },
-    {
-        "option": "--remove"
     }
 ]
+
 
 class Crack(object):
 
@@ -63,8 +36,8 @@ class Crack(object):
         self.set_input_hashfile(input_hashfile, output_path=output_path, log=log)
         self.set_hashes_type_code(hashes_type_code)
         self.set_options(DEFAULT_OPTIONS)
-        self.set_options(options)
         self.set_attack_mode_code(attack_mode_code)
+        self.set_options(options)
         self.set_attack_files(attack_files)
         self.set_session_id(session_id)
 
@@ -75,12 +48,17 @@ class Crack(object):
         self.working_folder = os.path.dirname(os.path.abspath(input_hashfile))
 
         self.input_hashfile_abs_path = input_hashfile
+        FilesHelper.file_exists(output_path, create=True)
         self.output_abs_path = output_path
 
         if log:
             self.set_option({
                 "option": "--debug-file",
                 "value": log
+            })
+            self.set_option({
+                "option": "--debug-mode",
+                "value": 4
             })
 
     def set_hashes_type_code(self, code):
@@ -121,13 +99,20 @@ class Crack(object):
             for option in options:
                 self.set_option(option)
 
-    def set_option(self, option):
-        new_option = CrackOption(option.get("option", None), option.get("value", None))
-        if new_option.option:
-            self.options.append(new_option)
+    def option_allowed(self, option):
+        print("check if "+str(option["option"])+" can be added with attacj mode "+str(self.attack_mode_code))
+        if option["option"] == "--rules-file" and self.attack_mode_code != 0:
+            return False
+        return True
 
-            if new_option.option == "--attack-mode":
-                self.attack_mode_code = new_option.value
+    def set_option(self, option):
+        if self.option_allowed(option):
+            new_option = CrackOption(option.get("option", None), option.get("value", None))
+            if new_option.option:
+                self.options.append(new_option)
+
+                if new_option.option == "--attack-mode":
+                    self.attack_mode_code = new_option.value
 
     def build_cmd_options(self):
         options_cmd_str = ""

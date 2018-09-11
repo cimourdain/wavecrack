@@ -17,6 +17,7 @@ class Crack(db.Model):
     cmd = db.Column(db.Text, nullable=True)
     process_id = db.Column(db.Integer, nullable=True)
     start_date = db.Column(db.DateTime, nullable=True)
+    end_date = db.Column(db.DateTime, nullable=True)
     running = db.Column(db.Boolean, nullable=False, default=False)
     working_folder = db.Column(db.Text, nullable=False)
 
@@ -33,7 +34,7 @@ class Crack(db.Model):
         self.cmd = new_crack_class.build_run_cmd()
 
     def run(self):
-        print("crack :: run new crack ("+str(self.id)+")")
+        print("======== crack :: run new crack ("+str(self.id)+")")
         self.start_date = datetime.now()
         db.session.commit()
         cmd = Cmd(
@@ -46,5 +47,12 @@ class Crack(db.Model):
         db.session.commit()
 
         print("wait for process to finish")
+        while cmd.is_running():
+            time.sleep(5)
+
+        print("process finished")
+        self.running = False
+        self.end_date = datetime.now()
+        db.session.commit()
 
         return cmd

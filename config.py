@@ -22,7 +22,7 @@ class Config(object):
     # CELERY
     # please harden your RabbitMQ installation by removing the default "admin" and "guest" user credentials
     CELERY_BROKER_URL = 'amqp://guest:guest@0.0.0.0:5672//'
-    CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+    CELERY_RESULT_BACKEND = 'db+sqlite:///celery.sqlite'
     CELERY_TRACK_STARTED = True
     CELERY_IGNORE_RESULT = False
 
@@ -35,19 +35,20 @@ class Config(object):
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
         'hashcat_rules': BASE_DIR + '/hashcat/rules/',
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
-        'wordlists': BASE_DIR + '/words/',
-        'rules': BASE_DIR + '/rules/',
+        'wordlists': BASE_DIR + '/sources/words/',
+        'rules': BASE_DIR + '/sources/rules/',
         # hashes
-        'hashes': BASE_DIR + '/hashes/written/',
+        'hashes': BASE_DIR + '/sources/hashes/',
         # Output hashcat directory path
         'hashcat_outputs': BASE_DIR + '/outputs/hashcat/',
         # Output logfiles directory path
-        'log': BASE_DIR + '/outputs/logs/',
+        # 'log': BASE_DIR + '/outputs/logs/',
         # Upload user files directory
-        'upload': BASE_DIR + '/outputs/uploads/',
+        # 'upload': BASE_DIR + '/outputs/uploads/',
         # John executable path (only used to extract the hash from uploaded encrypted files)
         # by default '/usr/sbin/john' on Kali
-        'john': BASE_DIR + '/john/'
+        # 'john': BASE_DIR + '/john/',
+        'tmp': BASE_DIR + '/tmp/'
 
     }
 

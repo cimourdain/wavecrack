@@ -7,6 +7,7 @@ from datetime import datetime
 from app import db
 from app.classes.crack import Crack as CrackClass
 from app.classes.cmd import Cmd
+from app.helpers.files import FilesHelper
 
 
 class Crack(db.Model):
@@ -21,6 +22,10 @@ class Crack(db.Model):
     running = db.Column(db.Boolean, nullable=False, default=False)
     working_folder = db.Column(db.Text, nullable=False)
 
+    @property
+    def output_file_path(self):
+        return os.path.join(self.working_folder, str(self.id), "output.txt")
+
     def build_crack_cmd(self, attack_mode, attack_file):
         new_crack_class = CrackClass(
             input_hashfile=self.request.hashes_path,
@@ -29,7 +34,7 @@ class Crack(db.Model):
             attack_files=attack_file,
             options=self.request.extra_options,
             log=os.path.join(self.working_folder, str(self.id), "hashcat_log.txt"),
-            output_path=os.path.join(self.working_folder, str(self.id), "output.txt")
+            output_path=self.output_file_path
         )
         self.cmd = new_crack_class.build_run_cmd()
 
@@ -54,5 +59,15 @@ class Crack(db.Model):
         self.running = False
         self.end_date = datetime.now()
         db.session.commit()
+
+        FilesHelper.move_file_content(
+            source_path=self.output_file_path,
+            target_path=self.request.outfile_path
+        )
+
+        FilesHelper.remove_found_hashes_from_hashes_file(
+            hashes_file=self.request.hashes_path,
+            found_hashes_file=self.output_file_path
+        )
 
         return cmd

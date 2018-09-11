@@ -57,6 +57,12 @@ class CrackRequest(db.Model):
         return folder_path
 
     @property
+    def outfile_path(self):
+        output_file_path = os.path.join(self.crack_folder, "output.txt")
+        FilesHelper.file_exists(output_file_path, create=True)
+        return output_file_path
+
+    @property
     def hashes(self):
         return FilesHelper.get_file_content(self.hashes_path)
 

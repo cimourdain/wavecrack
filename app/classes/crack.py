@@ -33,10 +33,11 @@ class Crack(object):
         self.attack_files = []
         self.session_id = None
 
+        self.set_attack_mode_code(attack_mode_code)
         self.set_input_hashfile(input_hashfile, output_path=output_path, log=log)
         self.set_hashes_type_code(hashes_type_code)
         self.set_options(DEFAULT_OPTIONS)
-        self.set_attack_mode_code(attack_mode_code)
+
         self.set_options(options)
         self.set_attack_files(attack_files)
         self.set_session_id(session_id)
@@ -56,10 +57,11 @@ class Crack(object):
                 "option": "--debug-file",
                 "value": log
             })
-            self.set_option({
-                "option": "--debug-mode",
-                "value": 4
-            })
+            if self.attack_mode_code == 0:
+                self.set_option({
+                    "option": "--debug-mode",
+                    "value": 4
+                })
 
     def set_hashes_type_code(self, code):
         self.hashes_type_code = int(code)

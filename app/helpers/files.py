@@ -1,5 +1,8 @@
+from shutil import copyfile, rmtree
 import os
+import uuid
 
+from server import app
 
 class FilesHelper(object):
     @staticmethod
@@ -59,3 +62,42 @@ class FilesHelper(object):
         if FilesHelper.file_exists(file_path, create=False):
             for line in open(file_path):
                 yield line
+
+    @staticmethod
+    def move_file_content(source_path, target_path):
+        source = open(source_path, "r+")
+        target = open(target_path, "a+")
+
+        target.write(source.read())
+        source.close()
+        target.close()
+
+    @staticmethod
+    def remove_found_hashes_from_hashes_file(hashes_file, found_hashes_file):
+        print("remove_found_hashes_from_hashes_file")
+        # duplicate hashes file
+        tmp_dir_path = os.path.join(app.config["DIR_LOCATIONS"]["tmp"], str(uuid.uuid4()))
+        os.mkdir(tmp_dir_path)
+        tmp_file_path = os.path.join(tmp_dir_path, "output_copy.txt")
+        copyfile(hashes_file, tmp_file_path)
+
+        with open(hashes_file, "w") as final_hash:
+            with open(tmp_file_path, "r") as current_hashes:
+                with open(found_hashes_file, "r") as found_hash:
+                    for hash_to_find in current_hashes:
+                        hash_to_find = hash_to_find.strip()
+                        print("check if "+str(hash_to_find)+" was found")
+                        found = False
+                        for hash_found in found_hash:
+                            print("check if "+str(hash_to_find)+" == "+str(hash_found.split(":")[0]))
+                            if hash_found.split(":")[0] == hash_to_find:
+                                print("yes!")
+                                found = True
+                        if not found:
+                            final_hash.write(hash_to_find+"\n")
+
+        final_hash.close()
+        current_hashes.close()
+        found_hash.close()
+
+        # rmtree(os.path.dirname(tmp_dir_path))

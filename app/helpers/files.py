@@ -23,9 +23,15 @@ class FilesHelper(object):
     def file_exists(file_path, folder=None, create=True):
         if folder:
             file_path = os.path.join(folder, file_path)
+
         if not os.path.isfile(file_path):
             if create:
+                file_folders = os.path.dirname(os.path.abspath(file_path))
                 try:
+                    # create folders if required
+                    if not os.path.exists(file_folders):
+                        os.makedirs(file_folders)
+                    # create file
                     open(file_path, 'a').close()
                 except Exception as _:
                     return False

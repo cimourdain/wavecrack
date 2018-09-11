@@ -4,6 +4,7 @@ import subprocess
 import shlex
 from datetime import datetime
 
+from app.helpers.files import FilesHelper
 
 class Cmd(object):
 
@@ -17,14 +18,20 @@ class Cmd(object):
         self.end_date = None
         self.process = None
 
-        self.out_file = out_file if out_file else subprocess.PIPE
-        print("outfile: "+self.out_file)
-        self.err_file = err_file if err_file else subprocess.STDOUT
-        print("errfile: "+self.err_file)
+        self.stdout = self.set_std_param(out_file, subprocess.PIPE)
+        self.stderr = self.set_std_param(err_file, subprocess.STDOUT)
+
+    def set_std_param(self, file_path, default):
+        if not file_path:
+            return default
+
+        FilesHelper.file_exists(file_path=file_path, create=True)
+
+        return open(file_path, 'w')
 
     def run(self):
         self.start_date = datetime.now()
-        self.process = subprocess.Popen(shlex.split(self.cmd), stdout=open(self.out_file, 'w'), stderr=open(self.err_file, 'w'), shell=False)
+        self.process = subprocess.Popen(shlex.split(self.cmd), stdout=self.stdout, stderr=self.stderr, shell=False)
         print ("executed commandline is %s" % self.cmd)
         self.pid = self.process.pid
 

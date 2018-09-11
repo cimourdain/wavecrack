@@ -27,8 +27,8 @@ class Crack(db.Model):
             attack_mode_code=attack_mode,
             attack_files=attack_file,
             options=self.request.extra_options,
-            log=True,
-            output_file=str(self.id)+".txt"
+            log=os.path.join(self.working_folder, str(self.id), "hashcat_log.txt"),
+            output_path=os.path.join(self.working_folder, str(self.id), "output.txt")
         )
         self.cmd = new_crack_class.build_run_cmd()
 
@@ -38,8 +38,8 @@ class Crack(db.Model):
         db.session.commit()
         cmd = Cmd(
             cmd=self.cmd,
-            out_file=os.path.join(self.working_folder, "cmd_output.txt"),
-            err_file=os.path.join(self.working_folder, "cmd_err.txt"),
+            out_file=os.path.join(self.working_folder,  str(self.id), "cmd_output.txt"),
+            err_file=os.path.join(self.working_folder,  str(self.id), "cmd_err.txt"),
         )
         self.process_id = cmd.run()
         self.running = True

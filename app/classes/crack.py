@@ -48,7 +48,7 @@ DEFAULT_OPTIONS = [
 class Crack(object):
 
     def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options,
-                 output_file="output.txt", log=False, session_id=None):
+                 output_path, log=None, session_id=None):
 
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
         self.working_folder = None
@@ -60,7 +60,7 @@ class Crack(object):
         self.attack_files = []
         self.session_id = None
 
-        self.set_input_hashfile(input_hashfile, output_filename=output_file, log=log)
+        self.set_input_hashfile(input_hashfile, output_path=output_path, log=log)
         self.set_hashes_type_code(hashes_type_code)
         self.set_options(DEFAULT_OPTIONS)
         self.set_options(options)
@@ -71,20 +71,16 @@ class Crack(object):
     """
     SET HASHFILE
     """
-    def set_input_hashfile(self, input_hashfile, output_filename, log):
+    def set_input_hashfile(self, input_hashfile, output_path, log):
         self.working_folder = os.path.dirname(os.path.abspath(input_hashfile))
 
         self.input_hashfile_abs_path = input_hashfile
-        self.output_abs_path = FilesHelper.file_exists(
-            file_path=os.path.join(self.working_folder, output_filename),
-            create=True
-        )
+        self.output_abs_path = output_path
 
         if log:
-            log_file = os.path.join(self.working_folder, "hashcat_log.txt")
             self.set_option({
                 "option": "--debug-file",
-                "value": log_file
+                "value": log
             })
 
     def set_hashes_type_code(self, code):
@@ -137,7 +133,6 @@ class Crack(object):
         options_cmd_str = ""
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
-
         return options_cmd_str
 
     def build_run_cmd(self):
@@ -193,4 +188,4 @@ class CrackOption(object):
                 else:
                     return "{}={} ".format(self.option, self.value)
             return ""
-        return self.option
+        return self.option + " "

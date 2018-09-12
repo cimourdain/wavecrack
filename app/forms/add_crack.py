@@ -29,6 +29,7 @@ def get_hashes_list_as_tuples():
 
 
 class AddCrackForm(FlaskForm):
+    request_name = StringField("Request Name")
     hashes = TextAreaField("Enter the hash list (one per line)",render_kw={
         "placeholder": "Enter the hash list (one per line)"
     })

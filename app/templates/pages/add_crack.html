@@ -26,6 +26,11 @@ function UpdateHashExample()
         {{ form.confirm_btn(class_="btn btn-primary") }}
         <a class="btn btn-primary" href="{{ url_for("cracks_post.add_new_crack") }}" role="button">Cancel</a>
     {% endif %}
+
+    <div class="form-group">
+        {{ form.request_name.label}}
+        {{ form.request_name(class_="form-control", readonly=confirmation) }}
+    </div><!-- //form-group -->
 <nav>
   <div class="nav nav-tabs" id="nav-tab" role="tablist">
     <a class="nav-item nav-link active"

@@ -1,0 +1,32 @@
+{% extends "common/layout.html" %}
+{% block body %}
+
+    <div class="list-group">
+
+
+    {% for request in user_requests %}
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{ request.name }} ({{ request.id }})</h5>
+              <small
+                  {% if request.end_mode %}
+                    style="color:green">{{ close_modes[request.end_mode] }}
+                  {% else %}
+                      style="color:orange">In progress
+                  {% endif %}
+              </small>
+            </div>
+            <ul class="mb-1">
+                <li>Launched on {{ request.start_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                {% if request.end_date %}
+                    , ended on {{ request.end_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                {% endif %}
+                </li>
+                <li>hashes (required: {{ request.nb_password_to_find }}
+                    , found {{ request.nb_password_found }})</li>
+                <li>{{ request.status }}</li>
+            </ul>
+        </a>
+    {% endfor %}
+    </div>
+{% endblock %}

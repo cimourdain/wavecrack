@@ -11,17 +11,17 @@ from app.helpers.text import TextHelper
 from app.helpers.word_dict import WordDictHelper
 
 
-DEFAULT_OPTIONS = [
-    {
+DEFAULT_OPTIONS_PER_ATTACK_MODE = {
+    0: [{
         "option": "--show"
-    }
-]
+    }]
+}
 
 
 class Crack(object):
 
     def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options,
-                 output_path, log=None, session_id=None):
+                 output_path, session_id=None):
 
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
         self.working_folder = None
@@ -34,26 +34,24 @@ class Crack(object):
         self.session_id = None
 
         self.set_attack_mode_code(attack_mode_code)
-        self.set_input_hashfile(input_hashfile, output_path=output_path, log=log)
+        self.set_input_hashfile(input_hashfile, output_path=output_path)
         self.set_hashes_type_code(hashes_type_code)
-        self.set_options(DEFAULT_OPTIONS)
 
+        self.set_default_options(DEFAULT_OPTIONS_PER_ATTACK_MODE)
         self.set_options(options)
+
         self.set_attack_files(attack_files)
         self.set_session_id(session_id)
 
     """
     SET HASHFILE
     """
-    def set_input_hashfile(self, input_hashfile, output_path, log):
+    def set_input_hashfile(self, input_hashfile, output_path):
         self.working_folder = os.path.dirname(os.path.abspath(input_hashfile))
 
         self.input_hashfile_abs_path = input_hashfile
         FilesHelper.file_exists(output_path, create=True)
         self.output_abs_path = output_path
-
-        if log:
-            pass
 
     def set_hashes_type_code(self, code):
         self.hashes_type_code = int(code)
@@ -88,7 +86,15 @@ class Crack(object):
     """
     SET OPTIONS
     """
+    def set_default_options(self, default_options_per_attack_mode):
+        for attack_mode, options in default_options_per_attack_mode.items():
+            print("key: "+str(attack_mode))
+            print("value: "+str(options))
+            if attack_mode == self.attack_mode_code:
+                self.set_options(options)
+
     def set_options(self, options):
+        print("new options "+str(options))
         if options:
             for option in options:
                 self.set_option(option)
@@ -100,6 +106,7 @@ class Crack(object):
         return True
 
     def set_option(self, option):
+        print("set option "+str(option))
         if self.option_allowed(option):
             new_option = CrackOption(option.get("option", None), option.get("value", None))
             if new_option.option:

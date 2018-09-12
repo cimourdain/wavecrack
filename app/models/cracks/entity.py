@@ -34,7 +34,6 @@ class Crack(db.Model):
             attack_mode_code=attack_mode,
             attack_files=attack_file,
             options=self.request.extra_options,
-            log=os.path.join(self.working_folder, str(self.id), "hashcat_log.txt"),
             output_path=self.output_file_path
         )
         self.cmd = new_crack_class.build_run_cmd()

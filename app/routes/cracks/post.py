@@ -2,7 +2,7 @@
 import os
 
 # third party imports
-from flask import Blueprint, render_template, jsonify, request, flash
+from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
 from flask_login import login_required
 
 # local imports
@@ -10,7 +10,6 @@ from server import app
 from app.forms.add_crack import AddCrackForm
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
-from app.helpers.crack import CrackHelper
 from flask_login import current_user
 
 from app.tasks.hashcat import launch_new_crack
@@ -106,6 +105,7 @@ def add_new_crack():
         else:
 
             launch_new_crack.delay(
+                name=form.request_name.data,
                 user_id=current_user.id,
                 hashes=hashes,
                 hashes_type_code=hash_type_code,
@@ -117,7 +117,7 @@ def add_new_crack():
                 rules=rules,
                 bruteforce=bruteforce
             )
-            return jsonify({"message": "sent"})
+            return redirect(url_for('requests_get.get_all_user_request'))
 
     # render add crack page on GET request
     return render_add_page(form=form)

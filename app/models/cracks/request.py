@@ -6,9 +6,10 @@ import json
 
 # third party imports
 from sqlalchemy.orm import relationship
+from celery.result import AsyncResult
 
 # local imports
-from server import app
+from server import app, celery
 from app import db
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
@@ -18,6 +19,7 @@ from app.models.cracks.entity import Crack
 CLOSE_MODES = {
     "MANUAL": "manually closed by user",
     "ALL_FOUND": "all password found",
+    "ALL_PERFORMED": "all attacks performed",
     "EXPIRED": "request duration expired",
     "UNDEFINED": "undefined"
 }
@@ -27,13 +29,15 @@ class CrackRequest(db.Model):
     __tablename__ = 'cracks_requests'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.Text, nullable=False, default="no name")
     celery_request_id = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     session_id = db.Column(db.Text, nullable=False, default=str(uuid.uuid4()))
     _hashes_type_code = db.Column(db.Integer, nullable=False)
     hashed_file_contains_usernames = db.Column(db.Boolean, nullable=False, default=False)
     hashes_path = db.Column(db.Text, nullable=False)
-    _dictionary_paths = db.Column(db.Text, nullable=False)
+    nb_password_to_find = db.Column(db.Integer, nullable=False)
+    _dictionary_paths = db.Column(db.Text, nullable=True)
     mask_path = db.Column(db.Text, nullable=True)
     bruteforce = db.Column(db.Boolean, nullable=False, default=False)
     _extra_options = db.Column(db.Text, nullable=True)
@@ -78,15 +82,21 @@ class CrackRequest(db.Model):
 
     @hashes.setter
     def hashes(self, hashes):
+        # create hashes file (will be decremented of found passwords during process)
         self.hashes_path = FilesHelper.create_new_file(
             file_path=self.crack_folder,
             file_name="hashes.txt",
             content=hashes
         )
+
+        # create a copy with reference of original list of required passwords
         FilesHelper.copy_file(
             source=self.hashes_path,
             target=os.path.join(self.crack_folder, "hashes_original.txt")
         )
+
+        # save nb of password in original file
+        self.nb_password_to_find = FilesHelper.nb_lines_in_file(os.path.join(self.crack_folder, "hashes_original.txt"))
 
     @property
     def dictionary_paths(self):
@@ -165,32 +175,32 @@ class CrackRequest(db.Model):
         return []
 
     def prepare_cracks(self):
+        if self.dictionary_paths:
+            for wordlist_file_path in self.dictionary_paths.split(','):
+                print("request :: add crack for wordlist")
+                # create new crack
+                new_dict_crack = Crack()
+                new_dict_crack.working_folder = self.crack_folder
+                db.session.add(new_dict_crack)
+                db.session.commit()
+                self.cracks.append(new_dict_crack)
+                new_dict_crack.build_crack_cmd(
+                    attack_mode=0,
+                    attack_file=wordlist_file_path
+                )
 
-        for wordlist_file_path in self.dictionary_paths.split(','):
-            print("request :: add crack for wordlist")
-            # create new crack
-            new_dict_crack = Crack()
-            new_dict_crack.working_folder = self.crack_folder
-            db.session.add(new_dict_crack)
+        if self.mask:
+            print("request :: add crack for mask")
+            new_mask_crack = Crack()
+            new_mask_crack.working_folder = self.crack_folder
+            db.session.add(new_mask_crack)
             db.session.commit()
-            self.cracks.append(new_dict_crack)
-            new_dict_crack.build_crack_cmd(
-                attack_mode=0,
-                attack_file=wordlist_file_path
+            self.cracks.append(new_mask_crack)
+            new_mask_crack.build_crack_cmd(
+                attack_mode=3,
+                attack_file=new_mask_crack
             )
 
-        # if self.mask:
-        #     print("request :: add crack for mask")
-        #     new_mask_crack = Crack()
-        #     new_mask_crack.working_folder = self.crack_folder
-        #     db.session.add(new_mask_crack)
-        #     db.session.commit()
-        #     self.cracks.append(new_mask_crack)
-        #     new_mask_crack.build_crack_cmd(
-        #         attack_mode=3,
-        #         attack_file=new_mask_crack
-        #     )
-        #
         if self.bruteforce:
             print("request :: add crack for bruteforce")
             new_bf_crack = Crack()
@@ -220,6 +230,7 @@ class CrackRequest(db.Model):
                 self.close_crack_request("EXPIRED")
                 break
 
+        self.close_crack_request("ALL_PERFORMED")
         return True
 
     def close_crack_request(self, mode):
@@ -230,3 +241,11 @@ class CrackRequest(db.Model):
         self.end_mode = mode
         self.end_date = datetime.now()
         db.session.commit()
+
+    @property
+    def nb_password_found(self):
+        return FilesHelper.nb_lines_in_file(self.outfile_path)
+
+    @property
+    def status(self):
+        return celery.AsyncResult(self.celery_request_id).state

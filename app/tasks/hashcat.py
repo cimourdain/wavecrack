@@ -29,11 +29,12 @@ def write_errors(folder, errors):
 
 #  the bind decorator argument > access to task id
 @celery.task(bind=True)
-def launch_new_crack(self, user_id, hashes, hashes_type_code, hashed_file_contains_usernames, duration, wordlist_files=None,
+def launch_new_crack(self, name, user_id, hashes, hashes_type_code, hashed_file_contains_usernames, duration, wordlist_files=None,
                      keywords=None, mask=None, rules=None, bruteforce=None):
 
     print("celery :: hashcat :: create new crack request")
     new_crack_request = CrackRequest()
+    new_crack_request.name = name
     new_crack_request.celery_request_id = self.request.id
     new_crack_request.user_id = user_id
     new_crack_request.duration = duration

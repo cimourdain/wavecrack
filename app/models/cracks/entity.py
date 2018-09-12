@@ -21,6 +21,7 @@ class Crack(db.Model):
     end_date = db.Column(db.DateTime, nullable=True)
     running = db.Column(db.Boolean, nullable=False, default=False)
     working_folder = db.Column(db.Text, nullable=False)
+    nb_password_found = db.Column(db.Integer, nullable=True)
 
     @property
     def output_file_path(self):
@@ -53,11 +54,14 @@ class Crack(db.Model):
 
         print("wait for process to finish")
         while cmd.is_running():
-            time.sleep(5)
+            print("process is running")
+            time.sleep(30)
 
         print("process finished")
         self.running = False
         self.end_date = datetime.now()
+        self.nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
+        print("nb passwords found :: "+str(self.nb_password_found))
         db.session.commit()
 
         FilesHelper.move_file_content(

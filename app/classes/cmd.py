@@ -6,6 +6,7 @@ from datetime import datetime
 
 from app.helpers.files import FilesHelper
 
+
 class Cmd(object):
 
     def __init__(self, cmd, out_file=None, err_file=None):
@@ -39,9 +40,11 @@ class Cmd(object):
 
     def is_running(self):
         if self.process:
+            print("poll: "+str(self.process.poll()))
             if self.process.poll() is None:
                 print("cmd :: process ("+str(self.pid)+") is still running")
                 return True
+        print("process finished")
         return False
 
     def status_code(self):

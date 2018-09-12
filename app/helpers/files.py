@@ -4,6 +4,7 @@ import uuid
 
 from server import app
 
+
 class FilesHelper(object):
     @staticmethod
     def parse_dict_folders(folder):
@@ -73,31 +74,40 @@ class FilesHelper(object):
         target.close()
 
     @staticmethod
+    def copy_file(source, target):
+        copyfile(source, target)
+
+    @staticmethod
     def remove_found_hashes_from_hashes_file(hashes_file, found_hashes_file):
-        print("remove_found_hashes_from_hashes_file")
+        tmp_folder = app.config["DIR_LOCATIONS"]["tmp"]
         # duplicate hashes file
-        tmp_dir_path = os.path.join(app.config["DIR_LOCATIONS"]["tmp"], str(uuid.uuid4()))
+        tmp_dir_path = os.path.join(tmp_folder, str(uuid.uuid4()))
         os.mkdir(tmp_dir_path)
         tmp_file_path = os.path.join(tmp_dir_path, "output_copy.txt")
-        copyfile(hashes_file, tmp_file_path)
+        FilesHelper.copy_file(hashes_file, tmp_file_path)
+
+        current_hashes = []
+        with open(tmp_file_path, "r") as hashes_file_content:
+            for h in hashes_file_content:
+                current_hashes.append(h.strip())
+        hashes_file_content.close()
+
+        found_hashes = []
+        with open(found_hashes_file, "r") as found_hashes_file_content:
+            for h in found_hashes_file_content:
+                found_hashes.append(h.split(":")[0].strip())
+
+        found_hashes_file_content.close()
 
         with open(hashes_file, "w") as final_hash:
-            with open(tmp_file_path, "r") as current_hashes:
-                with open(found_hashes_file, "r") as found_hash:
-                    for hash_to_find in current_hashes:
-                        hash_to_find = hash_to_find.strip()
-                        print("check if "+str(hash_to_find)+" was found")
-                        found = False
-                        for hash_found in found_hash:
-                            print("check if "+str(hash_to_find)+" == "+str(hash_found.split(":")[0]))
-                            if hash_found.split(":")[0] == hash_to_find:
-                                print("yes!")
-                                found = True
-                        if not found:
-                            final_hash.write(hash_to_find+"\n")
+            for ch in current_hashes:
+                if ch not in found_hashes:
+                    final_hash.write(ch + "\n")
 
         final_hash.close()
-        current_hashes.close()
-        found_hash.close()
 
-        # rmtree(os.path.dirname(tmp_dir_path))
+        rmtree(tmp_dir_path)
+
+    @staticmethod
+    def nb_lines_in_file(file_path):
+        return sum(1 for line in open(file_path))

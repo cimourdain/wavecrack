@@ -1,5 +1,5 @@
 # standard imports
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import os
 import json
@@ -13,6 +13,14 @@ from app import db
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
 from app.models.cracks.entity import Crack
+
+
+CLOSE_MODES = {
+    "MANUAL": "manually closed by user",
+    "ALL_FOUND": "all password found",
+    "EXPIRED": "request duration expired",
+    "UNDEFINED": "undefined"
+}
 
 
 class CrackRequest(db.Model):
@@ -30,6 +38,8 @@ class CrackRequest(db.Model):
     bruteforce = db.Column(db.Boolean, nullable=False, default=False)
     _extra_options = db.Column(db.Text, nullable=True)
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    end_date = db.Column(db.DateTime, nullable=True)
+    end_mode = db.Column(db.Text, nullable=True)
     duration = db.Column(db.Integer, nullable=False)
     email_end_job_sent = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -72,6 +82,10 @@ class CrackRequest(db.Model):
             file_path=self.crack_folder,
             file_name="hashes.txt",
             content=hashes
+        )
+        FilesHelper.copy_file(
+            source=self.hashes_path,
+            target=os.path.join(self.crack_folder, "hashes_original.txt")
         )
 
     @property
@@ -177,22 +191,42 @@ class CrackRequest(db.Model):
         #         attack_file=new_mask_crack
         #     )
         #
-        # if self.bruteforce:
-        #     print("request :: add crack for bruteforce")
-        #     new_bf_crack = Crack()
-        #     new_bf_crack.working_folder = self.crack_folder
-        #     db.session.add(new_bf_crack)
-        #     db.session.commit()
-        #     self.cracks.append(new_bf_crack)
-        #     new_bf_crack.build_crack_cmd(
-        #         attack_mode=3,
-        #         attack_file=None
-        #     )
+        if self.bruteforce:
+            print("request :: add crack for bruteforce")
+            new_bf_crack = Crack()
+            new_bf_crack.working_folder = self.crack_folder
+            db.session.add(new_bf_crack)
+            db.session.commit()
+            self.cracks.append(new_bf_crack)
+            new_bf_crack.build_crack_cmd(
+                attack_mode=3,
+                attack_file=None
+            )
 
         db.session.commit()
+
+    def is_expired(self):
+        return (self.start_date + timedelta(days=self.duration)) <= datetime.now()
 
     def run_cracks(self):
         for c in self.cracks:
             c.run()
 
+            if FilesHelper.nb_lines_in_file(self.hashes_path) == 0:
+                self.close_crack_request("ALL_FOUND")
+                break
 
+            if self.is_expired():
+                self.close_crack_request("EXPIRED")
+                break
+
+        return True
+
+    def close_crack_request(self, mode):
+        print("close request with code "+str(mode))
+        if mode not in CLOSE_MODES:
+            mode = "UNDEFINED"
+
+        self.end_mode = mode
+        self.end_date = datetime.now()
+        db.session.commit()

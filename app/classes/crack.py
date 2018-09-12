@@ -53,15 +53,7 @@ class Crack(object):
         self.output_abs_path = output_path
 
         if log:
-            self.set_option({
-                "option": "--debug-file",
-                "value": log
-            })
-            if self.attack_mode_code == 0:
-                self.set_option({
-                    "option": "--debug-mode",
-                    "value": 4
-                })
+            pass
 
     def set_hashes_type_code(self, code):
         self.hashes_type_code = int(code)
@@ -115,6 +107,9 @@ class Crack(object):
 
                 if new_option.option == "--attack-mode":
                     self.attack_mode_code = new_option.value
+
+                if new_option.option == "--rules-file" and self.attack_mode_code == 0:
+                    pass
 
     def build_cmd_options(self):
         options_cmd_str = ""

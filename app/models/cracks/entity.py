@@ -3,6 +3,9 @@ import os
 import time
 from datetime import datetime
 
+# third party imports
+from sqlalchemy.orm import relationship
+
 # local imports
 from app import db
 from app.classes.crack import Crack as CrackClass
@@ -22,7 +25,9 @@ class Crack(db.Model):
     end_date = db.Column(db.DateTime, nullable=True)
     running = db.Column(db.Boolean, nullable=False, default=False)
     working_folder = db.Column(db.Text, nullable=False)
-    nb_password_found = db.Column(db.Integer, nullable=True)
+    nb_password_found = db.Column(db.Integer, nullable=False, default=0)
+
+    request = relationship("CrackRequest", back_populates="cracks")
 
     @property
     def output_file_path(self):
@@ -75,3 +80,8 @@ class Crack(db.Model):
         )
 
         return cmd
+
+    def kill_process(self):
+        print("kill crack process")
+        kill_cmd = Cmd("kill -9 "+str(self.process_id))
+        kill_cmd.run()

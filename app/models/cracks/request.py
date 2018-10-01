@@ -47,7 +47,7 @@ class CrackRequest(db.Model):
     duration = db.Column(db.Integer, nullable=False)
     email_end_job_sent = db.Column(db.Boolean, nullable=False, default=False)
 
-    cracks = relationship("Crack", backref="request")
+    cracks = relationship("Crack", back_populates="request")
     user = relationship("User", back_populates="cracks_requests")
 
     def __init__(self):
@@ -111,7 +111,7 @@ class CrackRequest(db.Model):
     def dictionary_paths(self):
         if self._dictionary_paths:
             for d in self._dictionary_paths.split(','):
-                d_folder, d_filename = FilesHelper.split_path(d)
+                d_folder, d_filename = FilesHelper.split_path(d, return_file_ext=False)
                 yield d_filename
 
     def add_dictionary_paths(self, list_of_wordlists, ref=False):
@@ -192,7 +192,7 @@ class CrackRequest(db.Model):
                 # create new crack
                 new_dict_crack = Crack()
                 _, dict_filename = FilesHelper.split_path(wordlist_file_path)
-                new_dict_crack.name = "Dictionary: "+str(dict_filename)
+                new_dict_crack.name = "Dictionary: "+str(FilesHelper.remove_ext_from_filename(dict_filename))
                 new_dict_crack.working_folder = self.crack_folder
                 db.session.add(new_dict_crack)
                 db.session.commit()
@@ -202,7 +202,8 @@ class CrackRequest(db.Model):
                     attack_file=wordlist_file_path
                 )
 
-        if self.mask:
+        if self.mask_path:
+            print("Mask path is "+str(self.mask_path)+": launch a mask attack")
             new_mask_crack = Crack()
             new_mask_crack.name = "Mask crack"
             new_mask_crack.working_folder = self.crack_folder

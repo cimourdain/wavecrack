@@ -113,5 +113,13 @@ class FilesHelper(object):
         return sum(1 for line in open(file_path))
 
     @staticmethod
-    def split_path(path):
-        return os.path.split(path)
+    def remove_ext_from_filename(filename):
+        return os.path.splitext(filename)[0]
+
+    @staticmethod
+    def split_path(path, return_file_ext=True):
+        if return_file_ext:
+            return os.path.split(path)
+        else:
+            path_dir, path_file = os.path.split(path)
+            return path_dir, FilesHelper.remove_ext_from_filename(path_file)

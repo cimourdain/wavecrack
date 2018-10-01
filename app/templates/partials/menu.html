@@ -4,7 +4,7 @@
             <ul class="nav flex-column mb-2">
                 {% if  current_user.is_authenticated %}
               <li class="nav-item">
-                <a class="nav-link media" href="{{ url_for('cracks_post.add_new_crack') }}">
+                <a class="nav-link media" href="{{ url_for('requests_post.add_new_crack_request') }}">
                   <i class="far fa-plus-square align-self-center mr-2"></i>
                     <div class="media-body">New crack</div>
                 </a>

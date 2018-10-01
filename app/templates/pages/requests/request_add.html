@@ -17,14 +17,14 @@ function UpdateHashExample()
 </script>
 {% endblock %}
 {% block body %}
-<form method="POST" action="{{ url_for("cracks_post.add_new_crack") }}" enctype="multipart/form-data">
+<form method="POST" action="{{ url_for("requests_post.add_new_crack_request") }}" enctype="multipart/form-data">
     {{ form.csrf_token }}
 
     {% if not confirmation %}
         {{ form.submit_btn(class_="btn btn-primary") }}
     {% else %}
         {{ form.confirm_btn(class_="btn btn-primary") }}
-        <a class="btn btn-primary" href="{{ url_for("cracks_post.add_new_crack") }}" role="button">Cancel</a>
+        <a class="btn btn-primary" href="{{ url_for("requests_post.add_new_crack_request") }}" role="button">Cancel</a>
     {% endif %}
 
     <div class="form-group">

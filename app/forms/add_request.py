@@ -28,7 +28,7 @@ def get_hashes_list_as_tuples():
     return rst
 
 
-class AddCrackForm(FlaskForm):
+class AddCrackRequestForm(FlaskForm):
     request_name = StringField("Request Name")
     hashes = TextAreaField("Enter the hash list (one per line)",render_kw={
         "placeholder": "Enter the hash list (one per line)"
@@ -79,7 +79,7 @@ class AddCrackForm(FlaskForm):
 
     @staticmethod
     def set_hashes(form):
-        hashes = AddCrackForm.get_hashes()
+        hashes = AddCrackRequestForm.get_hashes()
         form.hashes.data = hashes
 
         return True
@@ -96,7 +96,7 @@ class AddCrackForm(FlaskForm):
 
     @staticmethod
     def set_keywords(form):
-        form.keywords.data = AddCrackForm.get_keywords()
+        form.keywords.data = AddCrackRequestForm.get_keywords()
 
         return True
 
@@ -137,22 +137,22 @@ class AddCrackForm(FlaskForm):
     # custom validation method
     @staticmethod
     def validate_hashes(form=None):
-        if not AddCrackForm.get_hashes(form):
+        if not AddCrackRequestForm.get_hashes(form):
             return False, "Hashes or hash file required"
 
         return True, ""
 
     @staticmethod
     def validate_hash_type_code():
-        if not HashesHelper.validate_code(AddCrackForm.get_hash_type_code()):
+        if not HashesHelper.validate_code(AddCrackRequestForm.get_hash_type_code()):
             return False, "Invalid hash code"
 
         return True, ""
 
     @staticmethod
     def validate_one_attack_selected(form=None):
-        if not AddCrackForm.get_wordlists_files() \
-                and not AddCrackForm.get_keywords(form) \
+        if not AddCrackRequestForm.get_wordlists_files() \
+                and not AddCrackRequestForm.get_keywords(form) \
                 and not request.form.get('mask', None) \
                 and not request.form.get('bruteforce', None):
 
@@ -169,11 +169,11 @@ class AddCrackForm(FlaskForm):
 
     @staticmethod
     def validate_custom(form=None):
-        hashes_valid, hashes_message = AddCrackForm.validate_hashes(form)
-        hashes_code_valid, hashes_code_message = AddCrackForm.validate_hash_type_code()
-        mask_valid, mask_message = AddCrackForm.validate_mask()
+        hashes_valid, hashes_message = AddCrackRequestForm.validate_hashes(form)
+        hashes_code_valid, hashes_code_message = AddCrackRequestForm.validate_hash_type_code()
+        mask_valid, mask_message = AddCrackRequestForm.validate_mask()
 
-        at_least_one_attack_selected, nb_attacks_message = AddCrackForm.validate_one_attack_selected(form)
+        at_least_one_attack_selected, nb_attacks_message = AddCrackRequestForm.validate_one_attack_selected(form)
 
         messages = [
             hashes_message,

@@ -20,7 +20,7 @@ def get_all_user_request():
 
     print("render template")
     return render_template(
-        'pages/cracks/requests_list.html',
+        'pages/requests/requests_list.html',
         title="All your cracks",
         close_modes=CLOSE_MODES,
         user_requests=user_requests
@@ -41,7 +41,7 @@ def get_unique_request(request_id):
         flash("request is archived", "info")
 
     return render_template(
-        'pages/cracks/request_detail.html',
+        'pages/requests/request_detail.html',
         title="Request detail: "+request.name,
         request=request
     )

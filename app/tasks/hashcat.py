@@ -22,7 +22,7 @@ def write_errors(folder, errors):
 
 #  the bind decorator argument > access to task id
 @celery.task(bind=True)
-def launch_new_crack(self, name, user_id, hashes, hashes_type_code, hashed_file_contains_usernames, duration, wordlist_files=None,
+def launch_new_crack_request(self, name, user_id, hashes, hashes_type_code, hashed_file_contains_usernames, duration, wordlist_files=None,
                      keywords=None, mask=None, rules=None, bruteforce=None):
 
     print("celery :: hashcat :: create new crack request")
@@ -52,3 +52,9 @@ def launch_new_crack(self, name, user_id, hashes, hashes_type_code, hashed_file_
     new_crack_request.prepare_cracks()
 
     new_crack_request.run_cracks()
+
+
+@celery.task
+def kill_crack(crack_id):
+    crack = Crack.query.filter(id=crack_id).one()
+    crack.kill_process()

@@ -1,0 +1,46 @@
+{% extends "common/layout.html" %}
+{% block body %}
+    <h2>Request</h2>
+    <div class="row">
+        <div class="col-sm-4">
+            <div>Launched by: {{ request.user.name }}</div>
+            <div>Launch time : {{ request.start_date.strftime('%Y-%m-%d %H:%m') }}</div>
+            <div>Status: {{ request.status }}</div>
+        </div>
+        <div class="col-sm-4">
+            <div>
+                <a href="{{ url_for('requests_get.download_original_password_file', request_id=request.id) }}">Hashes</a>
+                {% if request.hashed_file_contains_usernames %}(contains usernames){% endif %}
+            </div>
+            <div>
+                Hashes type: {{ request.hashes_type_label }}
+            </div>
+            <div>
+                Dictionaries: {% for d in request.dictionary_paths %}{{ d }}, {% endfor %}
+            </div>
+
+        </div>
+        <div class="col-sm-4">
+            <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }}</div>
+            <div>
+                <a href="{{ url_for('requests_get.download_output_file', request_id=request.id) }}">Output</a>
+            </div>
+        </div>
+    </div>
+    <h2>Cracks</h2>
+    <div class="row">
+    {% for crack in request.cracks %}
+        <div class="col-sm-4">
+            <div class="card" style="width: 18rem;">
+              <div class="card-body">
+                <h5 class="card-title">Crack n°{{ crack.id }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                <p class="card-text">{{ crack.cmd }}</p>
+                <a href="#" class="card-link">Card link</a>
+                <a href="#" class="card-link">Another link</a>
+              </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

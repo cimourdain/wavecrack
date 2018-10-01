@@ -10,13 +10,6 @@ from app.models.cracks.request import CrackRequest
 from app.classes.crack import Crack
 from app.helpers.files import FilesHelper
 
-#
-# def create_new_crack_request(user_id, crack_folder, duration):
-#
-#
-#     db.session.add(new_crack_request)
-#     db.session.commit()
-
 
 def write_errors(folder, errors):
     FilesHelper.create_new_file(

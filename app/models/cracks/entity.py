@@ -14,6 +14,7 @@ class Crack(db.Model):
     __tablename__ = 'cracks'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False, default="Unnamed crack")
     crack_request_id = db.Column(db.Integer, db.ForeignKey('cracks_requests.id'))
     cmd = db.Column(db.Text, nullable=True)
     process_id = db.Column(db.Integer, nullable=True)

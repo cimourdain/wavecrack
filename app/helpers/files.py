@@ -111,3 +111,7 @@ class FilesHelper(object):
     @staticmethod
     def nb_lines_in_file(file_path):
         return sum(1 for line in open(file_path))
+
+    @staticmethod
+    def split_path(path):
+        return os.path.split(path)

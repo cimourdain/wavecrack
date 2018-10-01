@@ -13,6 +13,6 @@ def logout():
     logout_user()
     flash('Logout successful', 'success')
     return render_template(
-        'homepage.html',
+        'pages/home.html',
         title="Homepage"
     )

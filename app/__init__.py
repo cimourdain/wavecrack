@@ -65,7 +65,7 @@ def register_routes(app):
                     module_var = getattr(loaded_module, module_name)
                     app.register_blueprint(module_var)
                 except Exception as e:
-                    print("Impossible to load route for "+str(import_path)+" : "+str(module_name))
+                    print("Impossible to load route for "+str(import_path)+" : "+str(module_name)+" : "+str(e))
 
     return True
 

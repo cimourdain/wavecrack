@@ -53,6 +53,14 @@ class Cmd(object):
         return None
 
     @staticmethod
+    def get_process_pids(prgm_name):
+        try:
+            return subprocess.check_output(["pgrep", prgm_name], stderr=subprocess.STDOUT)
+        except Exception as e:
+            print("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            return []
+
+    @staticmethod
     def kill(pid):
         print("kill process "+str(pid))
         os.system('kill -9 %s' % pid)

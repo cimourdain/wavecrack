@@ -1,0 +1,76 @@
+{% extends "common/layout.html" %}
+{% block body %}
+<h2>CPU Load</h2>
+    <canvas id="CPUChart" width="80vw" height="40vh"></canvas>
+<h2>Memory</h2>
+    <canvas id="MemoryChart" width="80vw" height="40vh"></canvas>
+<h2>Hashcat instances</h2>
+
+<ul>
+    {% for crack in running_cracks %}
+        <li>
+            <a href="{{ url_for('requests_get.get_unique_request',request_id=crack.request.id) }}">
+                {{ crack.request.name }}
+            </a> : {{ crack.name }}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='chart.bundle.min.js') }}" ></script>
+
+<script type="text/javascript">
+var ctx = document.getElementById("CPUChart");
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for cpu_nb in range(nb_cpu) %}"cpu_{{ cpu_nb + 1 }}",{% endfor %}],
+        datasets: [{
+            label: 'CPU load %',
+            data: [{% for cpu in cpu_load %}{{ cpu }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true,
+                    max:100
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById("MemoryChart");
+var MemoryChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels:["used", "free"],
+        datasets:[{
+            data:[{{ memory.percent }}, {{ 100 - memory.percent }}],
+            backgroundColor:["rgb(255, 99, 132)","rgb(54, 162, 235)"]
+        }]
+    },
+    options: {}
+});
+</script>
+{% endblock %}

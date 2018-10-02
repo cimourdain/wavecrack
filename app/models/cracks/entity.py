@@ -87,12 +87,10 @@ class Crack(db.Model):
 
     @reconstructor
     def check_status(self):
-        print("check status on crack load "+str(self.name))
         if self.running:
             process_is_running = Cmd.check_status(self.process_id)
             if not process_is_running:
                 self.set_as_ended()
-        print("end of check")
 
     def force_close(self):
         print("Force close crack "+self.name)

@@ -17,14 +17,16 @@
                     </div>
                 </a>
               </li>
+              {% if current_user.is_admin %}
               <li class="nav-item">
-                <a class="nav-link media" href="">
+                <a class="nav-link media" href="{{ url_for('server_get.server_load') }}">
                   <i class="fas fa-thermometer-half align-self-center mr-2"></i>
                     <div class="media-body">
                         Server status
                     </div>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a class="nav-link media" href="">
                   <i class="fas fa-file-archive align-self-center mr-2"></i>
@@ -33,16 +35,6 @@
                     </div>
                 </a>
               </li>
-                 {% if current_user.is_admin %}
-                     <li class="nav-item">
-                        <a class="nav-link media" href="{{ url_for() }}">
-                          <i class="fas fa-file-archive align-self-center mr-2"></i>
-                            <div class="media-body">
-                                Server Load
-                            </div>
-                        </a>
-                      </li>
-                 {% endif %}
                 {% endif %}
               <li class="nav-item">
                 <a class="nav-link media" href="{{ url_for('ntds_upload_get.render_ndts_upload') }}">

@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-sm-4">
             <div>Launched by: {{ request.user.name }}</div>
-            <div>Launch time : {{ request.start_date.strftime('%Y-%m-%d %H:%m') }}</div>
+            <div>Launch time : {{ request.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</div>
             <div>Status: {{ request.status }}</div>
         </div>
         <div class="col-sm-4">
@@ -43,9 +43,9 @@
                 <h5 class="card-title">{{ crack.name }}</h5>
                 {% if crack.start_date %}
                 <h6 class="card-subtitle mb-2 text-muted">{{ crack.nb_password_found }} password found.</h6>
-                <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%m') }}</p>
+                <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                 {% if crack.end_date %}
-                    <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%m') }}</p>
+                    <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                     <p>End status: {{ crack.end_status }}</p>
                 {% else %}
                     <p>Status: running: {{ crack.process_id }}</p>

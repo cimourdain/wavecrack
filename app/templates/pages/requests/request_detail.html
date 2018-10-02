@@ -25,6 +25,13 @@
             <div>
                 <a href="{{ url_for('requests_get.download_output_file', request_id=request.id) }}">Output</a>
             </div>
+            {% if request.is_running() %}
+            <div>
+                <form action="" method="POST">
+                    <button type="button" class="btn btn-danger">Cancel all cracks</button>
+                </form>
+            </div>
+            {% endif %}
         </div>
     </div>
     <h2>Cracks</h2>
@@ -39,8 +46,14 @@
                 <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%m') }}</p>
                 {% if crack.end_date %}
                     <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%m') }}</p>
+                    <p>End status: {{ crack.end_status }}</p>
                 {% else %}
-                    <p>Status: running</p>
+                    <p>Status: running: {{ crack.process_id }}</p>
+                    <div>
+                        <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger">Cancel crack</button>
+                        </form>
+                    </div>
                 {% endif %}
                 <p class="card-text">{{ crack.cmd }}</p>
                   {% if  crack.nb_password_found %}

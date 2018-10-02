@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.Text)
     email = db.Column(db.Text)
     password_hash = db.Column(db.Text)
+    is_admin = db.Column(db.Boolean, default=False)
 
     cracks_requests = db.relationship("CrackRequest", back_populates='user')
 
@@ -48,6 +49,7 @@ class User(UserMixin, db.Model):
                 new_user.name = u["name"]
                 new_user.email = u["email"]
                 new_user.password = u["password"]
+                new_user.is_admin = True
                 db.session.add(new_user)
                 db.session.commit()
 

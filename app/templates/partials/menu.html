@@ -2,7 +2,7 @@
               <span>Menu</span>
             </h6>
             <ul class="nav flex-column mb-2">
-                {% if  current_user.is_authenticated %}
+             {% if  current_user.is_authenticated %}
               <li class="nav-item">
                 <a class="nav-link media" href="{{ url_for('requests_post.add_new_crack_request') }}">
                   <i class="far fa-plus-square align-self-center mr-2"></i>
@@ -33,6 +33,16 @@
                     </div>
                 </a>
               </li>
+                 {% if current_user.is_admin %}
+                     <li class="nav-item">
+                        <a class="nav-link media" href="{{ url_for() }}">
+                          <i class="fas fa-file-archive align-self-center mr-2"></i>
+                            <div class="media-body">
+                                Server Load
+                            </div>
+                        </a>
+                      </li>
+                 {% endif %}
                 {% endif %}
               <li class="nav-item">
                 <a class="nav-link media" href="{{ url_for('ntds_upload_get.render_ndts_upload') }}">

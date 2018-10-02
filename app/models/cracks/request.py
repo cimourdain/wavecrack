@@ -263,3 +263,17 @@ class CrackRequest(db.Model):
     @property
     def status(self):
         return celery.AsyncResult(self.celery_request_id).state
+
+    def is_running(self):
+        for c in self.cracks:
+            if c.running:
+                return True
+        return False
+
+    def force_close(self):
+        # close celery task
+        celery.control.revoke(self.celery_request_id)
+
+        # force close all tasks
+        for crack in self.cracks:
+            crack.force_close()

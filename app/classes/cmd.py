@@ -52,6 +52,22 @@ class Cmd(object):
             return self.process.returncode
         return None
 
-    def kill(self):
-        if self.pid:
-            os.system('kill -9 %s' % self.pid)
+    @staticmethod
+    def kill(pid):
+        print("kill process "+str(pid))
+        os.system('kill -9 %s' % pid)
+
+    @staticmethod
+    def check_status(pid, expected_process_name=None):
+        print("check process status for "+str(pid))
+        out = subprocess.check_output(["ps", "-p", str(pid), "-o", "comm="])
+
+        print("out "+str(out))
+        if out and \
+                (not expected_process_name
+                 or (expected_process_name and out.lower().find(expected_process_name.lower()) != -1)
+                ):
+            print("process is running")
+            return True
+        print("process is not running")
+        return False

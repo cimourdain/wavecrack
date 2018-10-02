@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 # third party imports
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, reconstructor
 
 # local imports
 from app import db
@@ -22,8 +22,9 @@ class Crack(db.Model):
     cmd = db.Column(db.Text, nullable=True)
     process_id = db.Column(db.Integer, nullable=True)
     start_date = db.Column(db.DateTime, nullable=True)
-    end_date = db.Column(db.DateTime, nullable=True)
     running = db.Column(db.Boolean, nullable=False, default=False)
+    end_date = db.Column(db.DateTime, nullable=True)
+    end_status = db.Column(db.String(255), nullable=True)
     working_folder = db.Column(db.Text, nullable=False)
     nb_password_found = db.Column(db.Integer, nullable=False, default=0)
 
@@ -62,11 +63,16 @@ class Crack(db.Model):
             print("process is running")
             time.sleep(30)
 
-        print("process finished")
+        self.set_as_ended(end_status="cmd_finished")
+
+        return cmd
+
+    def set_as_ended(self, end_status="undefined"):
         self.running = False
         self.end_date = datetime.now()
+        self.end_status = end_status
         self.nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
-        print("nb passwords found :: "+str(self.nb_password_found))
+        print("nb passwords found :: " + str(self.nb_password_found))
         db.session.commit()
 
         FilesHelper.move_file_content(
@@ -79,9 +85,17 @@ class Crack(db.Model):
             found_hashes_file=self.output_file_path
         )
 
-        return cmd
+    @reconstructor
+    def check_status(self):
+        print("check status on crack load "+str(self.name))
+        if self.running:
+            process_is_running = Cmd.check_status(self.process_id)
+            if not process_is_running:
+                self.set_as_ended()
+        print("end of check")
 
-    def kill_process(self):
-        print("kill crack process")
-        kill_cmd = Cmd("kill -9 "+str(self.process_id))
-        kill_cmd.run()
+    def force_close(self):
+        print("Force close crack "+self.name)
+        if self.process_id:
+            Cmd.kill(self.process_id)
+            self.set_as_ended(end_status="force_close")

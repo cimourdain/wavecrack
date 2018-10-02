@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 # local imports
 from server import db
-from app.models.cracks.request import CrackRequest, CLOSE_MODES
+from app.models.cracks.request import CrackRequest, REQUESTS_CLOSE_MODES
 from app.models.cracks.entity import Crack
 from app.helpers.files import FilesHelper
 

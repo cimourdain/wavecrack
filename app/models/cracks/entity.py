@@ -11,7 +11,7 @@ from app import db
 from app.classes.crack import Crack as CrackClass
 from app.classes.cmd import Cmd
 from app.helpers.files import FilesHelper
-
+from app.ref.close_modes import CRACKS_CLOSE_MODES
 
 class Crack(db.Model):
     __tablename__ = 'cracks'
@@ -24,7 +24,7 @@ class Crack(db.Model):
     start_date = db.Column(db.DateTime, nullable=True)
     running = db.Column(db.Boolean, nullable=False, default=False)
     end_date = db.Column(db.DateTime, nullable=True)
-    end_status = db.Column(db.String(255), nullable=True)
+    end_mode = db.Column(db.String(255), nullable=True)
     working_folder = db.Column(db.Text, nullable=False)
     nb_password_found = db.Column(db.Integer, nullable=False, default=0)
 
@@ -33,6 +33,11 @@ class Crack(db.Model):
     @property
     def output_file_path(self):
         return os.path.join(self.working_folder, str(self.id), "output.txt")
+
+    @property
+    def status(self):
+        if self.end_mode:
+            return
 
     def build_crack_cmd(self, attack_mode, attack_file):
         new_crack_class = CrackClass(
@@ -63,14 +68,14 @@ class Crack(db.Model):
             print("process is running")
             time.sleep(30)
 
-        self.set_as_ended(end_status="cmd_finished")
+        self.set_as_ended(end_status_mode="CMD_FINISHED")
 
         return cmd
 
-    def set_as_ended(self, end_status="undefined"):
+    def set_as_ended(self, end_status_mode="UNDEFINED"):
         self.running = False
         self.end_date = datetime.now()
-        self.end_status = end_status
+        self.end_mode = end_status_mode
         self.nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
         print("nb passwords found :: " + str(self.nb_password_found))
         db.session.commit()
@@ -96,4 +101,4 @@ class Crack(db.Model):
         print("Force close crack "+self.name)
         if self.process_id:
             Cmd.kill(self.process_id)
-            self.set_as_ended(end_status="force_close")
+            self.set_as_ended(end_status_mode="MANUAL")

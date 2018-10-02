@@ -46,7 +46,7 @@
                 <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                 {% if crack.end_date %}
                     <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    <p>End status: {{ crack.end_status }}</p>
+                    <p>End status: {{ crack.end_status_mode }}</p>
                 {% else %}
                     <p>Status: running: {{ crack.process_id }}</p>
                     <div>

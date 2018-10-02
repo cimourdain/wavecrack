@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 
 # local imports
 from server import db
-from app.models.cracks.request import CrackRequest, CLOSE_MODES
+from app.models.cracks.request import CrackRequest, REQUESTS_CLOSE_MODES
 from app.models.cracks.entity import Crack
 from app.helpers.files import FilesHelper
 
@@ -22,7 +22,7 @@ def get_all_user_request():
     return render_template(
         'pages/requests/requests_list.html',
         title="All your cracks",
-        close_modes=CLOSE_MODES,
+        close_modes=REQUESTS_CLOSE_MODES,
         user_requests=user_requests
     )
 

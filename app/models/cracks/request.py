@@ -15,14 +15,8 @@ from app.ref.hashes_list import HASHS_LIST
 from app.helpers.files import FilesHelper
 from app.models.cracks.entity import Crack
 from app.models.user import User
+from app.ref.close_modes import REQUESTS_CLOSE_MODES
 
-CLOSE_MODES = {
-    "MANUAL": "manually closed by user",
-    "ALL_FOUND": "all password found",
-    "ALL_PERFORMED": "all attacks performed",
-    "EXPIRED": "request duration expired",
-    "UNDEFINED": "undefined"
-}
 
 
 class CrackRequest(db.Model):
@@ -187,6 +181,7 @@ class CrackRequest(db.Model):
         return []
 
     def prepare_cracks(self):
+        print("prepare cracks")
         if self._dictionary_paths:
             for wordlist_file_path in self._dictionary_paths.split(','):
                 # create new crack
@@ -201,6 +196,7 @@ class CrackRequest(db.Model):
                     attack_mode=0,
                     attack_file=wordlist_file_path
                 )
+                print("dict attack added")
 
         if self.mask_path:
             print("Mask path is "+str(self.mask_path)+": launch a mask attack")
@@ -214,7 +210,7 @@ class CrackRequest(db.Model):
                 attack_mode=3,
                 attack_file=new_mask_crack
             )
-
+            print ("mask attack added")
         if self.bruteforce:
             new_bf_crack = Crack()
             new_bf_crack.name = "Bruteforce"
@@ -226,6 +222,7 @@ class CrackRequest(db.Model):
                 attack_mode=3,
                 attack_file=None
             )
+            print("bruteforce attack added")
 
         db.session.commit()
 
@@ -249,7 +246,7 @@ class CrackRequest(db.Model):
 
     def close_crack_request(self, mode):
         print("close request with code "+str(mode))
-        if mode not in CLOSE_MODES:
+        if mode not in REQUESTS_CLOSE_MODES:
             mode = "UNDEFINED"
 
         self.end_mode = mode
@@ -262,7 +259,14 @@ class CrackRequest(db.Model):
 
     @property
     def status(self):
-        return celery.AsyncResult(self.celery_request_id).state
+        if self.end_mode:
+            return REQUESTS_CLOSE_MODES[self.end_mode]
+
+        for c in self.cracks:
+            if c.running:
+                return "running"
+
+        return "waiting"
 
     def is_running(self):
         for c in self.cracks:
@@ -277,3 +281,24 @@ class CrackRequest(db.Model):
         # force close all tasks
         for crack in self.cracks:
             crack.force_close()
+
+        self.close_crack_request(mode="MANUAL")
+
+    @property
+    def cracks_progress(self):
+        if not self.cracks:
+            return 0
+
+        nb_finished_cracks = 0
+        for c in self.cracks:
+            if c.end_date:
+                nb_finished_cracks += 1
+
+        return round((float(nb_finished_cracks) / len(self.cracks)) * 100, 2)
+
+    @property
+    def password_progress(self):
+        if not self.nb_password_to_find:
+            return 0
+
+        return round((float(self.nb_password_found) / self.nb_password_to_find)*100, 2)

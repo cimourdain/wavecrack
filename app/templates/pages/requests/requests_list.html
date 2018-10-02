@@ -22,10 +22,30 @@
                     , ended on {{ request.end_date.strftime('%Y-%m-%d %H:%M:%S') }}
                 {% endif %}
                 </li>
-                <li>hashes (required: {{ request.nb_password_to_find }}
-                    , found {{ request.nb_password_found }})</li>
-                <li>{{ request.status }}</li>
             </ul>
+        <div class="progress">
+          <div
+                  class="progress-bar progress-bar-striped"
+                  role="progressbar"
+                  style="width: {{ request.password_progress }}%; color:#000;"
+                  aria-valuenow="{{ request.password_progress }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                    Passwords found: {{ (request.nb_password_found / request.nb_password_to_find *100)|round(2) }} %
+          </div>
+        </div>
+        <p></p>
+        <div class="progress">
+          <div
+                  class="progress-bar progress-bar-striped"
+                  role="progressbar"
+                  style="width: {{ request.cracks_progress }}%; color:#000;"
+                  aria-valuenow="{{ request.cracks_progress }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100">
+                    Cracks: {{ request.cracks_progress }} %
+          </div>
+        </div>
         </a>
     {% endfor %}
     </div>

@@ -7,13 +7,17 @@
 <h2>Hashcat instances</h2>
 
 <ul>
-    {% for crack in running_cracks %}
-        <li>
-            <a href="{{ url_for('requests_get.get_unique_request',request_id=crack.request.id) }}">
-                {{ crack.request.name }}
-            </a> : {{ crack.name }}
-        </li>
-    {% endfor %}
+    {% if running_cracks %}
+        {% for crack in running_cracks %}
+            <li>
+                <a href="{{ url_for('requests_get.get_unique_request',request_id=crack.request.id) }}">
+                    {{ crack.request.name }}
+                </a> : {{ crack.name }}
+            </li>
+        {% endfor %}
+    {% else %}
+    <p>No Hashcat instance running.</p>
+    {% endif %}
 </ul>
 {% endblock %}
 

@@ -13,11 +13,19 @@
                 <a class="nav-link media" href="{{ url_for('requests_get.get_all_user_request') }}">
                   <i class="fas fa-list-ol align-self-center mr-2"></i>
                     <div class="media-body">
-                        Current and past cracks
+                        Your cracks
                     </div>
                 </a>
               </li>
               {% if current_user.is_admin %}
+              <li class="nav-item">
+                <a class="nav-link media" href="{{ url_for('requests_get.get_all_requests') }}">
+                  <i class="fas fa-list-ol align-self-center mr-2"></i>
+                    <div class="media-body">
+                        All Cracks
+                    </div>
+                </a>
+              </li>
               <li class="nav-item">
                 <a class="nav-link media" href="{{ url_for('server_get.server_load') }}">
                   <i class="fas fa-thermometer-half align-self-center mr-2"></i>

@@ -68,10 +68,12 @@ class Config(object):
     AUTH_TYPE = "None"
 
     # Basic Auth settings, define the sha256 password of the allowed users
-    BASIC_AUTH_USERS = [
-        ["user1", "89e01536ac207279409d4de1e5253e01f4a1769e696db0d6062ca9b8f56767c8", "email1@email.com"],  # user1/toto
-        ["user2", "89e01536ac207279409d4de1e5253e01f4a1769e696db0d6062ca9b8f56767c8", "email2@email.com"]
-    ]
+    DEFAULT_USERS = [{
+        "name": "admin",
+        "email": "admin@admin.com",
+        "password": "strong_password",
+        "admin": True
+    }]
 
     # LDAP settings
     LDAP_HOST = "1.1.1.1"
@@ -125,8 +127,28 @@ class DevelopmentConfig(Config):
     DEFAULT_USERS = [{
         "name": "admin",
         "email": "admin@admin.com",
-        "password": "toto"
-    }]
+        "password": "toto",
+        "admin": True
+        },
+            {
+            "name": "admin2",
+            "email": "admin2@admin.com",
+            "password": "toto",
+            "admin": True
+        },
+        {
+            "name": "user",
+            "email": "user@user.com",
+            "password": "toto",
+            "admin": False
+        },
+        {
+            "name": "user2",
+            "email": "user2@user.com",
+            "password": "toto",
+            "admin": False
+        }
+    ]
 
 
 class TestingConfig(Config):

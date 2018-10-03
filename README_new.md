@@ -57,6 +57,8 @@ $ pip install -r requirements.txt
 ### General
 Setup your project var in config.py
 
+Mandatory: set default users
+
 ### Database
 Db initialization
 ```
@@ -102,6 +104,7 @@ $ celery -A worker.celery worker
 ```
 
 # App
+* (optional) Set FLASK_CONFIG environement variable with either developement, testing or production (developement used by default)
 * Launch the Flask Web server
     * Directly from the `server.py` file: this mode is not suitable for production purpose
     ```

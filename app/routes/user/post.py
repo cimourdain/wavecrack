@@ -12,7 +12,7 @@ user_post = Blueprint('user_post', __name__, template_folder='templates')
 
 def get_page_to_redirect():
     next = request.args.get('next', None)
-    if not next or not next.startswith('/'):
+    if not next or not next.startswith('/') or next.find("logout") != -1:
         next = url_for('home_get.render_homepage')
     return redirect(next)
 
@@ -41,4 +41,4 @@ def login():
         flash('Invalid login', 'error')
 
     # render login page
-    return get_page_to_redirect()
+    return redirect(url_for('home_get.render_homepage'))

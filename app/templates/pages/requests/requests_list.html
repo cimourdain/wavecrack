@@ -7,13 +7,13 @@
     {% for request in user_requests %}
         <a href="{{url_for('requests_get.get_unique_request', request_id=request.id)}}" class="list-group-item list-group-item-action flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">{{ request.name }} ({{ request.id }})</h5>
+              <h5 class="mb-1">{{ request.name }}</h5>
               <small>
                   {{ request.status }}
               </small>
             </div>
             <ul class="mb-1">
-                <li>Launched on {{ request.start_date.strftime('%Y-%m-%d %H:%M:%S') }}
+                <li>Launched on {{ request.start_date.strftime('%Y-%m-%d %H:%M:%S') }} by {{ request.user.name }}
                 {% if request.end_date %}
                     , ended on {{ request.end_date.strftime('%Y-%m-%d %H:%M:%S') }}
                 {% endif %}

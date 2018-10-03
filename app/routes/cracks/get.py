@@ -20,8 +20,8 @@ def get_crack(crack_id):
         flash("Error: crack not found", "error")
         return render_template('pages/home.html', title="crack not found")
 
-    if crack.request.user.id != current_user.id:
-        flash("Error: crack not found", "error")
+    if crack.request.user.id != current_user.id and not current_user.is_admin:
+        flash("Error: invalid access", "error")
         return render_template('pages/home.html', title="crack not found")
 
     return crack
@@ -56,11 +56,3 @@ def download_crack_cmd_errfile(crack_id):
 
     return send_from_directory(directory=folder_path, filename="cmd_err.txt")
 
-
-@cracks_get.route('/cracks/<crack_id>/mask', methods=["GET"])
-@login_required
-def download_crack_mask_file(crack_id):
-    crack = get_crack(crack_id)
-
-    folder_path, filename = FilesHelper.split_path(crack.request.mask_path)
-    return send_from_directory(directory=folder_path, filename=filename)

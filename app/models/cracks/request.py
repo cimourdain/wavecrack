@@ -146,6 +146,12 @@ class CrackRequest(db.Model):
     def mask(self):
         return FilesHelper.get_file_content(self.mask_path)
 
+    @property
+    def has_mask(self):
+        if self.mask_path and FilesHelper.file_exists(self.mask_path):
+            return True
+        return False
+
     @mask.setter
     def mask(self, mask):
         self.mask_path = FilesHelper.create_new_file(

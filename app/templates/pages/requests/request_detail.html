@@ -19,10 +19,17 @@
             <div>
                 Dictionaries: {% for d in request.dictionary_paths %}{{ d }}, {% endfor %}
             </div>
+            {% if request.has_mask %}
+            <div>
+                <a href="{{ url_for('requests_get.download_mask_file', request_id=request.id) }}"
+                             class="card-link">Mask
+                          </a>
 
+            </div>
+            {% endif %}
         </div>
         <div class="col-sm-4">
-            <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }} ({{ (request.nb_password_found / request.nb_password_to_find) *100 |round(2) }}%)</div>
+            <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }} ({{ request.password_progress }}%)</div>
             <div>
                 <a href="{{ url_for('requests_get.download_output_file', request_id=request.id) }}">Output</a>
             </div>
@@ -49,14 +56,18 @@
                     <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                     <p>End status: {{ crack.end_status_mode }}</p>
                 {% else %}
-                    <p>Status: running: {{ crack.process_id }}</p>
+                    <p>Status: running {% if current_user.is_admin %} on {{ crack.process_id }}{% endif %}</p>
                     <div>
                         <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
                             <button type="submit" class="btn btn-danger">Cancel crack</button>
                         </form>
                     </div>
                 {% endif %}
+
+                {% if current_user.is_admin %}
                 <p class="card-text">{{ crack.cmd }}</p>
+                {% endif %}
+
                   {% if  crack.end_date %}
                       <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
                          class="card-link">Output
@@ -67,11 +78,7 @@
                       <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
                          class="card-link">Hashcat errors
                       </a>
-                      {% if crack.request.mask %}
-                          <br /><a href="{{ url_for('cracks_get.download_crack_mask_file', crack_id=crack.id) }}"
-                         class="card-link">Mask
-                      </a>
-                      {% endif %}
+
                   {% endif %}
                 {% else %}
                     <p>Not started</p>

@@ -49,7 +49,7 @@ class User(UserMixin, db.Model):
                 new_user.name = u["name"]
                 new_user.email = u["email"]
                 new_user.password = u["password"]
-                new_user.is_admin = True
+                new_user.is_admin = u["admin"] if "admin" in u and isinstance(u["admin"], bool) else False
                 db.session.add(new_user)
                 db.session.commit()
 

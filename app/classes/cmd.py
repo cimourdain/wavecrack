@@ -67,8 +67,10 @@ class Cmd(object):
 
     @staticmethod
     def check_status(pid, expected_process_name=None):
-        print("check process status for "+str(pid))
-        out = subprocess.check_output(["ps", "-p", str(pid), "-o", "comm="])
+        try:
+            out = subprocess.check_output(["ps", "-p", str(pid), "-o", "comm="])
+        except Exception as _:
+            return False
 
         print("out "+str(out))
         if out and \

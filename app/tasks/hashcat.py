@@ -27,6 +27,7 @@ def launch_new_crack_request(self, name, user_id, hashes, hashes_type_code, hash
 
     print("celery :: hashcat :: create new crack request")
     new_crack_request = CrackRequest()
+    new_crack_request.init_request_folder()
     new_crack_request.name = name
     new_crack_request.celery_request_id = self.request.id
     new_crack_request.user_id = user_id

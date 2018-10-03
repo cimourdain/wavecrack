@@ -46,7 +46,8 @@ class Crack(db.Model):
             attack_mode_code=attack_mode,
             attack_files=attack_file,
             options=self.request.extra_options,
-            output_path=self.output_file_path
+            output_path=self.output_file_path,
+            session_id=self.request.session_id
         )
         self.cmd = new_crack_class.build_run_cmd()
 

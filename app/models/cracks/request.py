@@ -44,10 +44,12 @@ class CrackRequest(db.Model):
     cracks = relationship("Crack", back_populates="request")
     user = relationship("User", back_populates="cracks_requests")
 
-    def __init__(self):
+    def init_request_folder(self):
         self.session_id = str(uuid.uuid4())
-        if not os.path.isdir(self.crack_folder):
+        if not FilesHelper.dir_exists(self.crack_folder):
+            print("create directory "+str(self.crack_folder))
             os.mkdir(self.crack_folder)
+        FilesHelper.file_exists(self.outfile_path, create=True)
 
     @property
     def hashes_type_code(self):
@@ -71,9 +73,7 @@ class CrackRequest(db.Model):
 
     @property
     def outfile_path(self):
-        output_file_path = os.path.join(self.crack_folder, "output.txt")
-        FilesHelper.file_exists(output_file_path, create=True)
-        return output_file_path
+        return os.path.join(self.crack_folder, "output.txt")
 
     @property
     def hashes(self):
@@ -81,6 +81,7 @@ class CrackRequest(db.Model):
 
     @property
     def is_archived(self):
+        print("check if folder "+str(self.crack_folder)+" exists.")
         return not FilesHelper.dir_exists(self.crack_folder)
 
     @hashes.setter
@@ -181,7 +182,15 @@ class CrackRequest(db.Model):
         return []
 
     def prepare_cracks(self):
-        print("prepare cracks")
+        """
+        Create a Crack instance for each hashcat instance to launch
+        - cracks for each dictionary
+        - crack for keywords
+        - crack for mask
+        - crack for bruteforce
+
+        :return:
+        """
         if self._dictionary_paths:
             for wordlist_file_path in self._dictionary_paths.split(','):
                 # create new crack
@@ -196,7 +205,6 @@ class CrackRequest(db.Model):
                     attack_mode=0,
                     attack_file=wordlist_file_path
                 )
-                print("dict attack added")
 
         if self.mask_path:
             print("Mask path is "+str(self.mask_path)+": launch a mask attack")
@@ -208,9 +216,9 @@ class CrackRequest(db.Model):
             self.cracks.append(new_mask_crack)
             new_mask_crack.build_crack_cmd(
                 attack_mode=3,
-                attack_file=new_mask_crack
+                attack_file=os.path.join(new_mask_crack.working_folder, "mask.hcmask")
             )
-            print ("mask attack added")
+
         if self.bruteforce:
             new_bf_crack = Crack()
             new_bf_crack.name = "Bruteforce"
@@ -222,7 +230,6 @@ class CrackRequest(db.Model):
                 attack_mode=3,
                 attack_file=None
             )
-            print("bruteforce attack added")
 
         db.session.commit()
 
@@ -255,24 +262,32 @@ class CrackRequest(db.Model):
 
     @property
     def nb_password_found(self):
-        return FilesHelper.nb_lines_in_file(self.outfile_path)
+        if not self.is_archived:
+            return FilesHelper.nb_lines_in_file(self.outfile_path)
+        return 0
 
     @property
     def status(self):
+        if self.is_archived:
+            return "archived"
+
+        if not self.is_finished():
+            return "running"
+
         if self.end_mode:
             return REQUESTS_CLOSE_MODES[self.end_mode]
 
-        for c in self.cracks:
-            if c.running:
-                return "running"
-
         return "waiting"
 
-    def is_running(self):
+    def is_finished(self):
         for c in self.cracks:
-            if c.running:
-                return True
-        return False
+            if not c.end_mode:
+                return False
+
+        self.end_mode = "ALL_PERFORMED"
+        db.session.commit()
+
+        return True
 
     def force_close(self):
         # close celery task

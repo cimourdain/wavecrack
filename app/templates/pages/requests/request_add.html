@@ -76,8 +76,10 @@ function UpdateHashExample()
       {% endif %}
 
       <div class="form-group">
-        {{ form.hashed_file_contains_usernames(class_="form-control", readonly=confirmation) }}
-        {{ form.hashed_file_contains_usernames.label }}
+        {{ form.hashed_file_contains_usernames(readonly=confirmation) }}
+          {{ form.hashed_file_contains_usernames.label }}
+
+
 
         <small class="form-text text-muted">"In this case, usernames have to be separated from hashes by {{ separator }}.
                  For example, a compliant input if the box it ticked is: user{{ separator }}hash"</small>

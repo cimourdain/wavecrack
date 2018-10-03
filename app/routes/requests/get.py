@@ -16,9 +16,10 @@ requests_get = Blueprint('requests_get', __name__, template_folder='templates')
 @requests_get.route('/requests', methods=["GET"])
 @login_required
 def get_all_user_request():
-    user_requests = CrackRequest.query.filter_by(user_id=current_user.id).all()
+    user_requests = CrackRequest.query.filter_by(user_id=current_user.id).order_by(CrackRequest.start_date.desc()).all()
 
-    print("render template")
+    user_requests = [x for x in user_requests if not x.is_archived]
+
     return render_template(
         'pages/requests/requests_list.html',
         title="All your cracks",

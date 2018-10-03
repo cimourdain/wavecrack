@@ -59,6 +59,10 @@ class Crack(object):
     def set_attack_mode_code(self, attack_mode_code):
         if str(attack_mode_code) in ATTACK_MODES:
             self.attack_mode_code = int(attack_mode_code)
+            if self.attack_mode_code == 3:
+                self.set_option({
+                    "option": "--show"
+                })
 
     def set_attack_files(self, files_list):
         if isinstance(files_list, basestring):
@@ -122,6 +126,7 @@ class Crack(object):
         options_cmd_str = ""
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
+        print("cmd options "+str(options_cmd_str))
         return options_cmd_str
 
     def build_run_cmd(self):
@@ -130,9 +135,9 @@ class Crack(object):
             self.hashes_type_code,
             self.attack_mode_code,
             self.output_abs_path,
-            self.build_cmd_options(),
             self.input_hashfile_abs_path,
-            " ".join(self.attack_files)
+            " ".join(self.attack_files),
+            self.build_cmd_options(),
         )
 
         return cmd

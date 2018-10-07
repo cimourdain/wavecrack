@@ -59,10 +59,6 @@ class Crack(object):
     def set_attack_mode_code(self, attack_mode_code):
         if str(attack_mode_code) in ATTACK_MODES:
             self.attack_mode_code = int(attack_mode_code)
-            if self.attack_mode_code == 3:
-                self.set_option({
-                    "option": "--show"
-                })
 
     def set_attack_files(self, files_list):
         if isinstance(files_list, basestring):

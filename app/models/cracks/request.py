@@ -222,7 +222,10 @@ class CrackRequest(db.Model):
             self.cracks.append(new_mask_crack)
             new_mask_crack.build_crack_cmd(
                 attack_mode=3,
-                attack_file=os.path.join(new_mask_crack.working_folder, "mask.hcmask")
+                attack_file=os.path.join(new_mask_crack.working_folder, "mask.hcmask"),
+                crack_options=[{
+                    "option": "--show"  # mask crack seems to require --show option
+                }]
             )
 
         if self.bruteforce:

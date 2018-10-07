@@ -1,5 +1,6 @@
 # standard imports
 import os
+import json
 import time
 from datetime import datetime
 
@@ -39,13 +40,21 @@ class Crack(db.Model):
         if self.end_mode:
             return
 
-    def build_crack_cmd(self, attack_mode, attack_file):
+    def build_crack_cmd(self, attack_mode, attack_file, crack_options=None):
+        options = []
+        if self.request.extra_options:
+            options.extend(self.request.extra_options)
+        print("Create new CrackClass instance with options " + str(options))
+        if crack_options:
+            options.extend(crack_options)
+        print("Create new CrackClass instance with options "+str(options))
+
         new_crack_class = CrackClass(
             input_hashfile=self.request.hashes_path,
             hashes_type_code=self.request.hashes_type_code,
             attack_mode_code=attack_mode,
             attack_files=attack_file,
-            options=self.request.extra_options,
+            options=options,
             output_path=self.output_file_path,
             session_id=self.request.session_id
         )

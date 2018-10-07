@@ -88,25 +88,25 @@ class Crack(object):
     """
     def set_default_options(self, default_options_per_attack_mode):
         for attack_mode, options in default_options_per_attack_mode.items():
-            print("key: "+str(attack_mode))
-            print("value: "+str(options))
+            app.logger.debug("crack :: set_default_options :: key: "+str(attack_mode))
+            app.logger.debug("crack :: set_default_options :: value: "+str(options))
             if attack_mode == self.attack_mode_code:
                 self.set_options(options)
 
     def set_options(self, options):
-        print("new options "+str(options))
+        app.logger.debug("crack :: set_options :: new options "+str(options))
         if options:
             for option in options:
                 self.set_option(option)
 
     def option_allowed(self, option):
-        print("check if "+str(option["option"])+" can be added with attacj mode "+str(self.attack_mode_code))
+        app.logger.debug("crack :: option_allowed :: check if "+str(option["option"])+" can be added with attack mode " + str(self.attack_mode_code))
         if option["option"] == "--rules-file" and self.attack_mode_code != 0:
             return False
         return True
 
     def set_option(self, option):
-        print("set option "+str(option))
+        app.logger.debug("crack :: set_option :: set option "+str(option))
         if self.option_allowed(option):
             new_option = CrackOption(option.get("option", None), option.get("value", None))
             if new_option.option:
@@ -122,7 +122,7 @@ class Crack(object):
         options_cmd_str = ""
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
-        print("cmd options "+str(options_cmd_str))
+        app.logger.debug("crack :: build_cmd_options :: cmd options "+str(options_cmd_str))
         return options_cmd_str
 
     def build_run_cmd(self):

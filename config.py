@@ -1,6 +1,5 @@
 # !/usr/bin/python
 # coding: utf8
-from collections import OrderedDict
 import os
 
 

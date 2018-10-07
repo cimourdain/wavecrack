@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy.orm import relationship, reconstructor
 
 # local imports
+from server import app
 from app import db
 from app.classes.crack import Crack as CrackClass
 from app.classes.cmd import Cmd
@@ -44,10 +45,10 @@ class Crack(db.Model):
         options = []
         if self.request.extra_options:
             options.extend(self.request.extra_options)
-        print("Create new CrackClass instance with options " + str(options))
+
         if crack_options:
             options.extend(crack_options)
-        print("Create new CrackClass instance with options "+str(options))
+        app.logger.debug("Create new CrackClass instance with options "+str(options))
 
         new_crack_class = CrackClass(
             input_hashfile=self.request.hashes_path,
@@ -61,7 +62,7 @@ class Crack(db.Model):
         self.cmd = new_crack_class.build_run_cmd()
 
     def run(self):
-        print("======== crack :: run new crack ("+str(self.id)+")")
+        app.logger.debug("Crack Entity :: run :: run new crack ("+str(self.id)+")")
         self.start_date = datetime.now()
         db.session.commit()
         cmd = Cmd(
@@ -73,9 +74,9 @@ class Crack(db.Model):
         self.running = True
         db.session.commit()
 
-        print("wait for process to finish")
+        app.logger.debug("Crack Entity :: run :: wait for process to finish")
         while cmd.is_running():
-            print("process is running")
+            app.logger.debug("Crack Entity :: run :: process is running")
             time.sleep(30)
 
         self.set_as_ended(end_status_mode="CMD_FINISHED")
@@ -87,7 +88,7 @@ class Crack(db.Model):
         self.end_date = datetime.now()
         self.end_mode = end_status_mode
         self.nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
-        print("nb passwords found :: " + str(self.nb_password_found))
+        app.logger.debug("Crack Entity :: set_as_ended :: nb passwords found :: " + str(self.nb_password_found))
         db.session.commit()
 
         FilesHelper.move_file_content(

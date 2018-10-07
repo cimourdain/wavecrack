@@ -25,7 +25,7 @@ def write_errors(folder, errors):
 def launch_new_crack_request(self, name, user_id, hashes, hashes_type_code, hashed_file_contains_usernames, duration, wordlist_files=None,
                      keywords=None, mask=None, rules=None, bruteforce=None):
 
-    print("celery :: hashcat :: create new crack request")
+    app.logger.debug("celery :: hashcat :: create new crack request")
     new_crack_request = CrackRequest()
     new_crack_request.init_request_folder()
     new_crack_request.name = name

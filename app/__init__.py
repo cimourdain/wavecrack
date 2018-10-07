@@ -26,6 +26,7 @@ def create_app(config_name):
 
     app.config.from_object(config[config_name])
 
+
     db.init_app(app)
 
     login_manager.init_app(app)
@@ -86,7 +87,6 @@ def make_celery(app):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
-
 
     celery.Task = ContextTask
 

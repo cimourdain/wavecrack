@@ -4,6 +4,7 @@ import subprocess
 import shlex
 from datetime import datetime
 
+from server import app
 from app.helpers.files import FilesHelper
 
 
@@ -33,18 +34,18 @@ class Cmd(object):
     def run(self):
         self.start_date = datetime.now()
         self.process = subprocess.Popen(shlex.split(self.cmd), stdout=self.stdout, stderr=self.stderr, shell=False)
-        print ("executed commandline is %s" % self.cmd)
+        app.logger.info("Cmd :: run :: executed commandline is %s" % self.cmd)
         self.pid = self.process.pid
 
         return self.pid
 
     def is_running(self):
         if self.process:
-            print("poll: "+str(self.process.poll()))
+            app.logger.debug("Cmd :: is_running :: poll: "+str(self.process.poll()))
             if self.process.poll() is None:
-                print("cmd :: process ("+str(self.pid)+") is still running")
+                app.logger.info("Cmd :: is_running :: process ("+str(self.pid)+") is still running")
                 return True
-        print("process finished")
+        app.logger.info("Cmd :: is_running :: process finished")
         return False
 
     def status_code(self):
@@ -57,12 +58,12 @@ class Cmd(object):
         try:
             return subprocess.check_output(["pgrep", prgm_name], stderr=subprocess.STDOUT)
         except Exception as e:
-            print("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+            app.logger.warn("Cmd :: command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
             return []
 
     @staticmethod
     def kill(pid):
-        print("kill process "+str(pid))
+        app.logger.info("Cmd :: kill :: kill process "+str(pid))
         os.system('kill -9 %s' % pid)
 
     @staticmethod
@@ -72,12 +73,12 @@ class Cmd(object):
         except Exception as _:
             return False
 
-        print("out "+str(out))
+        app.logger.debug("Cmd :: check_status :: out "+str(out))
         if out and \
                 (not expected_process_name
                  or (expected_process_name and out.lower().find(expected_process_name.lower()) != -1)
                 ):
-            print("process is running")
+            app.logger.debug("Cmd :: check_status :: process is running")
             return True
-        print("process is not running")
+        app.logger.debug("Cmd :: check_status :: process is not running")
         return False

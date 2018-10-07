@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, flash, send_from_directory
 from flask_login import login_required, current_user
 
 # local imports
+from server import app
 from app.models.cracks.request import CrackRequest, REQUESTS_CLOSE_MODES
 from app.helpers.files import FilesHelper
 
@@ -30,11 +31,10 @@ def get_all_user_request(user_id):
     :param user_id:
     :return:
     """
-    print("enter route")
+    app.logger.debug("Enter user_requests route")
     if current_user.is_admin:
         user_requests = CrackRequest.query.filter_by(user_id=user_id).order_by(CrackRequest.start_date.desc()).all()
     else:
-        print("get user requests")
         user_requests = CrackRequest.query.filter_by(user_id=current_user.id).order_by(
             CrackRequest.start_date.desc()).all()
 

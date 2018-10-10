@@ -264,7 +264,7 @@ HASHCAT_OPTIONS = {
         },
         "--potfile-path": {
                 "short": None,
-                "type": "Dir",
+                "type": "File",  # File and not Dir as mentioned in doc
                 "description": "Specific path to potfile",
                 "example": "--potfile-path=my.pot",
         },

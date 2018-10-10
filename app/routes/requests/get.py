@@ -32,7 +32,7 @@ def get_all_user_request(user_id):
     :return:
     """
     app.logger.debug("Enter user_requests route")
-    if current_user.is_admin:
+    if current_user.is_admin and user_id:
         user_requests = CrackRequest.query.filter_by(user_id=user_id).order_by(CrackRequest.start_date.desc()).all()
     else:
         user_requests = CrackRequest.query.filter_by(user_id=current_user.id).order_by(
@@ -63,6 +63,7 @@ def get_all_requests():
         close_modes=REQUESTS_CLOSE_MODES,
         user_requests=all_requests
     )
+
 
 @requests_get.route('/requests/<request_id>', methods=["GET"])
 @login_required

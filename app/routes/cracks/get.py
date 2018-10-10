@@ -37,6 +37,16 @@ def download_crack_outfile(crack_id):
     return send_from_directory(directory=folder_path, filename=filename)
 
 
+@cracks_get.route('/cracks/<crack_id>/potfile', methods=["GET"])
+@login_required
+def download_crack_potfile(crack_id):
+
+    crack = get_crack(crack_id)
+
+    folder_path, filename = FilesHelper.split_path(crack.potfile_path)
+    return send_from_directory(directory=folder_path, filename=filename)
+
+
 @cracks_get.route('/cracks/<crack_id>/cmd_output_file', methods=["GET"])
 @login_required
 def download_crack_cmd_outfile(crack_id):

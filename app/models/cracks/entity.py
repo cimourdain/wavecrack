@@ -1,6 +1,5 @@
 # standard imports
 import os
-import json
 import time
 from datetime import datetime
 
@@ -10,10 +9,10 @@ from sqlalchemy.orm import relationship, reconstructor
 # local imports
 from server import app
 from app import db
-from app.classes.crack import Crack as CrackClass
+from app.classes.crackCmdBuilder import CrackCmdBuilder
 from app.classes.cmd import Cmd
 from app.helpers.files import FilesHelper
-from app.ref.close_modes import CRACKS_CLOSE_MODES
+
 
 class Crack(db.Model):
     __tablename__ = 'cracks'
@@ -27,21 +26,30 @@ class Crack(db.Model):
     running = db.Column(db.Boolean, nullable=False, default=False)
     end_date = db.Column(db.DateTime, nullable=True)
     end_mode = db.Column(db.String(255), nullable=True)
-    working_folder = db.Column(db.Text, nullable=False)
-    nb_password_found = db.Column(db.Integer, nullable=False, default=0)
+    _nb_password_found = db.Column(db.Integer, nullable=False, default=0)
 
     request = relationship("CrackRequest", back_populates="cracks")
 
+    def __init__(self, name):
+        self.name = name
+
+    @property
+    def crack_folder(self):
+        return os.path.join(self.request.request_working_folder, str(self.id))
+
     @property
     def output_file_path(self):
-        return os.path.join(self.working_folder, str(self.id), "output.txt")
+        output_path = os.path.join(self.crack_folder, "output.txt")
+        FilesHelper.file_exists(file_path=output_path, create=True)
+        return output_path
 
     @property
-    def status(self):
-        if self.end_mode:
-            return
+    def potfile_path(self):
+        potfile_path = os.path.join(self.crack_folder, str(self.id), "crack.pot")
+        FilesHelper.file_exists(potfile_path, create=True)
+        return potfile_path
 
-    def build_crack_cmd(self, attack_mode, attack_file, crack_options=None):
+    def build_crack_cmd(self, attack_mode, attack_file, crack_options=None, use_potfile=True):
         options = []
         if self.request.extra_options:
             options.extend(self.request.extra_options)
@@ -50,14 +58,12 @@ class Crack(db.Model):
             options.extend(crack_options)
         app.logger.debug("Create new CrackClass instance with options "+str(options))
 
-        new_crack_class = CrackClass(
-            input_hashfile=self.request.hashes_path,
-            hashes_type_code=self.request.hashes_type_code,
+        new_crack_class = CrackCmdBuilder(
+            source_crack=self,
             attack_mode_code=attack_mode,
             attack_files=attack_file,
             options=options,
-            output_path=self.output_file_path,
-            session_id=self.request.session_id
+            use_potfile=use_potfile
         )
         self.cmd = new_crack_class.build_run_cmd()
 
@@ -67,8 +73,8 @@ class Crack(db.Model):
         db.session.commit()
         cmd = Cmd(
             cmd=self.cmd,
-            out_file=os.path.join(self.working_folder,  str(self.id), "cmd_output.txt"),
-            err_file=os.path.join(self.working_folder,  str(self.id), "cmd_err.txt"),
+            out_file=os.path.join(self.crack_folder, "cmd_output.txt"),
+            err_file=os.path.join(self.crack_folder, "cmd_err.txt"),
         )
         self.process_id = cmd.run()
         self.running = True
@@ -87,8 +93,8 @@ class Crack(db.Model):
         self.running = False
         self.end_date = datetime.now()
         self.end_mode = end_status_mode
-        self.nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
-        app.logger.debug("Crack Entity :: set_as_ended :: nb passwords found :: " + str(self.nb_password_found))
+        self._nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
+        app.logger.debug("Crack Entity :: set_as_ended :: nb passwords found :: " + str(self._nb_password_found))
         db.session.commit()
 
         FilesHelper.move_file_content(
@@ -100,6 +106,14 @@ class Crack(db.Model):
             hashes_file=self.request.hashes_path,
             found_hashes_file=self.output_file_path
         )
+
+    @property
+    def nb_password_found(self):
+        if self.end_date:
+            return self._nb_password_found
+        elif self.running:
+            return FilesHelper.nb_lines_in_file(self.potfile_path)
+        return 0
 
     @reconstructor
     def check_status(self):

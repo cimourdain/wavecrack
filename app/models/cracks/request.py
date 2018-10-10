@@ -18,13 +18,12 @@ from app.models.user import User
 from app.ref.close_modes import REQUESTS_CLOSE_MODES
 
 
-
 class CrackRequest(db.Model):
     __tablename__ = 'cracks_requests'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False, default="no name")
-    celery_request_id = db.Column(db.Text, nullable=False)
+    celery_request_id = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     session_id = db.Column(db.Text, nullable=False, default=str(uuid.uuid4()))
     _hashes_type_code = db.Column(db.Integer, nullable=False)
@@ -46,9 +45,9 @@ class CrackRequest(db.Model):
 
     def init_request_folder(self):
         self.session_id = str(uuid.uuid4())
-        if not FilesHelper.dir_exists(self.crack_folder):
-            app.logger.debug("create directory "+str(self.crack_folder))
-            os.mkdir(self.crack_folder)
+        if not FilesHelper.dir_exists(self.request_working_folder):
+            app.logger.debug("create directory "+str(self.request_working_folder))
+            os.mkdir(self.request_working_folder)
         FilesHelper.file_exists(self.outfile_path, create=True)
 
     @property
@@ -68,12 +67,12 @@ class CrackRequest(db.Model):
                 self._hashes_type_code = int(code)
 
     @property
-    def crack_folder(self):
+    def request_working_folder(self):
         return os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id)
 
     @property
     def outfile_path(self):
-        return os.path.join(self.crack_folder, "output.txt")
+        return os.path.join(self.request_working_folder, "output.txt")
 
     @property
     def hashes(self):
@@ -81,14 +80,14 @@ class CrackRequest(db.Model):
 
     @property
     def is_archived(self):
-        app.logger.debug("check if folder "+str(self.crack_folder)+" exists.")
-        return not FilesHelper.dir_exists(self.crack_folder)
+        app.logger.debug("check if folder "+str(self.request_working_folder)+" exists.")
+        return not FilesHelper.dir_exists(self.request_working_folder)
 
     @hashes.setter
     def hashes(self, hashes):
         # create hashes file (will be decremented of found passwords during process)
         self.hashes_path = FilesHelper.create_new_file(
-            file_path=self.crack_folder,
+            file_path=self.request_working_folder,
             file_name="hashes.txt",
             content=hashes
         )
@@ -96,11 +95,13 @@ class CrackRequest(db.Model):
         # create a copy with reference of original list of required passwords
         FilesHelper.copy_file(
             source=self.hashes_path,
-            target=os.path.join(self.crack_folder, "hashes_original.txt")
+            target=os.path.join(self.request_working_folder, "hashes_original.txt")
         )
 
         # save nb of password in original file
-        self.nb_password_to_find = FilesHelper.nb_lines_in_file(os.path.join(self.crack_folder, "hashes_original.txt"))
+        self.nb_password_to_find = FilesHelper.nb_lines_in_file(
+            os.path.join(self.request_working_folder, "hashes_original.txt")
+        )
 
     @property
     def dictionary_paths(self):
@@ -135,7 +136,7 @@ class CrackRequest(db.Model):
     @keywords.setter
     def keywords(self, keywords):
         keyword_file_path = FilesHelper.create_new_file(
-            file_path=self.crack_folder,
+            file_path=self.request_working_folder,
             file_name="keywords.txt",
             content=keywords
         )
@@ -155,7 +156,7 @@ class CrackRequest(db.Model):
     @mask.setter
     def mask(self, mask):
         self.mask_path = FilesHelper.create_new_file(
-            file_path=self.crack_folder,
+            file_path=self.request_working_folder,
             file_name="mask.hcmask",
             content=mask
         )
@@ -199,13 +200,12 @@ class CrackRequest(db.Model):
         """
         if self._dictionary_paths:
             for wordlist_file_path in self._dictionary_paths.split(','):
-                # create new crack
-                new_dict_crack = Crack()
+                app.logger.debug("Create new dictionary attack")
                 _, dict_filename = FilesHelper.split_path(wordlist_file_path)
-                new_dict_crack.name = "Dictionary: "+str(FilesHelper.remove_ext_from_filename(dict_filename))
-                new_dict_crack.working_folder = self.crack_folder
+                new_dict_crack = Crack("Dictionary: "+str(FilesHelper.remove_ext_from_filename(dict_filename)))
                 db.session.add(new_dict_crack)
                 db.session.commit()
+
                 self.cracks.append(new_dict_crack)
                 new_dict_crack.build_crack_cmd(
                     attack_mode=0,
@@ -213,12 +213,11 @@ class CrackRequest(db.Model):
                 )
 
         if self.mask_path:
-            app.logger.debug("Mask path is "+str(self.mask_path)+": launch a mask attack")
-            new_mask_crack = Crack()
-            new_mask_crack.name = "Mask crack"
-            new_mask_crack.working_folder = self.crack_folder
+            app.logger.debug("Mask path is "+str(self.mask_path)+": create a mask attack")
+            new_mask_crack = Crack(name="Mask crack")
             db.session.add(new_mask_crack)
             db.session.commit()
+
             self.cracks.append(new_mask_crack)
             new_mask_crack.build_crack_cmd(
                 attack_mode=3,
@@ -229,11 +228,11 @@ class CrackRequest(db.Model):
             )
 
         if self.bruteforce:
-            new_bf_crack = Crack()
-            new_bf_crack.name = "Bruteforce"
-            new_bf_crack.working_folder = self.crack_folder
+            app.logger.info("Create debug crack in request")
+            new_bf_crack = Crack(name="Bruteforce")
             db.session.add(new_bf_crack)
             db.session.commit()
+
             self.cracks.append(new_bf_crack)
             new_bf_crack.build_crack_cmd(
                 attack_mode=3,

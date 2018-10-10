@@ -1,5 +1,7 @@
 import os
+
 # third party imports
+import click
 from flask_migrate import Migrate, upgrade
 
 # local imports
@@ -14,8 +16,10 @@ migrate = Migrate(app, db)
 from app.models.cracks.request import CrackRequest  # do not remove
 from app.models.cracks.entity import Crack  # do not remove
 
+
 @app.cli.command()
-def deploy():
+@click.argument('users')
+def deploy(users):
     # init migration
 
 
@@ -28,4 +32,5 @@ def deploy():
     upgrade()
 
     # insert default users
-    User.insert_default_users()
+    if users == "y":
+        User.insert_default_users()

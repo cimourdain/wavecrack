@@ -1,10 +1,5 @@
-# standard imports
-import uuid
-import os
-
 # local imports
 from server import app
-from app.classes.cmd import Cmd
 from app.helpers.files import FilesHelper
 from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
@@ -18,44 +13,31 @@ DEFAULT_OPTIONS_PER_ATTACK_MODE = {
 }
 
 
-class Crack(object):
+class CrackCmdBuilder(object):
 
-    def __init__(self, input_hashfile, hashes_type_code, attack_mode_code, attack_files, options,
-                 output_path, session_id=None):
+    def __init__(self, source_crack, attack_mode_code, attack_files, options, use_potfile=True):
 
+        app.logger.info("Create new crack "+str(source_crack.id))
+        self.source_crack = source_crack
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
-        self.working_folder = None
-        self.input_hashfile_abs_path = None
-        self.hashes_type_code = 0
-        self.output_abs_path = None
-        self.options = []
+
         self.attack_mode_code = 0
         self.attack_files = []
-        self.session_id = None
+        self.options = []
 
         self.set_attack_mode_code(attack_mode_code)
-        self.set_input_hashfile(input_hashfile, output_path=output_path)
-        self.set_hashes_type_code(hashes_type_code)
 
         self.set_default_options(DEFAULT_OPTIONS_PER_ATTACK_MODE)
         self.set_options(options)
+        if use_potfile:
+            self.set_potfile_option()
+        self.set_session_id_option()
 
         self.set_attack_files(attack_files)
-        self.set_session_id(session_id)
 
     """
-    SET HASHFILE
+    SET PARAMS
     """
-    def set_input_hashfile(self, input_hashfile, output_path):
-        self.working_folder = os.path.dirname(os.path.abspath(input_hashfile))
-
-        self.input_hashfile_abs_path = input_hashfile
-        FilesHelper.file_exists(output_path, create=True)
-        self.output_abs_path = output_path
-
-    def set_hashes_type_code(self, code):
-        self.hashes_type_code = int(code)
-
     def set_attack_mode_code(self, attack_mode_code):
         if str(attack_mode_code) in ATTACK_MODES:
             self.attack_mode_code = int(attack_mode_code)
@@ -76,16 +58,27 @@ class Crack(object):
         elif FilesHelper.file_exists(file_path=f):
             self.attack_files.append(f)
 
-    def set_session_id(self, session_id):
-        if session_id:
-            self.set_option({
-                "option": "--session",
-                "value": session_id
-            })
-
     """
     SET OPTIONS
     """
+    def set_potfile_option(self):
+        if self.source_crack.potfile_path:
+            self.set_option({
+                "option": "--potfile-path",
+                "value": self.source_crack.potfile_path
+            })
+        else:
+            self.set_option({
+                "option": "--potfile-disable"
+            })
+
+    def set_session_id_option(self):
+        if self.source_crack.request.session_id:
+            self.set_option({
+                "option": "--session",
+                "value": self.source_crack.request.session_id
+            })
+
     def set_default_options(self, default_options_per_attack_mode):
         for attack_mode, options in default_options_per_attack_mode.items():
             app.logger.debug("crack :: set_default_options :: key: "+str(attack_mode))
@@ -110,6 +103,7 @@ class Crack(object):
         if self.option_allowed(option):
             new_option = CrackOption(option.get("option", None), option.get("value", None))
             if new_option.option:
+                app.logger.debug("new option is valid and object created, add it to self.options")
                 self.options.append(new_option)
 
                 if new_option.option == "--attack-mode":
@@ -128,10 +122,10 @@ class Crack(object):
     def build_run_cmd(self):
         cmd = "{} -m {} -a {} -o {} {} {} {}".format(
             self.hashcat_cmd,
-            self.hashes_type_code,
+            self.source_crack.request.hashes_type_code,
             self.attack_mode_code,
-            self.output_abs_path,
-            self.input_hashfile_abs_path,
+            self.source_crack.output_file_path,
+            self.source_crack.request.hashes_path,
             " ".join(self.attack_files),
             self.build_cmd_options(),
         )
@@ -141,6 +135,7 @@ class Crack(object):
 
 class CrackOption(object):
     def __init__(self, option, value=None):
+        app.logger.info("Create new crack option "+str(option)+" : "+str(value))
         self.option = None
         self.value = None
 
@@ -150,6 +145,7 @@ class CrackOption(object):
     def set_option(self, option):
         if option and option in HASHCAT_OPTIONS:
             self.option = option
+        app.logger.debug("option name set to " + str(self.option))
         return True
 
     def set_value(self, value):
@@ -157,17 +153,27 @@ class CrackOption(object):
             if "values" in HASHCAT_OPTIONS[self.option] and str(value) in HASHCAT_OPTIONS[self.option]["values"]:
                 self.value = value
             elif HASHCAT_OPTIONS[self.option]["type"]:
+                app.logger.debug("check if option value "+str(value)+" matches the required type "
+                                 + str(HASHCAT_OPTIONS[self.option]["type"]))
                 if HASHCAT_OPTIONS[self.option]["type"] == "Num" and TextHelper.is_int(value):
+                    app.logger.debug(str(value) + " is a valid integer")
                     self.value = value
                 elif HASHCAT_OPTIONS[self.option]["type"] == "File" and FilesHelper.file_exists(value):
+                    app.logger.debug(str(value) + " is a valid file")
                     self.value = value
                 elif HASHCAT_OPTIONS[self.option]["type"] == "Dir" and FilesHelper.dir_exists(value):
+                    app.logger.debug(str(value) + " is a valid directory")
                     self.value = value
                 elif HASHCAT_OPTIONS[self.option]["type"] in ["Str", "Rule", "CS"] and isinstance(value, basestring):
+                    app.logger.debug(str(value) + " is a valid string")
                     self.value = value
                 elif HASHCAT_OPTIONS[self.option]["type"] == "Char" \
                         and isinstance(value, basestring) and len(value) == 1:
+                    app.logger.debug(str(value) + " is a valid char")
                     self.value = value
+                if not self.value:
+                    app.logger.error(str(value) + " is not a valid "+str(HASHCAT_OPTIONS[self.option]["type"]))
+        app.logger.debug("option value set to "+str(self.value))
         return True
 
     def get_option_cmd(self):

@@ -123,3 +123,8 @@ class FilesHelper(object):
         else:
             path_dir, path_file = os.path.split(path)
             return path_dir, FilesHelper.remove_ext_from_filename(path_file)
+
+    @staticmethod
+    def path_to_list(path_str):
+        path = os.path.normpath(path_str)
+        return path.split(os.sep)

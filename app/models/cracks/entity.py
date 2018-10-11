@@ -83,28 +83,31 @@ class Crack(db.Model):
         return cmd
 
     def set_as_ended(self, end_status_mode="UNDEFINED"):
+
+        # if crack is currently running, move output content to request output
+        if self.running:
+            app.logger.debug("move cracked hashes from {} to request main output {}".format(
+                self.output_file_path,
+                self.request.outfile_path
+            ))
+            FilesHelper.move_file_content(
+                source_path=self.output_file_path,
+                target_path=self.request.outfile_path
+            )
+
+            app.logger.debug("remove cracked hashes from {} to {}".format(
+                self.request.hashes_path,
+                self.output_file_path
+            ))
+            FilesHelper.remove_found_hashes_from_hashes_file(
+                hashes_file=self.request.hashes_path,
+                found_hashes_file=self.output_file_path
+            )
+
         self.running = False
         self.end_date = datetime.now()
         self.end_mode = end_status_mode
         db.session.commit()
-
-        app.logger.debug("move cracked hashes from {} to request main output {}".format(
-            self.output_file_path,
-            self.request.outfile_path
-        ))
-        FilesHelper.move_file_content(
-            source_path=self.output_file_path,
-            target_path=self.request.outfile_path
-        )
-
-        app.logger.debug("remove cracked hashes from {} to {}".format(
-            self.request.hashes_path,
-            self.output_file_path
-        ))
-        FilesHelper.remove_found_hashes_from_hashes_file(
-            hashes_file=self.request.hashes_path,
-            found_hashes_file=self.output_file_path
-        )
 
     @property
     def nb_password_found(self):

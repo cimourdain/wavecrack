@@ -43,12 +43,6 @@ class Crack(db.Model):
         FilesHelper.file_exists(file_path=output_path, create=True)
         return output_path
 
-    @property
-    def potfile_path(self):
-        potfile_path = os.path.join(self.crack_folder, str(self.id), "crack.pot")
-        FilesHelper.file_exists(potfile_path, create=True)
-        return potfile_path
-
     def build_crack_cmd(self, attack_mode, attack_file, crack_options=None, use_potfile=True):
         options = []
         if self.request.extra_options:
@@ -62,8 +56,7 @@ class Crack(db.Model):
             source_crack=self,
             attack_mode_code=attack_mode,
             attack_files=attack_file,
-            options=options,
-            use_potfile=use_potfile
+            options=options
         )
         self.cmd = new_crack_class.build_run_cmd()
 
@@ -93,8 +86,6 @@ class Crack(db.Model):
         self.running = False
         self.end_date = datetime.now()
         self.end_mode = end_status_mode
-        self._nb_password_found = FilesHelper.nb_lines_in_file(self.output_file_path)
-        app.logger.debug("Crack Entity :: set_as_ended :: nb passwords found :: " + str(self._nb_password_found))
         db.session.commit()
 
         FilesHelper.move_file_content(
@@ -109,11 +100,7 @@ class Crack(db.Model):
 
     @property
     def nb_password_found(self):
-        if self.end_date:
-            return self._nb_password_found
-        elif self.running:
-            return FilesHelper.nb_lines_in_file(self.potfile_path)
-        return 0
+        return FilesHelper.nb_lines_in_file(self.output_file_path)
 
     @reconstructor
     def check_status(self):

@@ -1,11 +1,12 @@
 # coding: utf8
 
 # third party imports
-from flask import Blueprint, render_template, jsonify, request, flash, redirect, url_for
+from flask import Blueprint, render_template
 from flask_login import login_required
 import psutil
 
 # local imports
+from server import app
 from app.classes.cmd import Cmd
 from app.models.cracks.entity import Crack
 
@@ -21,7 +22,8 @@ def server_load():
 
     # fetch all haschat instances
     haschat_pids = Cmd.get_process_pids("hashcat")
-    haschat_pids = [] if not haschat_pids else haschat_pids[:-1].split(" ")
+    app.logger.debug("Hashcat processes found "+str(haschat_pids))
+    haschat_pids = [] if not haschat_pids else haschat_pids[:-1].split("\n")
 
     running_cracks = Crack.query.filter(Crack.process_id.in_(haschat_pids)).all()
 

@@ -33,6 +33,7 @@ class CrackRequest(db.Model):
     _dictionary_paths = db.Column(db.Text, nullable=True)
     mask_path = db.Column(db.Text, nullable=True)
     bruteforce = db.Column(db.Boolean, nullable=False, default=False)
+    use_potfile = db.Column(db.Boolean, nullable=False, default=False)
     _extra_options = db.Column(db.Text, nullable=True)
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     end_date = db.Column(db.DateTime, nullable=True)
@@ -75,13 +76,26 @@ class CrackRequest(db.Model):
         return os.path.join(self.request_working_folder, "output.txt")
 
     @property
+    def potfile_path(self):
+        if self.use_potfile:
+            potfile_path = os.path.join(self.request_working_folder, "request.pot")
+            FilesHelper.file_exists(potfile_path, create=True)
+            return potfile_path
+
+        return None
+
+    @property
     def hashes(self):
         return FilesHelper.get_file_content(self.hashes_path)
 
     @property
     def is_archived(self):
-        app.logger.debug("check if folder "+str(self.request_working_folder)+" exists.")
-        return not FilesHelper.dir_exists(self.request_working_folder)
+        app.logger.debug("Nb folders in directory {} : {}".format(
+                             str(self.request_working_folder),
+                             str(FilesHelper.count_folders_in_dir(self.request_working_folder))
+                        )
+        )
+        return True if not FilesHelper.count_folders_in_dir(self.request_working_folder) else False
 
     @hashes.setter
     def hashes(self, hashes):
@@ -270,9 +284,9 @@ class CrackRequest(db.Model):
 
     @property
     def nb_password_found(self):
-        if not self.is_archived:
-            return FilesHelper.nb_lines_in_file(self.outfile_path)
-        return 0
+        if self.use_potfile:
+            return FilesHelper.nb_lines_in_file(self.potfile_path)
+        return FilesHelper.nb_lines_in_file(self.outfile_path)
 
     @property
     def status(self):

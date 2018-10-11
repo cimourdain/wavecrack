@@ -13,7 +13,3 @@ class CrackHelper(object):
             random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6)
         )
         return output_file_name_prefix + output_file_name_suffix
-
-    @staticmethod
-    def crack(options):
-        pass

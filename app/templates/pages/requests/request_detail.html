@@ -50,47 +50,51 @@
               <div class="card-body">
                 <h5 class="card-title">{{ crack.name }}</h5>
                 {% if crack.start_date %}
-                <h6 class="card-subtitle mb-2 text-muted">{{ crack.nb_password_found }} password found.</h6>
-                <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                {% if crack.end_date %}
-                    <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    <p>End status: {{ crack.end_status_mode }}</p>
-                {% else %}
-                    <p>Status: running {% if current_user.is_admin %} on {{ crack.process_id }}{% endif %}</p>
-                    <a href="{{ url_for('cracks_get.download_crack_potfile', crack_id=crack.id) }}"
-                         class="card-link">Potfile
-                      </a><br />
-                    <div>
-                        <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
-                            <button type="submit" class="btn btn-danger">Cancel crack</button>
-                        </form>
-                    </div>
-                {% endif %}
 
-                {% if current_user.is_admin %}
-                <p class="card-text">{{ crack.cmd }}</p>
-                {% endif %}
+                    <h6 class="card-subtitle mb-2 text-muted">{{ crack.nb_password_found }} password found.</h6>
 
-                  {% if  crack.end_date %}
-                      <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
-                         class="card-link">Output
-                      </a><br />
+                    <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    {% if crack.end_date %}
+                        <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <p>End status: {{ crack.end_status_mode }}</p>
+                    {% else %}
+                        <p>Status: running {% if current_user.is_admin %} on {{ crack.process_id }}{% endif %}</p>
 
-                      <a href="{{ url_for('cracks_get.download_crack_cmd_outfile', crack_id=crack.id) }}"
-                         class="card-link">Hashcat output
-                      </a><br />
-                      <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
-                         class="card-link">Hashcat errors
-                      </a>
+                        <div>
+                            <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger">Cancel crack</button>
+                            </form>
+                        </div>
+                    {% endif %}
 
-                  {% endif %}
+                    {# Display hashcat command for admin #}
+                    {% if current_user.is_admin %}
+                    <p class="card-text">{{ crack.cmd }}</p>
+                    {% endif %}
+
+
+                    {# Display hashcat command outputs if crack #}
+                    <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
+                             class="card-link">Output
+                    </a><br />
+                    <a href="{{ url_for('cracks_get.download_crack_cmd_outfile', crack_id=crack.id) }}"
+                     class="card-link">Hashcat output
+                    </a><br />
+                    <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
+                     class="card-link">Hashcat errors
+                    </a>
+
+                {#  // if crack is not started#}
                 {% else %}
                     <p>Not started</p>
                 {% endif %}
               </div>
             </div>
         </div>
+    {# // end of cracks loop#}
     {% endfor %}
     </div>
+
+    {# // request is not achived#}
     {% endif %}
 {% endblock %}

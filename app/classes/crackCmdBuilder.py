@@ -15,7 +15,7 @@ DEFAULT_OPTIONS_PER_ATTACK_MODE = {
 
 class CrackCmdBuilder(object):
 
-    def __init__(self, source_crack, attack_mode_code, attack_files, options, use_potfile=True):
+    def __init__(self, source_crack, attack_mode_code, attack_files, options):
 
         app.logger.info("Create new crack "+str(source_crack.id))
         self.source_crack = source_crack
@@ -29,8 +29,7 @@ class CrackCmdBuilder(object):
 
         self.set_default_options(DEFAULT_OPTIONS_PER_ATTACK_MODE)
         self.set_options(options)
-        if use_potfile:
-            self.set_potfile_option()
+        self.set_potfile_option(use_potfile=self.source_crack.request.use_potfile)
         self.set_session_id_option()
 
         self.set_attack_files(attack_files)
@@ -61,11 +60,11 @@ class CrackCmdBuilder(object):
     """
     SET OPTIONS
     """
-    def set_potfile_option(self):
-        if self.source_crack.potfile_path:
+    def set_potfile_option(self, use_potfile=False):
+        if not use_potfile:
             self.set_option({
                 "option": "--potfile-path",
-                "value": self.source_crack.potfile_path
+                "value": self.source_crack.request.potfile_path
             })
         else:
             self.set_option({

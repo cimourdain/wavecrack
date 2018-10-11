@@ -178,7 +178,10 @@ function UpdateHashExample()
 
   <!-- OPTIONS -->
   <div class="tab-pane fade" id="nav-options" role="tabpanel" aria-labelledby="nav-options">
-      No extra option available.
+      <div class="form-group">
+            {{ form.use_potfile(readonly=confirmation) }}
+            {{ form.use_potfile.label }}
+      </div>
   </div>
 
 </form>

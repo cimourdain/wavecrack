@@ -110,6 +110,9 @@ class FilesHelper(object):
 
     @staticmethod
     def nb_lines_in_file(file_path):
+        if not FilesHelper.file_exists(file_path=file_path, create=False):
+            return 0
+
         return sum(1 for line in open(file_path))
 
     @staticmethod
@@ -128,3 +131,14 @@ class FilesHelper(object):
     def path_to_list(path_str):
         path = os.path.normpath(path_str)
         return path.split(os.sep)
+
+    @staticmethod
+    def count_folders_in_dir(path_str):
+        """
+        method used to count nb of directories in path
+        (created to check nb of dir in request folder > determine if archived)
+
+        :param path_str: <str>
+        :return: <int> (nb of dir in path)
+        """
+        return sum(os.path.isdir(os.path.join(path_str, i)) for i in os.listdir(path_str))

@@ -61,6 +61,8 @@ class AddCrackRequestForm(FlaskForm):
         choices=get_durations_as_tuple()
     )
 
+    use_potfile = BooleanField("Use potfile")
+
     submit_btn = SubmitField(label='Sumbit')
     confirm_btn = SubmitField(label='Confirm')
 
@@ -129,6 +131,12 @@ class AddCrackRequestForm(FlaskForm):
     @staticmethod
     def get_duration():
         return int(request.form.get("duration", 3))
+
+    @staticmethod
+    def get_use_potfile():
+        if request.form.get('use_potfile', 'n') == 'y':
+            return True
+        return False
 
     @staticmethod
     def is_confirmation():

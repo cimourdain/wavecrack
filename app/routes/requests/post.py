@@ -41,13 +41,14 @@ def get_filelist_checkbox_builder_dict(name, files_list):
 
 def create_new_crack_request(name, user_id, hashes, hashes_type_code,
                              hashed_file_contains_usernames, duration, wordlist_files=None,
-                             keywords=None, mask=None, rules=None, bruteforce=None):
+                             keywords=None, mask=None, rules=None, bruteforce=None, use_potfile=False):
     app.logger.debug("celery :: hashcat :: create new crack request")
     new_crack_request = CrackRequest()
     new_crack_request.init_request_folder()
     new_crack_request.name = name
     new_crack_request.user_id = user_id
     new_crack_request.duration = duration
+    new_crack_request.use_potfile = use_potfile
 
     new_crack_request.hashes_type_code = hashes_type_code
     new_crack_request.hashed_file_contains_usernames = hashed_file_contains_usernames
@@ -122,6 +123,7 @@ def add_new_crack_request():
         rules = AddCrackRequestForm.get_rules_files()
         bruteforce = AddCrackRequestForm.get_bruteforce()
         duration = AddCrackRequestForm.get_duration()
+        use_potfile = AddCrackRequestForm.get_use_potfile()
 
         if not AddCrackRequestForm.is_confirmation():
             # render confirmation page if confirm button not submitted
@@ -139,7 +141,9 @@ def add_new_crack_request():
                 keywords=keywords,
                 mask=mask,
                 rules=rules,
-                bruteforce=bruteforce)
+                bruteforce=bruteforce,
+                use_potfile=use_potfile
+            )
 
             # build cracks for request
             new_crack_request.prepare_cracks()

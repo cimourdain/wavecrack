@@ -1,27 +1,23 @@
 Wavecrack
 =========
 
-Description
------------
+# Description
 A user-friendly Web interface to share an hashcat cracking box among multiple users with some pre-defined options.  
   
-Screenshots
------------
+# Screenshots
 * The homepage ![The homepage](screenshots/1_homepage.png?raw=true)  
 * Adding an hash to crack ![Adding an hash to crack](screenshots/2_adding_an_hash.png?raw=true)  
 * Seeing the results and some stats ![Seeing the results and some stats](screenshots/3_seeing_results_and_stats.png?raw=true)  
   
   
-Outline
--------
+# Outine
 * This Web application can be used to launch **asynchronous password cracks with hashcat**.  
 * The interface tries to be as **user-friendly** as possible and facilitates the password cracking method choice and to **automate the succession of various attack modes**.  
 * It also displays **statistics regarding the cracked passwords** and allows to **export the cracked password list in CSV**.  
 * The application is designed to be used in a multi-user environment with a **strict segregation between the cracking results of different users**: the user authentication can be done through an **LDAP directory or basic auth**.  
   
   
-Usage
------
+# Usage
 Wavecrack can be used to do the following:
 * Add new password hashes, choose the **attack mode and the crack duration**
 * View the **past and current cracks** for your user with **statistics and graphs**
@@ -32,20 +28,14 @@ The **attack modes** are followed in the order they are displayed on the hash su
 It is also possible to stop a crack. However, **every cancelation is final.**  
 A limit to the amount of **concurrent cracks** can be defined in the settings in order not to reduce the current cracks performance.  
   
-  
-Requirements
-------------
+# Install
+## Pre-requisites
 * python 2.7 (not compatible with python 3)
 * [hashcat](https://hashcat.net/hashcat/): follow [these instructions](https://bugs.kali.org/view.php?id=3432#c6062) for CPU only usage on a Kali linux host 
-* flask (>=0.10.1)
-* celery (>=3.1.18)
-* SQLite (>=3.8.7.4)
-* rabbitmq-server (>= 3.4.3)
 * Rules for hashcat ([examples](https://hashcat.net/wiki/doku.php?id=rule_based_attack))
-* Wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
 
-Installation
-------------
+
+## Modules
 * Install the RabbitMQ server and `python-ldap` requirements
 Debian :
 ```
@@ -57,29 +47,46 @@ Arch:
 # yaourt -S libsm libsasl2 rabbitmq
 ```
 
-  
-* Install the python [requirements](requirements.txt)
+## Python modules
 ```
 $ pip install -r requirements.txt
 ```
-  
-* Create a `cracker/app_settings.py` configuration file from the [`cracker/app_settings.py.example`](cracker/app_settings.py.example) file and notably edit the `Mandatory settings` section:
-    * The path of hashcat
-    * The RabbitMQ connection string: by default, the guest/guest account is used. Be sure to harden your installation
-    * The path of the SQLite database
-    * The path of the hashcat rules
-    * The path of the wordlists 
-    * The LDAP parameters:
-        * IP address
-        * port
-        * LDAP database for the users
-        * Base DN
-  
-* Initialize the local database linked in the `cracker/app_settings.py` configuration file
+
+
+## Setup
+### General
+Setup your project var in config.py
+
+Mandatory: set default users
+
+### Database
+Db initialization
 ```
-$ sqlite3 base.db < setup_resources/base_schema.sql
+$ export FLASK_APP=migrate
+$ flask db init # if no database exists
+$ flask db migrate # for every update in models > generate alembic files
+$ flask deploy y # update model and create default users from config DEFAULT_USERS (replace y by n to not create default users=
 ```
-  
+
+After model update
+```
+$ export FLASK_APP=migrate
+$ flask db migrate # for every update in models > generate alembic files
+```
+### Words dictionaries
+# Setup Wordlists Folder
+Setup words folder in config.py (DIR_LOCATIONS/wordlists)
+
+# Add Dictionaries
+* Download wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
+* Add downloaded wordlists files in the wordlist folder.
+    - Wordlists files must be inserted in folders using ISO language codes (cf. app/ref/languages_list)
+    - Wordlists files with multi languages must be inserted into a folder called misc
+    
+Note: Wordlists languages folders names can be either upper or lowercases. 
+
+# Launch
+# Rabbit
 * Start the RabbitMQ server
 ```
 # service rabbitmq-server start
@@ -89,12 +96,15 @@ or
 # systemctl enable rabbitmq 
 # systemctl start rabbitmq
 ```
-  
+
+# Celery
 * Start Celery from the application folder
 ```
-$ celery worker -A cracker.celery
+$ celery -A worker.celery worker
 ```
-  
+
+# App
+* (optional) Set FLASK_CONFIG environement variable with either developement, testing or production (developement used by default)
 * Launch the Flask Web server
     * Directly from the `server.py` file: this mode is not suitable for production purpose
     ```
@@ -109,15 +119,3 @@ $ celery worker -A cracker.celery
 
 Finally, if you don't want to setup your own VM, you can use the Docker-based process described in the [`docker`](Docker/) folder.  
   
-  
-Copyright and license
----------------------
-All product names, logos, and brands are property of their respective owners.  
-All resources published in wavecrack are free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-See the GNU General Public License for more details.
-  
-  
-Contact
--------
-* Cyprien Oger < cyprien.oger at wavestone d0t com >
-* CERT-W < cert at wavestone d0t com >

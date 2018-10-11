@@ -58,7 +58,7 @@
                         <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                         <p>End status: {{ crack.end_status_mode }}</p>
                     {% else %}
-                        <p>Status: running {% if current_user.is_admin %} on {{ crack.process_id }}{% endif %}</p>
+                        <p>Status: running {% if current_user.is_admin %} <small>process {{ crack.process_id }}</small>{% endif %}</p>
 
                         <div>
                             <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">

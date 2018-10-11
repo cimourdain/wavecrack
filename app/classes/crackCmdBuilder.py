@@ -7,9 +7,9 @@ from app.helpers.word_dict import WordDictHelper
 
 
 DEFAULT_OPTIONS_PER_ATTACK_MODE = {
-    0: [{
-        "option": "--show"
-    }]
+    # 0: [{
+    #     "option": "--show"
+    # }]
 }
 
 
@@ -61,7 +61,7 @@ class CrackCmdBuilder(object):
     SET OPTIONS
     """
     def set_potfile_option(self, use_potfile=False):
-        if not use_potfile:
+        if use_potfile:
             self.set_option({
                 "option": "--potfile-path",
                 "value": self.source_crack.request.potfile_path

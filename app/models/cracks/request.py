@@ -80,8 +80,9 @@ class CrackRequest(db.Model):
         if self.use_potfile:
             potfile_path = os.path.join(self.request_working_folder, "request.pot")
             FilesHelper.file_exists(potfile_path, create=True)
+            app.logger.debug("get potfile_path :: potfile_path")
             return potfile_path
-
+        app.logger.debug("get potfile_path :: request does not use potfile")
         return None
 
     @property
@@ -125,6 +126,9 @@ class CrackRequest(db.Model):
                 yield d_filename
 
     def add_dictionary_paths(self, list_of_wordlists, ref=False):
+        app.logger.debug("request :: add_dictionary_paths :: add {} to list of dictionaries".format(
+            str(list_of_wordlists))
+        )
         if not isinstance(list_of_wordlists, list):
             list_of_wordlists = [list_of_wordlists]
 
@@ -132,8 +136,10 @@ class CrackRequest(db.Model):
 
         if ref:
             prepath = app.config["DIR_LOCATIONS"]["wordlists"]
+            app.logger.debug("use prepath "+str(prepath))
         else:
-            prepath = self.crack_folder
+            prepath = self.request_working_folder
+            app.logger.debug("use prepath " + str(prepath))
 
         for d in list_of_wordlists:
             if d not in current_dict_path_list:
@@ -235,10 +241,10 @@ class CrackRequest(db.Model):
             self.cracks.append(new_mask_crack)
             new_mask_crack.build_crack_cmd(
                 attack_mode=3,
-                attack_file=os.path.join(new_mask_crack.working_folder, "mask.hcmask"),
-                crack_options=[{
-                    "option": "--show"  # mask crack seems to require --show option
-                }]
+                attack_file=os.path.join(self.request_working_folder, "mask.hcmask"),
+                # crack_options=[{
+                #     "option": "--show"  # mask crack seems to require --show option
+                # }]
             )
 
         if self.bruteforce:
@@ -286,7 +292,14 @@ class CrackRequest(db.Model):
     def nb_password_found(self):
         if self.use_potfile:
             return FilesHelper.nb_lines_in_file(self.potfile_path)
-        return FilesHelper.nb_lines_in_file(self.outfile_path)
+
+        if self.is_finished():
+            return FilesHelper.nb_lines_in_file(self.outfile_path)
+        else:
+            nb_passwords = 0
+            for c in self.cracks:
+                nb_passwords += c.nb_password_found
+            return nb_passwords
 
     @property
     def status(self):

@@ -176,8 +176,4 @@ def kill_all_cracks_in_request(request_id):
             crack.force_close()
 
     # render request page details
-    return render_template(
-        'pages/requests/request_detail.html',
-        title="Request detail: " + request.name,
-        request=request
-    )
+    return redirect(url_for('requests_get.get_unique_request', request_id=request_id))

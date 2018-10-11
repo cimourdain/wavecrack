@@ -142,3 +142,8 @@ class FilesHelper(object):
         :return: <int> (nb of dir in path)
         """
         return sum(os.path.isdir(os.path.join(path_str, i)) for i in os.listdir(path_str))
+
+    @staticmethod
+    def delete_directory(dir_path):
+        rmtree(dir_path, ignore_errors=True)
+        return True

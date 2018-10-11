@@ -177,3 +177,17 @@ def kill_all_cracks_in_request(request_id):
 
     # render request page details
     return redirect(url_for('requests_get.get_unique_request', request_id=request_id))
+
+
+@requests_post.route('/request/delete/<request_id>', methods=["POST"])
+@login_required
+def delete_request(request_id):
+    request = get_request(request_id)
+
+    if request:
+        FilesHelper.delete_directory(request.request_working_folder)
+
+        db.session.delete(request)
+        db.session.commit()
+
+    return redirect(url_for('requests_get.get_all_user_request'))

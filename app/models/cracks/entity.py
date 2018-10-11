@@ -23,7 +23,6 @@ class Crack(db.Model):
     cmd = db.Column(db.Text, nullable=True)
     process_id = db.Column(db.Integer, nullable=True)
     start_date = db.Column(db.DateTime, nullable=True)
-    running = db.Column(db.Boolean, nullable=False, default=False)
     end_date = db.Column(db.DateTime, nullable=True)
     end_mode = db.Column(db.String(255), nullable=True)
     _nb_password_found = db.Column(db.Integer, nullable=False, default=0)
@@ -42,6 +41,12 @@ class Crack(db.Model):
         output_path = os.path.join(self.crack_folder, "output.txt")
         FilesHelper.file_exists(file_path=output_path, create=True)
         return output_path
+
+    @property
+    def running(self):
+        if self.start_date and not self.end_date:
+            return True
+        return False
 
     def build_crack_cmd(self, attack_mode, attack_file, crack_options=None, use_potfile=True):
         options = []
@@ -70,7 +75,6 @@ class Crack(db.Model):
             err_file=os.path.join(self.crack_folder, "cmd_err.txt"),
         )
         self.process_id = cmd.run()
-        self.running = True
         db.session.commit()
 
         app.logger.debug("Crack Entity :: run :: wait for process to finish")
@@ -104,7 +108,6 @@ class Crack(db.Model):
                 found_hashes_file=self.output_file_path
             )
 
-        self.running = False
         self.end_date = datetime.now()
         self.end_mode = end_status_mode
         db.session.commit()

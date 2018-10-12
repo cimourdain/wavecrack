@@ -63,22 +63,40 @@ class CrackRequest(db.Model):
 
     @property
     def hashes_type_label(self):
+        """
+        property to get hash type label from hashes_type_code.
+        The method search in ref HASH_LIST for the label
+        :return: <str>
+        """
         for h in HASHS_LIST:
             if int(h["code"]) == int(self.hashes_type_code):
                 return h["name"]
-
-
+        return ""
 
     @property
     def request_working_folder(self):
+        """
+        Method return request working folder
+        working folder : output folder from config + session_id
+        :return:
+        """
         return os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id)
 
     @property
     def outfile_path(self):
+        """
+        return output file path, output file is on request_working folder root)
+        :return: <str> output file path
+        """
         return os.path.join(self.request_working_folder, "output.txt")
 
     @property
     def potfile_path(self):
+        """
+        Retur potfile path (if request uses potfile)
+        potfile is in request_working_folder root path
+        :return:
+        """
         if self.use_potfile:
             potfile_path = os.path.join(self.request_working_folder, "request.pot")
             FilesHelper.file_exists(potfile_path, create=True)
@@ -89,19 +107,17 @@ class CrackRequest(db.Model):
 
     @property
     def hashes(self):
+        """
+        :return: list of remaining hashes to crack (= content of request hashes file)
+        """
         return FilesHelper.get_file_content(self.hashes_path)
 
     @property
-    def is_archived(self):
-        app.logger.debug("Nb folders in directory {} : {}".format(
-                             str(self.request_working_folder),
-                             str(FilesHelper.count_folders_in_dir(self.request_working_folder))
-                        )
-        )
-        return True if not FilesHelper.count_folders_in_dir(self.request_working_folder) else False
-
-    @property
     def dictionary_paths(self):
+        """
+        generator returning list of request dictionaries (keywords + dicts)
+        :return:
+        """
         if self._dictionary_paths:
             for d in self._dictionary_paths.split(','):
                 d_folder, d_filename = FilesHelper.split_path(d, return_file_ext=False)
@@ -109,27 +125,59 @@ class CrackRequest(db.Model):
 
     @property
     def keywords(self):
+        """
+        return content of keyword file.
+        Parse all request dictionnaries from self._dictionary_paths.
+            * Return value if path not in the config dict folder
+        :return: <str> / None
+        """
         for d in self._dictionary_paths.split(','):
             if not d.startswith(app.config["DIR_LOCATIONS"]["wordlists"]):
                 return FilesHelper.get_file_content(d)
-
-    @property
-    def mask(self):
-        return FilesHelper.get_file_content(self.mask_path)
+        return None
 
     @property
     def has_mask(self):
+        """
+        Check if request has a mask
+        :return: <bool>
+        """
         if self.mask_path and FilesHelper.file_exists(self.mask_path):
             return True
         return False
 
     @property
+    def mask(self):
+        """
+        :return: content of mask file
+        """
+        if self.has_mask:
+            return FilesHelper.get_file_content(self.mask_path)
+        return None
+
+    @property
+    def has_rules(self):
+        """
+        Check if rules_path property is not empty
+        :return:
+        """
+        return True if self.rules_path else False
+
+    @property
     def rules(self):
-        for d in self.rules_path.split(','):
-            yield d
+        """
+        Generator to yield each rule file path
+        :return:
+        """
+        if self.has_rules:
+            for d in self.rules_path.split(','):
+                yield d
 
     @property
     def extra_options(self):
+        """
+        :return: return content of request options as a list of dict (loaded from json in db)
+        """
         if self._extra_options:
             app.logger.debug("extra options: "+str(self._extra_options))
             return json.loads(self._extra_options)
@@ -138,6 +186,13 @@ class CrackRequest(db.Model):
 
     @property
     def nb_password_found(self):
+        """
+        function to check nb of passwords found
+            * from potfile (if potfile in use)
+            * from output file if all cracks are finished
+            * parsing all cracks outputs if cracks are running
+        :return: <int>
+        """
         if self.use_potfile:
             return FilesHelper.nb_lines_in_file(self.potfile_path)
 
@@ -151,6 +206,10 @@ class CrackRequest(db.Model):
 
     @property
     def status(self):
+        """
+        return current request status as string
+        :return: <str>
+        """
         if self.is_archived:
             return "archived"
 
@@ -164,37 +223,69 @@ class CrackRequest(db.Model):
 
     @property
     def cracks_progress(self):
+        """
+        get % of cracks finished (nb of finished crack / nb total of cracks)
+        :return: <float>
+        """
         if not self.cracks:
             return 0
 
         nb_finished_cracks = 0
         for c in self.cracks:
-            if c.end_date:
+            if c.is_finished:
                 nb_finished_cracks += 1
 
         return round((float(nb_finished_cracks) / len(self.cracks)) * 100, 2)
 
     @property
     def password_progress(self):
+        """
+        get % of password found (nb password found / nb total of passwords to find)
+        :return: <float>
+        """
         if not self.nb_password_to_find:
             return 0
 
         return round((float(self.nb_password_found) / self.nb_password_to_find)*100, 2)
 
     @property
-    def is_expired(self):
-        return (self.start_date + timedelta(days=self.duration)) <= datetime.now()
-
-    @property
     def is_finished(self):
+        """
+        check if request is finished (all cracks have en end_date)
+        :return:
+        """
         for c in self.cracks:
-            if not c.end_mode:
+            if not c.is_finished:
                 return False
 
         self.end_mode = "ALL_PERFORMED"
         db.session.commit()
 
         return True
+
+    @property
+    def is_expired(self):
+        """
+        check if request is expired (duration from start_date is expired)
+        :return: <bool>
+        """
+        return (self.start_date + timedelta(days=self.duration)) <= datetime.now()
+
+    @property
+    def is_archived(self):
+        """
+        Check if request is archived.
+
+        Archived means that cracks folders were removed from request_working_folder
+
+        :return: <bool>
+        """
+        app.logger.debug("Nb folders in directory {} : {}".format(
+                             str(self.request_working_folder),
+                             str(FilesHelper.count_folders_in_dir(self.request_working_folder))
+                        )
+        )
+        return True if not FilesHelper.count_folders_in_dir(self.request_working_folder) else False
 
     # SETTERS
     @hashes_type_code.setter

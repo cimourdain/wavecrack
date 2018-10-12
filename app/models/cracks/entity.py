@@ -48,6 +48,12 @@ class Crack(db.Model):
             return True
         return False
 
+    @property
+    def is_finished(self):
+        if self.end_date:
+            return True
+        return False
+
     def build_crack_cmd(self, attack_mode, attack_file, crack_options=None, use_potfile=True):
         options = []
         if self.request.extra_options:

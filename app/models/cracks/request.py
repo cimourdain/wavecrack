@@ -300,6 +300,17 @@ class CrackRequest(db.Model):
 
     @hashes.setter
     def hashes(self, hashes):
+        """
+        Set request hashes:
+            - write hashes in a hashes.txt file on root of request working folder
+                * this file will be decremented when hashes are found
+            - write hashes in a hashes_original.txt
+                * to keep a backup of original hashes
+
+        init value of nb_password_to_find with count of lines in hashes_original.txt file
+
+        :param hashes: <str>
+        """
         # create hashes file (will be decremented of found passwords during process)
         self.hashes_path = FilesHelper.create_new_file(
             file_path=self.request_working_folder,
@@ -320,6 +331,13 @@ class CrackRequest(db.Model):
 
     @keywords.setter
     def keywords(self, keywords):
+        """
+        From user provided keywords:
+            - create a keywords.txt file on working folder root
+            - add keywords.txt file to list of request dictionaries
+
+        :param keywords: <str>
+        """
         keyword_file_path = FilesHelper.create_new_file(
             file_path=self.request_working_folder,
             file_name="keywords.txt",
@@ -330,6 +348,10 @@ class CrackRequest(db.Model):
 
     @mask.setter
     def mask(self, mask):
+        """
+        Set content of user provided mask in a mask.hcmask file on root of request working folder
+        :param mask : <str>
+        """
         self.mask_path = FilesHelper.create_new_file(
             file_path=self.request_working_folder,
             file_name="mask.hcmask",
@@ -338,6 +360,11 @@ class CrackRequest(db.Model):
 
     @rules.setter
     def rules(self, rules_paths):
+        """
+        ##### NOT TESTED
+        From rule files path provided, update options to add --rules-file options with each rule file provided
+        :param rules_paths: <path> or <list of path>
+        """
         if isinstance(rules_paths, basestring):
             rules_paths = [rules_paths]
 

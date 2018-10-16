@@ -14,9 +14,25 @@ DEFAULT_OPTIONS_PER_ATTACK_MODE = {
 
 
 class CrackCmdBuilder(object):
+    """
+    Class used to build the hashcat command for a crack.
+    """
 
     def __init__(self, source_crack, attack_mode_code, attack_files, options):
+        """
+        init crack command.
 
+        :param source_crack: <Crack> object
+        :param attack_mode_code: <int> hashcat attack mode (-a option)
+        :param attack_files: [<str>] or <str> (dict, wordlists, masks) to apply on hashcat command (absolute paths)
+        :param options: [<dict>] list of dict containing options.
+
+        Note: options dict must have the following form:
+            {
+                "option": "option_name",
+                "value": "option_value" # optional
+            }
+        """
         app.logger.info("Create new crack "+str(source_crack.id))
         self.source_crack = source_crack
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
@@ -38,10 +54,24 @@ class CrackCmdBuilder(object):
     SET PARAMS
     """
     def set_attack_mode_code(self, attack_mode_code):
+        """
+        Set hashcat attack mode code. Used to define the -a option in hashcat command.
+
+        :param attack_mode_code: <int>
+        :return:
+        """
         if str(attack_mode_code) in ATTACK_MODES:
             self.attack_mode_code = int(attack_mode_code)
 
     def set_attack_files(self, files_list):
+        """
+        call the set_attack_file:
+            * for each file in list if files_list is a list
+            * for the string if files_list is a string
+
+        :param files_list: <str> or [<str>]
+        :return:
+        """
         if isinstance(files_list, basestring):
             self.set_attack_file(files_list)
         elif isinstance(files_list, list):
@@ -51,6 +81,7 @@ class CrackCmdBuilder(object):
     def set_attack_file(self, f):
         """
         check if file exists either in list of wordlists or in crack folder
+        :param f: file absolute path
         """
         if WordDictHelper.is_valid_wordlist_file(f):
             self.attack_files.append(f)
@@ -133,6 +164,9 @@ class CrackCmdBuilder(object):
 
 
 class CrackOption(object):
+    """
+    Class of an hashcat comand option
+    """
     def __init__(self, option, value=None):
         app.logger.info("Create new crack option "+str(option)+" : "+str(value))
         self.option = None

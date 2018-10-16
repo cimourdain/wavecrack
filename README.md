@@ -103,11 +103,7 @@ Setup words folder in config.py (DIR_LOCATIONS/wordlists)
 
 #### Add Dictionaries
 * Download wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
-* Add downloaded wordlists files in the wordlist folder.
-    - Wordlists files must be inserted in folders using ISO language codes (cf. app/ref/languages_list)
-    - Wordlists files with multi languages must be inserted into a folder called misc
-    
-Note: Wordlists languages folders names can be either upper or lowercases. 
+* Add downloaded wordlists files in the config wordlist folder.
 
 # Launch
 

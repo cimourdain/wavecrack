@@ -98,10 +98,10 @@ $ flask db migrate # for every update in models > generate alembic files
 ```
 
 ### Words dictionaries
-# Setup Wordlists Folder
+#### Setup Wordlists Folder
 Setup words folder in config.py (DIR_LOCATIONS/wordlists)
 
-# Add Dictionaries
+#### Add Dictionaries
 * Download wordlists ([examples](https://hashcat.net/forum/thread-1236.html))
 * Add downloaded wordlists files in the wordlist folder.
     - Wordlists files must be inserted in folders using ISO language codes (cf. app/ref/languages_list)
@@ -111,13 +111,13 @@ Note: Wordlists languages folders names can be either upper or lowercases.
 
 # Launch
 
-# Celery
+## Celery
 * Start Celery from the application folder
 ```
 $ celery -A worker.celery worker
 ```
 
-# App
+## App
 * (optional) Set FLASK_CONFIG environement variable with either "development", "testing" or "production" (development used by default)
 * Launch the Flask Web server
     * Directly from the `server.py` file: this mode is not suitable for production purpose

@@ -379,6 +379,10 @@ class CrackRequest(db.Model):
 
     # METHODS
     def init_request_folder(self):
+        """
+        method used to create the request folder (folder where intput and output file will be stored)
+        :return:
+        """
         self.session_id = str(uuid.uuid4())
         if not FilesHelper.dir_exists(self.request_working_folder):
             app.logger.debug("create directory "+str(self.request_working_folder))
@@ -386,14 +390,29 @@ class CrackRequest(db.Model):
         FilesHelper.file_exists(self.outfile_path, create=True)
 
     def add_dictionary_paths(self, list_of_wordlists, ref=False):
+        """
+        Method to add a dictionnary path.
+            * for keywords (=custom wordlist): wordlist path is relative to working folder
+            * for standard wordlists : wordlist path is relative to config wordlist folder
+
+        note: list of dict in db (_dictionary_paths) is a comma separated list of wordlists absolute path
+
+        :param list_of_wordlists: <str> (path of wordlist) or <list> (list of wordlists path)
+        :param ref: <bool> wordlist is in the wordlist folder from config
+        :return:
+        """
         app.logger.debug("request :: add_dictionary_paths :: add {} to list of dictionaries".format(
             str(list_of_wordlists))
         )
+
+        # if list_of worlist is a string, then convert it to a one element list
         if not isinstance(list_of_wordlists, list):
             list_of_wordlists = [list_of_wordlists]
 
+        # split current list of dictionnary in db by ","
         current_dict_path_list = self._dictionary_paths.split(',') if self._dictionary_paths else []
 
+        # define wordlist pre-path (to add in front of relative path) depending on ref
         if ref:
             prepath = app.config["DIR_LOCATIONS"]["wordlists"]
             app.logger.debug("use prepath "+str(prepath))
@@ -401,22 +420,27 @@ class CrackRequest(db.Model):
             prepath = self.request_working_folder
             app.logger.debug("use prepath " + str(prepath))
 
+        # add each wordlist absolute path to current list of wordlist
         for d in list_of_wordlists:
             if d not in current_dict_path_list:
                 current_dict_path_list.append(os.path.join(prepath, d))
 
+        # set dictionary path in db to list of wordlists (comma separated)
         self._dictionary_paths = ','.join(current_dict_path_list)
 
     def prepare_cracks(self):
         """
         Create a Crack instance for each hashcat instance to launch
-        - cracks for each dictionary
-        - crack for keywords
-        - crack for mask
-        - crack for bruteforce
+            - cracks for each dictionary
+            - crack for keywords
+            - crack for mask
+            - crack for bruteforce
+
+        Note: this method only create cracks instances in db (but does not run them)
 
         :return:
         """
+        # create a crack for each worlist in _dictionary_paths
         if self._dictionary_paths:
             for wordlist_file_path in self._dictionary_paths.split(','):
                 app.logger.debug("Create new dictionary attack")
@@ -431,7 +455,8 @@ class CrackRequest(db.Model):
                     attack_file=wordlist_file_path
                 )
 
-        if self.mask_path:
+        # create mask crack if mask is defined
+        if self.has_mask:
             app.logger.debug("Mask path is "+str(self.mask_path)+": create a mask attack")
             new_mask_crack = Crack(name="Mask crack")
             db.session.add(new_mask_crack)
@@ -441,11 +466,9 @@ class CrackRequest(db.Model):
             new_mask_crack.build_crack_cmd(
                 attack_mode=3,
                 attack_file=os.path.join(self.request_working_folder, "mask.hcmask"),
-                # crack_options=[{
-                #     "option": "--show"  # mask crack seems to require --show option
-                # }]
             )
 
+        # create bruteforce attack if required
         if self.bruteforce:
             app.logger.info("Create debug crack in request")
             new_bf_crack = Crack(name="Bruteforce")
@@ -461,6 +484,15 @@ class CrackRequest(db.Model):
         db.session.commit()
 
     def run_cracks(self):
+        """
+        Method to run all request cracks.
+
+        Method stops to launch cracks :
+            - when all hashes were found
+            - when crack duration is expired
+
+        :return:
+        """
         for c in self.cracks:
             c.run()
 
@@ -476,6 +508,14 @@ class CrackRequest(db.Model):
         return True
 
     def close_crack_request(self, mode):
+        """
+        method to soft close crack requests:
+            * set an end_mode
+            * set an end_date
+
+        :param mode: <str> close mode code (from REQUESTS_CLOSE_MODES)
+        :return:
+        """
         app.logger.debug("close request with code "+str(mode))
         if mode not in REQUESTS_CLOSE_MODES:
             mode = "UNDEFINED"
@@ -485,6 +525,14 @@ class CrackRequest(db.Model):
         db.session.commit()
 
     def force_close(self):
+        """
+        Method to force close a request:
+            1 - kill celery task
+            2 - force_close all cracks
+            3 - call request soft close
+
+        :return:
+        """
         # close celery task
         celery.control.revoke(self.celery_request_id)
 

@@ -124,10 +124,10 @@ class DevelopmentConfig(Config):
     PROPAGATE_EXCEPTIONS = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'data.sqlite')
     DEFAULT_USERS = [{
-        "name": "admin",
-        "email": "admin@admin.com",
-        "password": "toto",
-        "admin": True
+            "name": "admin",
+            "email": "admin@admin.com",
+            "password": "toto",
+            "admin": True
         },
             {
             "name": "admin2",

@@ -4,6 +4,7 @@ from app.helpers.files import FilesHelper
 from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
 from app.helpers.word_dict import WordDictHelper
+from app.helpers.attack_modes import AttackModeHelper
 
 # list of detault options to set per attack mode
 DEFAULT_OPTIONS_PER_ATTACK_MODE = {
@@ -169,7 +170,7 @@ class CrackCmdBuilder(object):
         app.logger.debug("crack :: option_allowed :: check if "+str(option["option"])+" can be added with attack mode " + str(self.attack_mode_code))
         if option["option"] == "--rules-file" and self.attack_mode_code != 0:
             return False
-        elif option["option"] in ["--attack-mode", "-a"] and TextHelper.is_int(option["value"]):
+        elif option["option"] in ["--attack-mode", "-a"] and AttackModeHelper.validate_code(option["value"]):
             self.attack_mode_code = int(option["value"])
             return False
         elif option["option"] in ["--hash-type", "-m"] and TextHelper.is_int(option["value"]):

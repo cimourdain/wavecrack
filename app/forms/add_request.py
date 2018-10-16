@@ -197,8 +197,3 @@ class AddCrackRequestForm(FlaskForm):
             return False, messages
 
         return True, []
-
-
-
-
-

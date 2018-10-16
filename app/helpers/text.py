@@ -2,6 +2,11 @@
 class TextHelper(object):
     @staticmethod
     def is_int(s):
+        """
+        Method to check if the input arg represents an int
+        :param s: <str>
+        :return:<boo>
+        """
         try:
             int(s)
             return True
@@ -10,6 +15,12 @@ class TextHelper(object):
 
     @staticmethod
     def check_mask(masks):
+        """
+        Method to check if a string represent a valid mask (chars after ? matches mask format)
+
+        :param masks: <str>
+        :return:
+        """
         # check that all char after ? are valid
         for mask in masks.splitlines():
             start = 0

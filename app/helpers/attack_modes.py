@@ -7,6 +7,12 @@ class AttackModeHelper(object):
 
     @staticmethod
     def validate_code(code):
+        """
+        Method used to validate that an attack mode is valid (mathes an allowed attack mode code in ATTACK_MODES ref)
+
+        :param code:<int> or <str>
+        :return:
+        """
         if not TextHelper.is_int(code):
             return False
 

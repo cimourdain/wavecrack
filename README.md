@@ -104,7 +104,7 @@ $ celery -A worker.celery worker
 ```
 
 # App
-* (optional) Set FLASK_CONFIG environement variable with either developement, testing or production (developement used by default)
+* (optional) Set FLASK_CONFIG environement variable with either "developement", "testing" or "production" (developement used by default)
 * Launch the Flask Web server
     * Directly from the `server.py` file: this mode is not suitable for production purpose
     ```

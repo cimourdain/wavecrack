@@ -10,13 +10,17 @@ class Config(object):
     # Running options
     HOST = 'localhost'
     PORT = 7777
+    DEBUG = False
+    TESTING = False
 
     # Complex random value use to sign cookies and other things by Flask
     SECRET_KEY = "xxx"
     WTF_CSRF_SECRET_KEY = 'zzz'
 
     # SQL Alchemy
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'data.sqlite')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    PROPAGATE_EXCEPTIONS = False
 
     # CELERY
     # please harden your RabbitMQ installation by removing the default "admin" and "guest" user credentials
@@ -25,10 +29,10 @@ class Config(object):
     CELERY_TRACK_STARTED = True
     CELERY_IGNORE_RESULT = False
 
-    # ???
+    # max file size allowed (for file upload)
     MAX_CONTENT_LENGTH = 30 * 1024 * 1024
 
-    # app locations
+    # Update with your install directories
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
     DIR_LOCATIONS = {
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
@@ -51,6 +55,7 @@ class Config(object):
 
     }
 
+    # app location
     APP_LOCATIONS = {
         "hashcat": BASE_DIR + '/hashcat/hashcat64.bin',
     }
@@ -66,13 +71,33 @@ class Config(object):
     # Authentication settings, choose between "None", "Basic" and "LDAP"
     AUTH_TYPE = "None"
 
-    # Basic Auth settings, define the sha256 password of the allowed users
-    DEFAULT_USERS = [{
-        "name": "admin",
-        "email": "admin@admin.com",
-        "password": "strong_password",
-        "admin": True
-    }]
+    # Detault users created by the flask deploy command (passwords are encrypted on user creation, see User model)
+    DEFAULT_USERS = [
+            {
+                "name": "admin",
+                "email": "admin@admin.com",
+                "password": "toto",
+                "admin": True
+            },
+            {
+                "name": "admin2",
+                "email": "admin2@admin.com",
+                "password": "toto",
+                "admin": True
+            },
+            {
+                "name": "user",
+                "email": "user@user.com",
+                "password": "toto",
+                "admin": False
+            },
+            {
+                "name": "user2",
+                "email": "user2@user.com",
+                "password": "toto",
+                "admin": False
+            }
+        ]
 
     # LDAP settings
     LDAP_HOST = "1.1.1.1"
@@ -121,43 +146,15 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    PROPAGATE_EXCEPTIONS = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'data.sqlite')
-    DEFAULT_USERS = [{
-            "name": "admin",
-            "email": "admin@admin.com",
-            "password": "toto",
-            "admin": True
-        },
-            {
-            "name": "admin2",
-            "email": "admin2@admin.com",
-            "password": "toto",
-            "admin": True
-        },
-        {
-            "name": "user",
-            "email": "user@user.com",
-            "password": "toto",
-            "admin": False
-        },
-        {
-            "name": "user2",
-            "email": "user2@user.com",
-            "password": "toto",
-            "admin": False
-        }
-    ]
 
 
 class TestingConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'data.sqlite')
 
 
 class ProductionConfig(Config):
-    PROPAGATE_EXCEPTIONS = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'data.sqlite')
+    # no default users created on prod environnement
+    DEFAULT_USERS = []
 
 
 config = {

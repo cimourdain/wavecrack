@@ -33,6 +33,11 @@ class Config(object):
     MAX_CONTENT_LENGTH = 30 * 1024 * 1024
 
     # Update with your install directories
+    # app location
+    APP_LOCATIONS = {
+        "hashcat": BASE_DIR + '/hashcat/hashcat64.bin',
+    }
+
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
     DIR_LOCATIONS = {
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
@@ -53,11 +58,6 @@ class Config(object):
         # 'john': BASE_DIR + '/john/',
         'tmp': BASE_DIR + '/tmp/'
 
-    }
-
-    # app location
-    APP_LOCATIONS = {
-        "hashcat": BASE_DIR + '/hashcat/hashcat64.bin',
     }
 
     # Hashcat rules list

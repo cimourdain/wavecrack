@@ -31,23 +31,39 @@ A limit to the amount of **concurrent cracks** can be defined in the settings in
 # Install
 ## Pre-requisites
 * python 2.7 (not compatible with python 3)
-* [hashcat](https://hashcat.net/hashcat/): follow [these instructions](https://bugs.kali.org/view.php?id=3432#c6062) for CPU only usage on a Kali linux host 
-* Rules for hashcat ([examples](https://hashcat.net/wiki/doku.php?id=rule_based_attack))
+* LDAP
+* RabbitMQ Server (for celery)
+* [hashcat](https://hashcat.net/hashcat/)
 
+### Hashcat install
+Either install hashcat with your system package manager or directly download hashcat source.
 
-## Modules
-* Install the RabbitMQ server and `python-ldap` requirements
-Debian :
-```
-# apt-get install libsasl2-dev libldap2-dev libssl-dev rabbitmq-server
-```
+If necessary:  follow [these instructions](https://bugs.kali.org/view.php?id=3432#c6062) for CPU only usage on a Kali linux host 
 
-Arch:
+### LDAP
+Install LDAP requirements
 ```
-# yaourt -S libsm libsasl2 rabbitmq
+# apt-get install libsasl2-dev libldap2-dev libssl-dev 
 ```
 
-## Python modules
+### rabbitmq-server (for Celery)
+Install RabbitMQ server
+```
+# apt-get install rabbitmq-server
+```
+
+Start the RabbitMQ server
+```
+# service rabbitmq-server start
+```
+or
+```
+# systemctl enable rabbitmq 
+# systemctl start rabbitmq
+```
+
+### Python modules
+Install project python modules
 ```
 $ pip install -r requirements.txt
 ```
@@ -57,7 +73,14 @@ $ pip install -r requirements.txt
 ### General
 Setup your project var in config.py
 
-Mandatory: set default users
+Mandatory configurations to update:
+* APP_LOCATIONS: update with your hashcat app location
+* DIR_LOCATIONS: Directories locations (rules, wordlists, output etc.)
+
+Optional but recommanded configurations to update (or at least to check):
+* SQLALCHEMY_DATABASE_URI : Database location
+* CELERY_BROKER_URL and CELERY_RESULT_BACKEND: Celery database location
+* DEFAULT_USERS: users created with "flask deploy command" (see database section)
 
 ### Database
 Db initialization
@@ -73,6 +96,7 @@ After model update
 $ export FLASK_APP=migrate
 $ flask db migrate # for every update in models > generate alembic files
 ```
+
 ### Words dictionaries
 # Setup Wordlists Folder
 Setup words folder in config.py (DIR_LOCATIONS/wordlists)
@@ -86,16 +110,6 @@ Setup words folder in config.py (DIR_LOCATIONS/wordlists)
 Note: Wordlists languages folders names can be either upper or lowercases. 
 
 # Launch
-# Rabbit
-* Start the RabbitMQ server
-```
-# service rabbitmq-server start
-```
-or
-```
-# systemctl enable rabbitmq 
-# systemctl start rabbitmq
-```
 
 # Celery
 * Start Celery from the application folder
@@ -104,7 +118,7 @@ $ celery -A worker.celery worker
 ```
 
 # App
-* (optional) Set FLASK_CONFIG environement variable with either "developement", "testing" or "production" (developement used by default)
+* (optional) Set FLASK_CONFIG environement variable with either "development", "testing" or "production" (development used by default)
 * Launch the Flask Web server
     * Directly from the `server.py` file: this mode is not suitable for production purpose
     ```

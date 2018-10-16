@@ -5,7 +5,7 @@ from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
 from app.helpers.word_dict import WordDictHelper
 
-
+# list of detault options to set per attack mode
 DEFAULT_OPTIONS_PER_ATTACK_MODE = {
     # 0: [{
     #     "option": "--show"
@@ -32,12 +32,20 @@ class CrackCmdBuilder(object):
                 "option": "option_name",
                 "value": "option_value" # optional
             }
+
+        Note: hash_type_code, attack_mode and output file are not handled as options but as parameter
+        (see build_run_cmd())
+            * hash_type_code: is inherited from the source crack parent request
+            * attack_mode: is set as a parameter
+            * output file: is inherited from the source crack
         """
         app.logger.info("Create new crack "+str(source_crack.id))
         self.source_crack = source_crack
         self.hashcat_cmd = app.config["APP_LOCATIONS"]["hashcat"]
 
+        self.hash_type_code = self.source_crack.request.hashes_type_code
         self.attack_mode_code = 0
+        self.output_file_path = self.source_crack.output_file_path
         self.attack_files = []
         self.options = []
 
@@ -92,7 +100,17 @@ class CrackCmdBuilder(object):
     SET OPTIONS
     """
     def set_potfile_option(self, use_potfile=False):
-        if use_potfile:
+        """
+        Method to define usage of potfile option.
+        if use_potfile arg is True and potfile path is defined on request level, the set optfile path option
+        else, set option to disable potfile.
+
+        Note: force disable potfile because defaulf use the hashcat potfile
+
+        :param use_potfile: <bool>
+        :return:
+        """
+        if use_potfile and self.source_crack.request.potfile_path:
             self.set_option({
                 "option": "--potfile-path",
                 "value": self.source_crack.request.potfile_path
@@ -103,6 +121,11 @@ class CrackCmdBuilder(object):
             })
 
     def set_session_id_option(self):
+        """
+        Method to set session_id
+
+        :return:
+        """
         if self.source_crack.request.session_id:
             self.set_option({
                 "option": "--session",
@@ -110,6 +133,12 @@ class CrackCmdBuilder(object):
             })
 
     def set_default_options(self, default_options_per_attack_mode):
+        """
+        method to set default options (not used)
+
+        :param default_options_per_attack_mode: <dict> (see above DEFAULT_OPTIONS_PER_ATTACK_MODE)
+        :return:
+        """
         for attack_mode, options in default_options_per_attack_mode.items():
             app.logger.debug("crack :: set_default_options :: key: "+str(attack_mode))
             app.logger.debug("crack :: set_default_options :: value: "+str(options))
@@ -117,18 +146,50 @@ class CrackCmdBuilder(object):
                 self.set_options(options)
 
     def set_options(self, options):
+        """
+        method to launch the set_option for each individual option
+        :param options: [<dict>] of options (see __init__ doc for format)
+        :return:
+        """
         app.logger.debug("crack :: set_options :: new options "+str(options))
         if options:
             for option in options:
                 self.set_option(option)
 
     def option_allowed(self, option):
+        """
+        Method to check if an option is allowed
+
+        -> prevent use of --rule-file option with attack mode != 0
+        -> set attack_mode_code, hash_type_code or output_file_path if attempt to set them as options
+
+        :param option: <dict>
+        :return:
+        """
         app.logger.debug("crack :: option_allowed :: check if "+str(option["option"])+" can be added with attack mode " + str(self.attack_mode_code))
         if option["option"] == "--rules-file" and self.attack_mode_code != 0:
+            return False
+        elif option["option"] in ["--attack-mode", "-a"] and TextHelper.is_int(option["value"]):
+            self.attack_mode_code = int(option["value"])
+            return False
+        elif option["option"] in ["--hash-type", "-m"] and TextHelper.is_int(option["value"]):
+            self.hash_type_code = int(option["value"])
+            return False
+        elif option["option"] in ["--outfile", "-o"] and FilesHelper.file_exists(option["value"]):
+            self.output_file_path = int(option["value"])
             return False
         return True
 
     def set_option(self, option):
+        """
+        Method to set option.
+            * check if option is allowed
+            * create new CrackOption instance
+            * add CrackOption to self.options
+
+        :param option: <dict>(see __init__ doc for format)
+        :return:
+        """
         app.logger.debug("crack :: set_option :: set option "+str(option))
         if self.option_allowed(option):
             new_option = CrackOption(option.get("option", None), option.get("value", None))
@@ -136,13 +197,12 @@ class CrackCmdBuilder(object):
                 app.logger.debug("new option is valid and object created, add it to self.options")
                 self.options.append(new_option)
 
-                if new_option.option == "--attack-mode":
-                    self.attack_mode_code = new_option.value
-
-                if new_option.option == "--rules-file" and self.attack_mode_code == 0:
-                    pass
-
     def build_cmd_options(self):
+        """
+        Method to build command list of options (from list of self.options)
+
+        :return: <str>
+        """
         options_cmd_str = ""
         for option in self.options:
             options_cmd_str += option.get_option_cmd()
@@ -150,11 +210,16 @@ class CrackCmdBuilder(object):
         return options_cmd_str
 
     def build_run_cmd(self):
+        """
+        Method to build complete hashcat command
+
+        :return: <str>
+        """
         cmd = "{} -m {} -a {} -o {} {} {} {}".format(
             self.hashcat_cmd,
-            self.source_crack.request.hashes_type_code,
+            self.hash_type_code,
             self.attack_mode_code,
-            self.source_crack.output_file_path,
+            self.output_file_path,
             self.source_crack.request.hashes_path,
             " ".join(self.attack_files),
             self.build_cmd_options(),
@@ -168,6 +233,12 @@ class CrackOption(object):
     Class of an hashcat comand option
     """
     def __init__(self, option, value=None):
+        """
+        Init new option with an option name and value
+
+        :param option: <str>
+        :param value: <str>
+        """
         app.logger.info("Create new crack option "+str(option)+" : "+str(value))
         self.option = None
         self.value = None
@@ -176,12 +247,25 @@ class CrackOption(object):
         self.set_value(value)
 
     def set_option(self, option):
+        """
+        Option setter, check that option name is in HASHCAT_OPTIONS ref list
+
+        :param option: <str>
+        :return: <bool>
+        """
         if option and option in HASHCAT_OPTIONS:
             self.option = option
         app.logger.debug("option name set to " + str(self.option))
         return True
 
     def set_value(self, value):
+        """
+        Set option value.
+
+        This method check that the value provided matches the required type (from HASHCAT_OPTIONS)
+        :param value:
+        :return:
+        """
         if value:
             if "values" in HASHCAT_OPTIONS[self.option] and str(value) in HASHCAT_OPTIONS[self.option]["values"]:
                 self.value = value
@@ -210,6 +294,10 @@ class CrackOption(object):
         return True
 
     def get_option_cmd(self):
+        """
+        Method to build the hashcat option command
+        :return: <str>
+        """
         if HASHCAT_OPTIONS[self.option]["type"]:
             if self.value:
                 if HASHCAT_OPTIONS[self.option]["type"] == "Char":

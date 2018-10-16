@@ -1,6 +1,10 @@
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.rules import RulesHelper
 
+"""
+Important note: --potfile-path option have to be set as File (and not Dir as mentionned in the doc)
+"""
+
 ATTACK_MODES = {
     "0": "Straight",
     "1": "Combination",

@@ -5,19 +5,18 @@ from app.models.cracks.request import CrackRequest
 from app.helpers.files import FilesHelper
 
 
-def write_errors(folder, errors):
-    FilesHelper.create_new_file(
-        file_path=folder,
-        file_name="errors.txt",
-        content=errors
-    )
-    return True
-
-
 #  the bind decorator argument > access to task id
 @celery.task(bind=True)
 def launch_new_crack_request(self, crack_request_id):
+    """
+    Celery task to launch all cracks for a request.
 
+    This task is called after the CrackRequest creation (on form submit)
+
+    :param self: celery task
+    :param crack_request_id: <CrackRequest>
+    :return:
+    """
     app.logger.info("celery :: hashcat :: load crack request")
     new_crack_request = CrackRequest.query.filter_by(id=crack_request_id).one()
 
@@ -34,5 +33,11 @@ def launch_new_crack_request(self, crack_request_id):
 
 @celery.task
 def kill_crack(crack_id):
+    """
+    Celery task to kill a crack
+
+    :param crack_id:<int> Crack object id
+    :return:
+    """
     crack = Crack.query.filter(id=crack_id).one()
     crack.kill_process()

@@ -430,7 +430,7 @@ class CrackRequest(db.Model):
 
     def prepare_cracks(self):
         """
-        Create a Crack instance for each hashcat instance to launch
+        Create a Crack instance for each hashcat instance to launch + build hashcat command to launch
             - cracks for each dictionary
             - crack for keywords
             - crack for mask
@@ -494,7 +494,8 @@ class CrackRequest(db.Model):
         :return:
         """
         for c in self.cracks:
-            c.run()
+            if not c.run():
+                break
 
             if FilesHelper.nb_lines_in_file(self.hashes_path) == 0:
                 self.close_crack_request("ALL_FOUND")

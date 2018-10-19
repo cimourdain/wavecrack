@@ -39,16 +39,17 @@ class Config(object):
     }
 
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
+    locations_base_dir = os.path.join(BASE_DIR, 'io')
     DIR_LOCATIONS = {
         # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
-        'hashcat_rules': BASE_DIR + '/hashcat/rules/',
+        'hashcat_rules': locations_base_dir + '/hashcat/rules/',
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
-        'wordlists': BASE_DIR + '/sources/words/',
-        'rules': BASE_DIR + '/sources/rules/',
+        'wordlists': locations_base_dir + '/sources/words/',
+        'rules': locations_base_dir + '/sources/rules/',
         # hashes
-        'hashes': BASE_DIR + '/sources/hashes/',
+        'hashes': locations_base_dir + '/sources/hashes/',
         # Output hashcat directory path
-        'hashcat_outputs': BASE_DIR + '/outputs/hashcat/',
+        'hashcat_outputs': locations_base_dir + '/outputs/hashcat/',
         # Output logfiles directory path
         # 'log': BASE_DIR + '/outputs/logs/',
         # Upload user files directory
@@ -56,7 +57,7 @@ class Config(object):
         # John executable path (only used to extract the hash from uploaded encrypted files)
         # by default '/usr/sbin/john' on Kali
         # 'john': BASE_DIR + '/john/',
-        'tmp': BASE_DIR + '/tmp/'
+        'tmp': locations_base_dir + '/tmp/'
 
     }
 
@@ -150,6 +151,8 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+
+    SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'tests', 'data.sqlite')
 
 
 class ProductionConfig(Config):

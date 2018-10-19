@@ -39,6 +39,11 @@ def create_app(config_name):
 
     return app
 
+def db_init_content():
+    from app.models.user import User
+
+    User.insert_default_users()
+
 
 def check_app_folders(app):
     for k, folder in app.config['DIR_LOCATIONS'].items():

@@ -75,27 +75,38 @@ Setup your project var in config.py
 
 Mandatory configurations to update:
 * APP_LOCATIONS: update with your hashcat app location
-* DIR_LOCATIONS: Directories locations (rules, wordlists, output etc.)
+* DIR_LOCATIONS: Directories locations (rules, wordlists, output etc.). See not below to use default.
 
-Optional but recommanded configurations to update (or at least to check):
+Optional but recommended configurations to update (or at least to check):
 * SQLALCHEMY_DATABASE_URI : Database location
 * CELERY_BROKER_URL and CELERY_RESULT_BACKEND: Celery database location
-* DEFAULT_USERS: users created with "flask deploy command" (see database section)
+* DEFAULT_USERS: users created with db create (see database section)
+
+#### Create default locations
+Instead of creating manually the required directories by the DIR_LOCATIONS config options. The manager script can automatically create all of them.
+
+```
+$ sh manager.sh init_dirs
+```
+
 
 ### Database
-Db initialization
+First initialization
+
 ```
-$ export FLASK_APP=migrate
-$ flask db init # if no database exists
-$ flask db migrate # for every update in models > generate alembic files
-$ flask deploy y # update model and create default users from config DEFAULT_USERS (replace y by n to not create default users=
+$ sh manager.sh init_db
 ```
 
-After model update
+Reset database
 ```
-$ export FLASK_APP=migrate
-$ flask db migrate # for every update in models > generate alembic files
+$ sh manager.sh reset_db
 ```
+
+Update db (after model update)
+```
+$ sh manager.sh update_db
+```
+
 
 ### Words dictionaries
 #### Setup Wordlists Folder

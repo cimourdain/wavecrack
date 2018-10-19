@@ -6,4 +6,3 @@ cracker/app_settings.py
 migrations/
 *.sqlite
 io/
-sources/

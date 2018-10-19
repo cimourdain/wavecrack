@@ -5,7 +5,5 @@ database/
 cracker/app_settings.py
 migrations/
 *.sqlite
-hashcat/
-tmp/
-tests/
+io/
 sources/

@@ -139,4 +139,22 @@ $ celery -A worker.celery worker
 * If you want to update the list of hashes supported, you can use the [`dedicated script`](setup_resources/extract_hashcat_examples.py) which will parse [hashcat's wiki](https://hashcat.net/wiki/doku.php?id=example_hashes) and generate an updated [hashcat_hashes.py](cracker/hashcat_hashes.py). To do so, you need to have BeautifulSoup installed on your system.
 
 Finally, if you don't want to setup your own VM, you can use the Docker-based process described in the [`docker`](Docker/) folder.  
-  
+
+
+# Testing (in progress)
+
+Current tested:
+* Login
+
+## Run testing
+```
+$ py.test /app/tests -x
+```
+
+# TODO
+* Enable LDAP login
+* Crack files containing usernames
+* Handle pwdump format cracking
+* NTDS Upload
+* Prevent hashcat launch if server is saturated
+* ...

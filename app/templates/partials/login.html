@@ -4,7 +4,11 @@
                     <div class="nav-link media" href="">
                       <i class="far fa-user align-self-center mr-2"></i>
                       <div class="media-body">
-                          {{ current_user.name }}
+                          {% if current_user.is_admin %}
+                              <span class="text-danger">{{ current_user.name }}</span>
+                          {% else %}
+                              <span class="text-success">{{ current_user.name }}</span>
+                          {% endif %}
                           <a href="{{ url_for("user_get.logout") }}">Logout</a>
                       </div>
                     </div>

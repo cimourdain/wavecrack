@@ -3,6 +3,7 @@ import pytest
 from app import create_app, db, register_routes
 
 
+
 @pytest.fixture
 def client():
     # build app
@@ -31,13 +32,3 @@ def client():
 
     db.session.remove()
     app_ctx.pop()
-
-
-def test_website_reacheable():
-    """
-    Check that app is launched
-
-    :return:
-    """
-    response = client.get('/')
-    assert response.status_code == 200, "Homepage cannot be reached"

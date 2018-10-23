@@ -144,6 +144,8 @@ Finally, if you don't want to setup your own VM, you can use the Docker-based pr
 # Testing (in progress)
 
 Current tested:
+* Application is running
+* Hashcat application can be launched
 * Login
 
 ## Run testing

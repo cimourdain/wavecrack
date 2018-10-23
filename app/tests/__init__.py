@@ -33,4 +33,11 @@ def client():
     app_ctx.pop()
 
 
+def test_website_reacheable():
+    """
+    Check that app is launched
 
+    :return:
+    """
+    response = client.get('/')
+    assert response.status_code == 200, "Homepage cannot be reached"

@@ -154,7 +154,10 @@ $ py.test /app/tests -x
 # TODO
 * Enable LDAP login
 * Crack files containing usernames
+* Crack with rules
 * Handle pwdump format cracking
 * NTDS Upload
 * Prevent hashcat launch if server is saturated
+* Update readme screenshots
+* Unit testing
 * ...

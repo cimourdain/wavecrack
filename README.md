@@ -157,8 +157,10 @@ $ py.test /app/tests -x
 * Crack with rules
 * Handle pwdump format cracking
 * NTDS Upload
+* Upload protected file
 * Prevent hashcat launch if server is saturated
 * Update readme screenshots
 * Unit testing
 * Archiving (with celery cron)
+* Stats
 * ...

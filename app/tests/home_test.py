@@ -9,37 +9,44 @@ class TestLogin(object):
     random_valid_user = None
 
     @staticmethod
-    def user_is_logged(response):
+    def user_is_logged(response, admin=False):
         """
         Method to test if response (html page) contains element allowing to consider user is logged
-        :param response:
+        :param response: response from client.get()
+        :param admin: <bool> check if client is admin
         :return:
         """
-        if 'Invalid login' in response.get_data(as_text=True):
-            print("Invalid login error message found in page")
-            return False
+        assert 'Invalid login' not in response.get_data(as_text=True), "Invalid login error message found in page"
 
-        if 'Logout' not in response.get_data(as_text=True):
-            print("Logout link not found")
-            return False
+        assert 'Logout' in response.get_data(as_text=True), "Logout link not found"
 
-        if 'New crack' not in response.get_data(as_text=True):
-            print("New crack menu entry not found")
-            return False
+        assert 'New crack' in response.get_data(as_text=True), "New crack menu entry not found"
+
+        if admin:
+            assert 'All Cracks' in response.get_data(as_text=True), "All Crack entry menu not found for admin"
 
         return True
 
     @staticmethod
-    def login(client, user_data):
+    def login(client, user_data=None, admin=True):
         """
         method to attempt login on client (test client) with user_data
         :param client: <Flask> client
         :param user_data: <dict> containing login and password keys
+        :param admin: <bool> user is admin
         :return:<bool>
         """
+        if not user_data:
+            user = TestLogin.get_user_credentials_from_config(admin=admin)
+            assert user, "Impossible to find user in config"
+            user_data = {
+                "login": user["name"],
+                "password": user["password"]
+            }
+
         response = client.post('/login', data=user_data, follow_redirects=True)
 
-        assert TestLogin.user_is_logged(response), \
+        TestLogin.user_is_logged(response), \
             "Impossible to login with user: {} and password: {}".format(
                 user_data["login"],
                 user_data["password"]
@@ -47,19 +54,21 @@ class TestLogin(object):
 
         return True
 
-    def test_set_valid_admin_user(self):
+    @staticmethod
+    def get_user_credentials_from_config(admin=False):
+        for u in TestingConfig.DEFAULT_USERS:
+            if u["admin"] == admin:
+                return u
+
+        return None
+
+    def test_init(self):
         """
         Method to define random_valid_admin and random_valid_user from config default users
         :return:
         """
-        for u in TestingConfig.DEFAULT_USERS:
-            if not self.random_valid_admin and u["admin"]:
-                TestLogin.random_valid_admin = u
-            if not self.random_valid_user and not u["admin"]:
-                TestLogin.random_valid_user = u
-
-            if self.random_valid_user and self.random_valid_admin:
-                break
+        TestLogin.random_valid_user = TestLogin.get_user_credentials_from_config()
+        TestLogin.random_valid_admin = TestLogin.get_user_credentials_from_config(admin=True)
 
         assert self.random_valid_user, "No config default user found"
         assert self.random_valid_admin, "No config default admin found"

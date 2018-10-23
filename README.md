@@ -160,4 +160,5 @@ $ py.test /app/tests -x
 * Prevent hashcat launch if server is saturated
 * Update readme screenshots
 * Unit testing
+* Archiving (with celery cron)
 * ...

@@ -1,8 +1,12 @@
+import pytest
+
 # local imports
 from app.tests import client
 from config import TestingConfig
+from app.tests.decorators import login_required
 
 
+@pytest.mark.incremental
 class TestLogin(object):
 
     random_valid_admin = None
@@ -67,6 +71,7 @@ class TestLogin(object):
         Method to define random_valid_admin and random_valid_user from config default users
         :return:
         """
+
         TestLogin.random_valid_user = TestLogin.get_user_credentials_from_config()
         TestLogin.random_valid_admin = TestLogin.get_user_credentials_from_config(admin=True)
 
@@ -146,5 +151,23 @@ class TestLogin(object):
             "login": self.random_valid_admin["email"],
             "password": self.random_valid_admin["password"]
         })
+
+        client.get('/logout')
+
+    @login_required()
+    def test_base(self, client):
+        print("self: "+str(self))
+        print("client: "+str(client))
+        response = client.get('/', follow_redirects=True)
+
+        TestLogin.user_is_logged(response, admin=False), "Invalid login"
+
+        client.get('/logout')
+
+    @login_required(admin=True)
+    def test_base_admin(self, client):
+
+        response = client.get('/', follow_redirects=True)
+        TestLogin.user_is_logged(response, admin=True), "Invalid login"
 
         client.get('/logout')

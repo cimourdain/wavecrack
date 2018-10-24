@@ -1,7 +1,8 @@
+# third party import
 import pytest
 
+# local imports
 from app import create_app, db, register_routes
-
 
 
 @pytest.fixture
@@ -26,9 +27,9 @@ def client():
     User.insert_default_users()
 
     # setup client
-    client = app.test_client(use_cookies=True)
-
-    yield client
+    yield app.test_client(use_cookies=True)
 
     db.session.remove()
     app_ctx.pop()
+
+

@@ -42,7 +42,8 @@ def get_filelist_checkbox_builder_dict(name, files_list):
 def create_new_crack_request(name, user_id, hashes, hashes_type_code,
                              hashed_file_contains_usernames, duration, wordlist_files=None,
                              keywords=None, mask=None, rules=None, bruteforce=None, use_potfile=False):
-    app.logger.debug("celery :: hashcat :: create new crack request")
+
+    app.logger.debug("requests_post :: create_new_crack_request")
     new_crack_request = CrackRequest()
     new_crack_request.init_request_folder()
     new_crack_request.name = name
@@ -64,6 +65,7 @@ def create_new_crack_request(name, user_id, hashes, hashes_type_code,
         new_crack_request.rules = rules
     new_crack_request.bruteforce = bruteforce
 
+    app.logger.debug("requests_post :: create_new_crack_request :: add & save")
     db.session.add(new_crack_request)
     db.session.flush()
 
@@ -76,6 +78,7 @@ def render_add_page(form, confirmation=False):
     """
 
     # render add form
+    app.logger.debug("requests_post :: render_add_page")
     return render_template(
         'pages/requests/request_add.html',
         title="Add new crack request" if not confirmation else "Confirm new crack request",
@@ -98,14 +101,18 @@ def render_add_page(form, confirmation=False):
 @requests_post.route('/add', methods=["GET", "POST"])
 @login_required
 def add_new_crack_request():
+    app.logger.debug("requests_post :: add_new_crack_request :: init form")
     form = AddCrackRequestForm(request.form)
 
     if request.method == "POST":
         # set hashes from file content to hashes textarea if required
+        app.logger.debug("requests_post :: add_new_crack_request :: set hashes from file content")
         AddCrackRequestForm.set_hashes(form)
+        app.logger.debug("requests_post :: add_new_crack_request :: set keywords from file content")
         AddCrackRequestForm.set_keywords(form)
 
         # validate form content
+        app.logger.debug("requests_post :: add_new_crack_request :: validate form content")
         form_is_valid, messages = AddCrackRequestForm.validate_custom(form)
         if not form_is_valid:
             for m in messages:
@@ -114,6 +121,7 @@ def add_new_crack_request():
             return render_add_page(form)
 
         # extract elements from form data
+        app.logger.debug("requests_post :: add_new_crack_request :: extract elements from form data")
         hashes = AddCrackRequestForm.get_hashes()
         hash_type_code = AddCrackRequestForm.get_hash_type_code()
         hashed_file_contains_usernames = AddCrackRequestForm.get_file_contains_username()
@@ -127,9 +135,11 @@ def add_new_crack_request():
 
         if not AddCrackRequestForm.is_confirmation():
             # render confirmation page if confirm button not submitted
+            app.logger.debug("requests_post :: add_new_crack_request :: render confirmation page")
             return render_add_page(form=form, confirmation=True)
         else:
             # create new crack request
+            app.logger.debug("requests_post :: add_new_crack_request :: create new crack request")
             new_crack_request = create_new_crack_request(
                 name=form.request_name.data,
                 user_id=current_user.id,
@@ -146,14 +156,17 @@ def add_new_crack_request():
             )
 
             # build cracks for request
+            app.logger.debug("requests_post :: add_new_crack_request :: build cracks for request")
             new_crack_request.prepare_cracks()
 
             # launch request cracks
+            app.logger.debug("requests_post :: add_new_crack_request :: launch cracks (via celery task)")
             launch_new_crack_request.delay(
                 crack_request_id=new_crack_request.id
             )
 
             # render list of requests
+            app.logger.debug("requests_post :: add_new_crack_request :: render list of requests")
             return redirect(url_for('requests_get.get_all_user_request'))
 
     # render add crack page on GET request

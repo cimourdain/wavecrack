@@ -154,6 +154,7 @@ $ py.test /app/tests -x
 ```
 
 # TODO
+* Dict naming
 * Enable LDAP login
 * Crack files containing usernames
 * Crack with rules

@@ -51,7 +51,7 @@ class Crack(db.Model):
 
         :return: <str> crack folder path
         """
-        return os.path.join(self.request.request_working_folder, str(self.id))
+        return os.path.join(self.request.request_working_folder, "crack_"+str(self.id))
 
     @property
     def output_file_path(self):

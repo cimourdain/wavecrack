@@ -83,7 +83,7 @@ class CrackRequest(db.Model):
         """
         return os.path.join(
             app.config["DIR_LOCATIONS"]["hashcat_outputs"],
-            "u_" + str(self.user_id),
+            "user_" + str(self.user_id),
             "req_" + str(self.id)
         )
 

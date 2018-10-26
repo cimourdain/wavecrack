@@ -52,7 +52,7 @@ class Config(object):
         'rules': locations_base_dir + '/sources/rules',
 
         # Output hashcat directory path
-        'hashcat_outputs': locations_base_dir + '/outputs/hashcat',
+        'hashcat_outputs': locations_base_dir + '/outputs',
 
         # tmp folder
         'tmp': locations_base_dir + '/tmp/'

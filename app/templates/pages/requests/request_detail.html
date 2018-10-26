@@ -38,6 +38,7 @@
                 <form action="{{ url_for('requests_post.kill_all_cracks_in_request', request_id=request.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">Cancel all cracks</button>
                 </form>
+                <br />
                 <form action="{{ url_for('requests_post.delete_request', request_id=request.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">Delete Request</button>
                 </form>
@@ -46,57 +47,95 @@
         </div>
     </div>
     <h2>Cracks</h2>
-    <div class="row">
+    <div class="accordion" id="accordionExample">
     {% for crack in request.cracks %}
-        <div class="col-sm-6">
-            <div class="card" style="width: 18rem;">
-              <div class="card-body">
-                <h5 class="card-title">{{ crack.name }}</h5>
-                {% if crack.start_date %}
 
-                    <h6 class="card-subtitle mb-2 text-muted">{{ crack.nb_password_found }} password found.</h6>
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link"
+                        type="button"
+                        data-toggle="collapse"
+                        data-target="#collapse{{ crack.id }}"
+                        aria-expanded="true"
+                        aria-controls="collapse{{ crack.id }}">
 
-                    <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    {% if crack.end_date %}
-                        <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                        <p>End status: {{ crack.end_status_mode }}</p>
+                    {% if crack.start_date %}
+                        {% if crack.end_date %}
+                            <i class="fas fa-check"></i>
+                        {% else %}
+                            <i class="fas fa-bolt"></i>
+                        {% endif %}
                     {% else %}
-                        <p>Status: running {% if current_user.is_admin %} <small>process {{ crack.process_id }}</small>{% endif %}</p>
-
-                        <div>
-                            <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
-                                <button type="submit" class="btn btn-danger">Cancel crack</button>
-                            </form>
-                        </div>
+                        <i class="far fa-clock"></i>
                     {% endif %}
-
-                    {# Display hashcat command for admin #}
-                    {% if current_user.is_admin %}
-                    <p class="card-text">{{ crack.cmd }}</p>
+                    {{ crack.name }}
+                    {%  if  crack.start_date %}
+                        ({{ crack.nb_password_found }} found)
                     {% endif %}
+                </button>
+              </h5>
+            </div>
+
+            <div id="collapse{{ crack.id }}"
+                 class="collapse"
+                 aria-labelledby="heading{{ crack.id }}"
+                 data-parent="#accordionExample">
+              <div class="card-body">
+                  <div class="row">
+                      <div class="col-sm-6">
+                          {% if crack.start_date %}
+                              <p>{{ crack.nb_password_found }} password found.</p>
+                              <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                              {% if crack.end_date %}
+                                  <p>End: {{ crack.end_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                  <p>End status: {{ crack.end_status_mode }}</p>
+
+                              {% else %}
+                                <p>Status: running {% if current_user.is_admin %} <small>process {{ crack.process_id }}</small>{% endif %}</p>
+
+                                <div>
+                                    <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">Cancel crack</button>
+                                    </form>
+                                </div>
+                              {% endif %}
+
+                          {% else %}
+                              <p>Status : Not started</p>
+                          {% endif %}
 
 
-                    {# Display hashcat command outputs if crack #}
-                    <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
+                      </div>
+                      <div class="col-sm-6">
+                         <p>Outputs:</p>
+                          {% if crack.start_date %}
+                          <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
                              class="card-link">Output
-                    </a><br />
-                    <a href="{{ url_for('cracks_get.download_crack_cmd_outfile', crack_id=crack.id) }}"
-                     class="card-link">Hashcat output
-                    </a><br />
-                    <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
-                     class="card-link">Hashcat errors
-                    </a>
+                            </a><br />
+                            <a href="{{ url_for('cracks_get.download_crack_cmd_outfile', crack_id=crack.id) }}"
+                             class="card-link">Hashcat output
+                            </a><br />
+                            <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
+                             class="card-link">Hashcat errors
+                            </a>
+                          {% endif %}
+                      </div>
+                  </div>
 
-                {#  // if crack is not started#}
-                {% else %}
-                    <p>Not started</p>
-                {% endif %}
+                  {% if current_user.is_admin %}
+                      <div class="col-md-12 alert alert-danger" role="alert">
+                        <h5>Admin details:</h5>
+                        <p>Hashcat command: <small>{{ crack.cmd }}</small></p>
+                        <p>Process id: {{ crack.process_id }}</p>
+                      </div>
+                  {% endif %}
               </div>
             </div>
+          </div>
+
+        {% endfor %}
         </div>
-    {# // end of cracks loop#}
-    {% endfor %}
-    </div>
 
     {# // request is not achived#}
     {% endif %}

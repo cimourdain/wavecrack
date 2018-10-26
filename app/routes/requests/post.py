@@ -13,6 +13,8 @@ from app.helpers.files import FilesHelper
 from flask_login import current_user
 
 from app.models.cracks.request import CrackRequest
+from app.classes.Rule import Rule
+from app.classes.Wordlist import Wordlist
 from app.tasks.hashcat import launch_new_crack_request
 from app.routes.requests.get import get_request
 
@@ -86,14 +88,8 @@ def render_add_page(form, confirmation=False):
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
         hashes_list=HASHS_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
-        wordlist_files_list=get_filelist_checkbox_builder_dict(
-            'wordlist_files',
-            FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["wordlists"])
-        ),
-        rules_files_list=get_filelist_checkbox_builder_dict(
-            'rules_files',
-            FilesHelper.get_available_files(folder=app.config["DIR_LOCATIONS"]["rules"])
-        ),
+        wordlist_files_list=Wordlist.get_all(),
+        rules_files_list=Rule.get_all(),
         confirmation=confirmation
     )
 

@@ -32,24 +32,31 @@ class Config(object):
     # max file size allowed (for file upload)
     MAX_CONTENT_LENGTH = 30 * 1024 * 1024
 
-    # Update with your install directories
+    """
+    FILES/FOLDERS LOCATIONS
+    """
     # app location
     APP_LOCATIONS = {
+        # hashcat executable location
         "hashcat": BASE_DIR + '/hashcat/hashcat64.bin',
     }
 
     # in case of concat with BASE_DIR, folder values must start and end with separator "/"
     locations_base_dir = os.path.join(BASE_DIR, 'io')
     DIR_LOCATIONS = {
-        # Hashcat rules directory path, by default '/usr/share/hashcat/rules/' on Kali
-        'hashcat_rules': locations_base_dir + '/hashcat/rules/',
+
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
         'wordlists': locations_base_dir + '/sources/words/',
+
+        # Folder directory path, where rules are stored
         'rules': locations_base_dir + '/sources/rules/',
-        # hashes
-        'hashes': locations_base_dir + '/sources/hashes/',
+
         # Output hashcat directory path
         'hashcat_outputs': locations_base_dir + '/outputs/hashcat/',
+
+        # tmp folder
+        'tmp': locations_base_dir + '/tmp/'
+
         # Output logfiles directory path
         # 'log': BASE_DIR + '/outputs/logs/',
         # Upload user files directory
@@ -57,12 +64,33 @@ class Config(object):
         # John executable path (only used to extract the hash from uploaded encrypted files)
         # by default '/usr/sbin/john' on Kali
         # 'john': BASE_DIR + '/john/',
-        'tmp': locations_base_dir + '/tmp/'
-
     }
 
-    # Hashcat rules list
-    rule_name_list = ["rockyou-30000.rule"]
+    # by default wordlists are displayed by filename in "add crack" form.
+    # This config allow to define custom wordlists names
+    # dict keys are rule path relative to above DIR_LOCATIONS["wordlists"]
+    WORDLIST_SETUP = {
+        # file relative path from DIR_LOCATIONS["wordlists"]
+        "rockyou.txt": {
+            # name displayed in form
+            "name": "My RockYou",
+            # is the file selected by default for each attack (optional, default is False)
+            "default": False
+        }
+    }
+
+    # by default rules are displayed by filename in "add crack" form.
+    # This config allow to define custom rules names
+    # dict "file" key are rule path relative to above DIR_LOCATIONS["rules"]
+    RULES_SETUP = {
+        # file relative path from DIR_LOCATIONS["rules"]
+        "rule2.txt" : {
+            # name displayed in form
+            "name": "Rule 2 Cusom name",
+            # is the file selected by default for each rule attack (optional, default is False)
+            "default": True
+        }
+    }
 
     """
     ADDITIONAL SETTINGS

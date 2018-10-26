@@ -109,12 +109,12 @@ function UpdateHashExample()
             <div class="form-group">
                 <input
                         type="checkbox"
-                        name="{{ cb['name'] }}"
-                        value="{{ cb['value'] }}"
-                        {{ "checked" if cb["checked"] else "" }}
+                        name="wordlist_files"
+                        value="{{ cb['filepath'] }}"
+                        {{ "checked" if cb["default"] else "" }}
                         {{ "readonly" if confirmation else "" }}
                 />
-                {{ cb['label'] }}
+                {{ cb['name'] }}
             </div>
         {% endfor %}
 
@@ -157,12 +157,12 @@ function UpdateHashExample()
                 <div class="form-group">
                     <input
                             type="checkbox"
-                            name="{{ cb['name'] }}"
-                            value="{{ cb['value'] }}"
-                            {{ "checked" if cb["checked"] else "" }}
+                            name="rules_files"
+                            value="{{ cb['filepath'] }}"
+                            {{ "checked" if cb["default"] else "" }}
                             {{ "readonly" if confirmation else "" }}
                     />
-                    {{ cb['label'] }}
+                    {{ cb['name'] }}
                 </div>
         {% endfor %}
 

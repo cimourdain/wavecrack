@@ -3,7 +3,7 @@ from server import app
 from app.helpers.files import FilesHelper
 from app.ref.hashcat_options import HASHCAT_OPTIONS, ATTACK_MODES
 from app.helpers.text import TextHelper
-from app.helpers.word_dict import WordDictHelper
+from app.classes.Wordlist import Wordlist
 from app.helpers.attack_modes import AttackModeHelper
 
 # list of detault options to set per attack mode
@@ -92,7 +92,7 @@ class CrackCmdBuilder(object):
         check if file exists either in list of wordlists or in crack folder
         :param f: file absolute path
         """
-        if WordDictHelper.is_valid_wordlist_file(f):
+        if Wordlist.is_valid(f):
             self.attack_files.append(f)
         elif FilesHelper.file_exists(file_path=f):
             self.attack_files.append(f)

@@ -1,5 +1,5 @@
 from app.ref.hashes_list import HASHS_LIST
-from app.helpers.rules import RulesHelper
+from app.classes.Rule import Rule
 
 """
 Important note: --potfile-path option have to be set as File (and not Dir as mentionned in the doc)
@@ -31,9 +31,9 @@ OUTFILES_FORMAT = {
     "15": "hash[:salt]:plain:hex_plain:crack_pos",
 }
 
-RULES_FILES = RulesHelper.get_rules_files()
+RULES_FILES = Rule.get_all_filename()
 
-DEBUG_MODES ={
+DEBUG_MODES = {
     "1": "Finding - Rule",
     "2": "Original - Word",
     "3": "Original - Word:Finding - Rule",

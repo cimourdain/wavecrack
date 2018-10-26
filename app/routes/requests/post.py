@@ -88,8 +88,8 @@ def render_add_page(form, confirmation=False):
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
         hashes_list=HASHS_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
-        wordlist_files_list=Wordlist.get_all(),
-        rules_files_list=Rule.get_all(),
+        wordlist_files_list=Wordlist.get_all_as_instances(),
+        rules_files_list=Rule.get_all_as_instances(),
         confirmation=confirmation
     )
 

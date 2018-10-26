@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship
 from server import app, celery
 from app import db
 from app.ref.hashes_list import HASHS_LIST
+from app.classes.Wordlist import Wordlist
 from app.helpers.files import FilesHelper
 from app.models.cracks.entity import Crack
 # do not remove, used in request relationships
@@ -36,8 +37,8 @@ class CrackRequest(db.Model):
     session_id = db.Column(db.Text, nullable=False, default=str(uuid.uuid4()))
     _hashes_type_code = db.Column(db.Integer, nullable=False)
     hashed_file_contains_usernames = db.Column(db.Boolean, nullable=False, default=False)
-    hashes_path = db.Column(db.Text, nullable=False)
-    nb_password_to_find = db.Column(db.Integer, nullable=False)
+    hashes_path = db.Column(db.Text, nullable=False, default="")
+    nb_password_to_find = db.Column(db.Integer, nullable=False, default=0)
     _dictionary_paths = db.Column(db.Text, nullable=True)
     mask_path = db.Column(db.Text, nullable=True)
     bruteforce = db.Column(db.Boolean, nullable=False, default=False)
@@ -46,7 +47,7 @@ class CrackRequest(db.Model):
     start_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     end_date = db.Column(db.DateTime, nullable=True)
     end_mode = db.Column(db.Text, nullable=True)
-    duration = db.Column(db.Integer, nullable=False)
+    duration = db.Column(db.Integer, nullable=False, default=3)
     email_end_job_sent = db.Column(db.Boolean, nullable=False, default=False)
 
     cracks = relationship("Crack", back_populates="request")
@@ -77,10 +78,14 @@ class CrackRequest(db.Model):
     def request_working_folder(self):
         """
         Method return request working folder
-        working folder : output folder from config + session_id
+        working folder : output folder from user_id + request_id
         :return:
         """
-        return os.path.join(app.config["DIR_LOCATIONS"]["hashcat_outputs"], self.session_id)
+        return os.path.join(
+            app.config["DIR_LOCATIONS"]["hashcat_outputs"],
+            "u_" + str(self.user_id),
+            "req_" + str(self.id)
+        )
 
     @property
     def outfile_path(self):
@@ -344,7 +349,7 @@ class CrackRequest(db.Model):
             content=keywords
         )
 
-        self.add_dictionary_paths(keyword_file_path, ref=False)
+        self.add_dictionary_paths(os.path.join(self.request_working_folder, keyword_file_path))
 
     @mask.setter
     def mask(self, mask):
@@ -358,25 +363,6 @@ class CrackRequest(db.Model):
             content=mask
         )
 
-    @rules.setter
-    def rules(self, rules_paths):
-        """
-        ##### NOT TESTED
-        From rule files path provided, update options to add --rules-file options with each rule file provided
-        :param rules_paths: <path> or <list of path>
-        """
-        if isinstance(rules_paths, basestring):
-            rules_paths = [rules_paths]
-
-        current_options = self.extra_options
-        for rp in rules_paths:
-            current_options.append({
-                "option": "--rules-file",
-                "value": os.path.join(app.config["DIR_LOCATIONS"]["rules"], str(rp))
-            })
-
-        self._extra_options = json.dumps(current_options, indent=4)
-
     # METHODS
     def init_request_folder(self):
         """
@@ -386,10 +372,10 @@ class CrackRequest(db.Model):
         self.session_id = str(uuid.uuid4())
         if not FilesHelper.dir_exists(self.request_working_folder):
             app.logger.debug("create directory "+str(self.request_working_folder))
-            os.mkdir(self.request_working_folder)
+            os.makedirs(self.request_working_folder)
         FilesHelper.file_exists(self.outfile_path, create=True)
 
-    def add_dictionary_paths(self, list_of_wordlists, ref=False):
+    def add_dictionary_paths(self, dict_paths):
         """
         Method to add a dictionnary path.
             * for keywords (=custom wordlist): wordlist path is relative to working folder
@@ -401,32 +387,35 @@ class CrackRequest(db.Model):
         :param ref: <bool> wordlist is in the wordlist folder from config
         :return:
         """
-        app.logger.debug("request :: add_dictionary_paths :: add {} to list of dictionaries".format(
-            str(list_of_wordlists))
-        )
-
-        # if list_of worlist is a string, then convert it to a one element list
-        if not isinstance(list_of_wordlists, list):
-            list_of_wordlists = [list_of_wordlists]
+        if not isinstance(dict_paths, list):
+            dict_paths = [dict_paths]
 
         # split current list of dictionnary in db by ","
         current_dict_path_list = self._dictionary_paths.split(',') if self._dictionary_paths else []
 
-        # define wordlist pre-path (to add in front of relative path) depending on ref
-        if ref:
-            prepath = app.config["DIR_LOCATIONS"]["wordlists"]
-            app.logger.debug("use prepath "+str(prepath))
-        else:
-            prepath = self.request_working_folder
-            app.logger.debug("use prepath " + str(prepath))
-
         # add each wordlist absolute path to current list of wordlist
-        for d in list_of_wordlists:
-            if d not in current_dict_path_list:
-                current_dict_path_list.append(os.path.join(prepath, d))
+        for d in dict_paths:
+            dict_path = d.full_filepath if isinstance(d, Wordlist) else d
+            if dict_path not in current_dict_path_list:
+                current_dict_path_list.append(dict_path)
 
         # set dictionary path in db to list of wordlists (comma separated)
         self._dictionary_paths = ','.join(current_dict_path_list)
+
+    def add_rules(self, rule_objects):
+        """
+        From rule files path provided, update options to add --rules-file options with each rule file provided
+        :param rule_objects: <path> or <list of path>
+        """
+        current_options = self.extra_options
+        for r in rule_objects:
+            current_options.append({
+                "option": "--rules-file",
+                "value": r.full_filepath
+            })
+
+        self._extra_options = json.dumps(current_options, indent=4)
+
 
     def prepare_cracks(self):
         """

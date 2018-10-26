@@ -29,7 +29,8 @@ then
     echo "remove existing_db"
     rm -rf migrations
     rm data.sqlite
-
+    echo "remove all existing outputs"
+    rm -r ./io/outputs/*
     init_db
 elif [ "$1" = "update_db" ]
 then

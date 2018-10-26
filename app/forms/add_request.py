@@ -7,6 +7,8 @@ from wtforms import TextAreaField, FileField, SelectField, BooleanField, RadioFi
 
 # local imports
 from server import app
+from app.classes.Wordlist import Wordlist
+from app.classes.Rule import Rule
 from app.ref.hashes_list import HASHS_LIST
 from app.helpers.forms import FormHelper
 from app.helpers.hashes import HashesHelper
@@ -52,7 +54,7 @@ class AddCrackRequestForm(FlaskForm):
         "placeholder": "Enter keywords(one per line)"
     })
 
-    # note: rules generated manually
+    rules = BooleanField("Use Rules (cusomise rules files in \"options\" tab if necessary)")
 
     bruteforce = BooleanField("Perform a bruteforce attack")
 
@@ -111,16 +113,51 @@ class AddCrackRequestForm(FlaskForm):
         return request.form.get("hashed_file_contains_usernames", 'n') == 'y'
 
     @staticmethod
-    def get_wordlists_files():
-        return request.form.get('wordlist_files', None)
+    def get_files_from_ref(obj_list, form_field, only_submited=False):
+        if AddCrackRequestForm.is_submission():
+            form_rules_files = request.form.getlist(form_field, None)
+            updated_list = []
+            for o in obj_list:
+                app.logger.debug("Check if {} is in {}: {}".format(
+                    o.filepath,
+                    str(form_rules_files),
+                    str(True if o.filepath in form_rules_files or o.filepath == form_rules_files else False)
+                ))
+                o.set_default(value=(True if o.filepath in form_rules_files else False))
+                if not only_submited or (only_submited and o.default):
+                    updated_list.append(o)
+
+            return updated_list
+
+        return obj_list
+
+    @staticmethod
+    def get_wordlists_files(only_submited=False):
+        app.logger.debug("Get selected or default wordlists")
+        return AddCrackRequestForm.get_files_from_ref(
+            obj_list=Wordlist.get_all_as_instances(),
+            form_field='wordlist_files',
+            only_submited=only_submited
+        )
 
     @staticmethod
     def get_mask():
         return request.form.get("mask", None)
 
     @staticmethod
-    def get_rules_files():
-        return request.form.get('rules_files', None)
+    def get_rules():
+        if request.form.get('rules', 'n') == 'y':
+            return True
+        return False
+
+    @staticmethod
+    def get_rules_files(only_submited=False):
+        app.logger.debug("Get selected or default rules")
+        return AddCrackRequestForm.get_files_from_ref(
+            obj_list=Rule.get_all_as_instances(),
+            form_field='rules_files',
+            only_submited=only_submited
+        )
 
     @staticmethod
     def get_bruteforce():
@@ -137,6 +174,10 @@ class AddCrackRequestForm(FlaskForm):
         if request.form.get('use_potfile', 'n') == 'y':
             return True
         return False
+
+    @staticmethod
+    def is_submission():
+        return request.form.get("confirm_btn", None) or request.form.get("submit_btn", None)
 
     @staticmethod
     def is_confirmation():

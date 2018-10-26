@@ -104,7 +104,7 @@ function UpdateHashExample()
   <!-- ATTACK -->
   <div class="tab-pane fade" id="nav-main" role="tabpanel" aria-labelledby="nav-main">
       <h3>Dictionaries</h3>
-
+      <h4>Standard dictionaries</h4>
       {% for cb in wordlist_files_list %}
             <div class="form-group">
                 <input
@@ -117,7 +117,7 @@ function UpdateHashExample()
                 {{ cb['name'] }}
             </div>
         {% endfor %}
-
+      <h4>Custom</h4>
       <div class="form-group">
         {{ form.keywords.label}}
         {{ form.keywords(class_="form-control", readonly=confirmation) }}
@@ -153,18 +153,10 @@ function UpdateHashExample()
       </div>
 
       <h3>Rules</h3>
-        {% for cb in rules_files_list %}
-                <div class="form-group">
-                    <input
-                            type="checkbox"
-                            name="rules_files"
-                            value="{{ cb['filepath'] }}"
-                            {{ "checked" if cb["default"] else "" }}
-                            {{ "readonly" if confirmation else "" }}
-                    />
-                    {{ cb['name'] }}
-                </div>
-        {% endfor %}
+      <div class="form-group">
+            {{ form.rules(class_="attack_mode", readonly=confirmation) }}
+            {{ form.rules.label }}
+      </div>
 
 
       <h3>Duration</h3>
@@ -178,10 +170,19 @@ function UpdateHashExample()
 
   <!-- OPTIONS -->
   <div class="tab-pane fade" id="nav-options" role="tabpanel" aria-labelledby="nav-options">
-      <div class="form-group">
-            {{ form.use_potfile(readonly=confirmation) }}
-            {{ form.use_potfile.label }}
-      </div>
+        <h3>Customise Rules</h3>
+        {% for cb in rules_files_list %}
+                <div class="form-group">
+                    <input
+                            type="checkbox"
+                            name="rules_files"
+                            value="{{ cb['filepath'] }}"
+                            {{ "checked" if cb["default"] else "" }}
+                            {{ "readonly" if confirmation else "" }}
+                    />
+                    {{ cb['name'] }}
+                </div>
+        {% endfor %}
   </div>
 
 </form>

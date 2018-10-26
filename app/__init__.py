@@ -39,6 +39,7 @@ def create_app(config_name):
 
     return app
 
+
 def db_init_content():
     from app.models.user import User
 
@@ -47,7 +48,8 @@ def db_init_content():
 
 def check_app_folders(app):
     for k, folder in app.config['DIR_LOCATIONS'].items():
-        if not os.path.exists(folder):
+        if not os.path.exists(folder) and os.path.isdir(folder):
+            app.logger.debug("Folder "+str(folder)+" does not exists or is not a folder.")
             if not os.makedirs(folder):
                 raise OSError(
                     "Impossible to find or create folder for {} ({})".format(str(k), str(folder))

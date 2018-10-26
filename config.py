@@ -46,13 +46,13 @@ class Config(object):
     DIR_LOCATIONS = {
 
         # Wordlist directory path, by default '/usr/share/wordlists/' on Kali
-        'wordlists': locations_base_dir + '/sources/words/',
+        'wordlists': locations_base_dir + '/sources/words',
 
         # Folder directory path, where rules are stored
-        'rules': locations_base_dir + '/sources/rules/',
+        'rules': locations_base_dir + '/sources/rules',
 
         # Output hashcat directory path
-        'hashcat_outputs': locations_base_dir + '/outputs/hashcat/',
+        'hashcat_outputs': locations_base_dir + '/outputs/hashcat',
 
         # tmp folder
         'tmp': locations_base_dir + '/tmp/'

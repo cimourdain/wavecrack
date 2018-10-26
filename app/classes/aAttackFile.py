@@ -1,3 +1,5 @@
+import os
+
 from app.helpers.files import FilesHelper
 
 
@@ -27,9 +29,15 @@ class AbstractAttackFile(object):
         else:
             self.name = FilesHelper.remove_ext_from_filename(self.filepath)
 
-    def set_default(self, config=None):
+    def set_default(self, config=None, value=False):
         if config and "default" in config and isinstance(config["default"], bool):
             self.default = config["default"]
+        elif not config and isinstance(value, bool):
+            self.default = value
+
+    @property
+    def full_filepath(self):
+        return os.path.join(type(self).base_folder, self.filepath)
 
     @classmethod
     def is_valid(cls, filename):

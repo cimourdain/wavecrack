@@ -111,10 +111,10 @@ function UpdateHashExample()
                         type="checkbox"
                         name="wordlist_files"
                         value="{{ cb['filepath'] }}"
-                        {{ "checked" if cb["default"] else "" }}
+                        {{ "checked" if cb["active"] else "" }}
                         {{ "readonly" if confirmation else "" }}
                 />
-                {{ cb['name'] }}
+                {{ cb['name'].decode('utf-8') }}
             </div>
         {% endfor %}
       <h4>Custom</h4>
@@ -177,10 +177,10 @@ function UpdateHashExample()
                             type="checkbox"
                             name="rules_files"
                             value="{{ cb['filepath'] }}"
-                            {{ "checked" if cb["default"] else "" }}
+                            {{ "checked" if cb["active"] else "" }}
                             {{ "readonly" if confirmation else "" }}
                     />
-                    {{ cb['name'] }}
+                    {{ cb['name'].decode('utf-8') }}
                 </div>
         {% endfor %}
   </div>

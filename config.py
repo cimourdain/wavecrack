@@ -69,28 +69,36 @@ class Config(object):
     # by default wordlists are displayed by filename in "add crack" form.
     # This config allow to define custom wordlists names
     # dict keys are rule path relative to above DIR_LOCATIONS["wordlists"]
-    WORDLIST_SETUP = {
-        # file relative path from DIR_LOCATIONS["wordlists"]
-        "rockyou.txt": {
-            # name displayed in form
-            "name": "My RockYou",
-            # is the file selected by default for each attack (optional, default is False)
-            "default": False
-        }
-    }
+    # wordlist files will be displayed on form in order of the following list (wordlist files not defined in the
+    # list below will be displayed alphabetically after.
+    WORDLIST_SETUP = [
+        # EXAMPLE
+        # {
+        #     # file relative path from DIR_LOCATIONS["wordlists"]
+        #     "file": "word3.txt",
+        #     # name displayed in form
+        #     "name": "Word File n°3",
+        #     # is the file selected by default for each attack (optional, default is False)
+        #     "active": False
+        # },
+    ]
 
     # by default rules are displayed by filename in "add crack" form.
     # This config allow to define custom rules names
     # dict "file" key are rule path relative to above DIR_LOCATIONS["rules"]
-    RULES_SETUP = {
-        # file relative path from DIR_LOCATIONS["rules"]
-        "rule2.txt" : {
-            # name displayed in form
-            "name": "Rule 2 Cusom name",
-            # is the file selected by default for each rule attack (optional, default is False)
-            "default": True
-        }
-    }
+    # rules files will be displayed on form in order of the following list (rules files not defined in the
+    # list below will be displayed alphabetically after.
+    RULES_SETUP = [
+        # EXAMPLE
+        # {
+        #     # file relative path from DIR_LOCATIONS["rules"]
+        #     "file": "rule3.txt",
+        #     # name displayed in form
+        #     "name": "My Rule 3",
+        #     # is the file selected by default for each rule attack (optional, default is False)
+        #     "active": False
+        # },
+    ]
 
     """
     ADDITIONAL SETTINGS

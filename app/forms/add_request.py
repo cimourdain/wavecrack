@@ -1,3 +1,4 @@
+# coding: utf8
 import os
 
 # third party imports
@@ -123,8 +124,8 @@ class AddCrackRequestForm(FlaskForm):
                     str(form_rules_files),
                     str(True if o.filepath in form_rules_files or o.filepath == form_rules_files else False)
                 ))
-                o.set_default(value=(True if o.filepath in form_rules_files else False))
-                if not only_submited or (only_submited and o.default):
+                o.set_active(active=(True if o.filepath in form_rules_files else False))
+                if not only_submited or (only_submited and o.active):
                     updated_list.append(o)
 
             return updated_list
@@ -135,7 +136,7 @@ class AddCrackRequestForm(FlaskForm):
     def get_wordlists_files(only_submited=False):
         app.logger.debug("Get selected or default wordlists")
         return AddCrackRequestForm.get_files_from_ref(
-            obj_list=Wordlist.get_all_as_instances(),
+            obj_list=Wordlist.get_all_from_config_and_ref_folder_as_instances(),
             form_field='wordlist_files',
             only_submited=only_submited
         )
@@ -154,7 +155,7 @@ class AddCrackRequestForm(FlaskForm):
     def get_rules_files(only_submited=False):
         app.logger.debug("Get selected or default rules")
         return AddCrackRequestForm.get_files_from_ref(
-            obj_list=Rule.get_all_as_instances(),
+            obj_list=Rule.get_all_from_config_and_ref_folder_as_instances(),
             form_field='rules_files',
             only_submited=only_submited
         )

@@ -1,3 +1,4 @@
+# coding: utf8
 from app.ref.hashes_list import HASHS_LIST
 from app.classes.Rule import Rule
 
@@ -31,7 +32,7 @@ OUTFILES_FORMAT = {
     "15": "hash[:salt]:plain:hex_plain:crack_pos",
 }
 
-RULES_FILES = Rule.get_all_filename()
+RULES_FILES = Rule.get_all_from_config_and_ref_folder_as_filename()
 
 DEBUG_MODES = {
     "1": "Finding - Rule",

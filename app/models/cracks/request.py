@@ -17,6 +17,7 @@ from app.models.cracks.entity import Crack
 # do not remove, used in request relationships
 from app.models.user import User
 from app.ref.close_modes import REQUESTS_CLOSE_MODES
+from app.classes.Rule import Rule
 
 
 class CrackRequest(db.Model):
@@ -180,7 +181,7 @@ class CrackRequest(db.Model):
         if self.has_rules:
             for o in self.extra_options:
                 if o["option"] == "--rules-file":
-                    yield o["value"]
+                    yield Rule(filepath=o["value"])
 
     @property
     def extra_options(self):
@@ -188,7 +189,6 @@ class CrackRequest(db.Model):
         :return: return content of request options as a list of dict (loaded from json in db)
         """
         if self._extra_options:
-            app.logger.debug("extra options: "+str(self._extra_options))
             return json.loads(self._extra_options)
 
         return []
@@ -550,7 +550,8 @@ class CrackRequest(db.Model):
 
         app.logger.debug("Request :: Check if " + str(filename) + " a rule file")
         for rf in self.rules:
-            if os.path.split(rf)[-1] == filename:
-                return rf
+            app.logger.debug("Analyse rule "+str(rf.__dict__))
+            if rf.filepath_strict_name == filename:
+                return rf.full_filepath
 
         return None

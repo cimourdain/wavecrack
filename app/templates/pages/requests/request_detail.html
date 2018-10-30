@@ -26,7 +26,19 @@
                           </a>
 
             </div>
-            {% endif %}
+                {% if request.has_rules %}
+                    <div>
+                            <p>Rules:</p>
+                              <ul>
+                            {% for rule in request.rules %}
+                                <li><a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename=rule.filepath_strict_name) }}">
+                                 {{ rule.name }}
+                                </a></li>
+                            {% endfor %}
+                              </ul>
+                          {% endif %}
+                    </div>
+                {% endif %}
         </div>
         <div class="col-sm-4">
             <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }} ({{ request.password_progress }}%)</div>
@@ -84,6 +96,7 @@
               <div class="card-body">
                   <div class="row">
                       <div class="col-sm-6">
+                          <p>Attack type: {{ crack.attack_mode.description }}</p>
                           {% if crack.start_date %}
                               <p>{{ crack.nb_password_found }} password found.</p>
                               <p>Start : {{ crack.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
@@ -108,13 +121,25 @@
 
                       </div>
                       <div class="col-sm-6">
-                        {% if  crack.attack_file %}
-                         <p>
+                          {% if crack.attack_file %}
+                          <p>
                              <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename=crack.attack_file) }}">
                                  Attack file
                              </a>
-                         </p>
-                         {% endif %}
+                          </p>
+                          {% endif %}
+
+                          {% if crack.has_rules %}
+                            <p>Rules:</p>
+                              <ul>
+                            {% for rule in crack.rules %}
+                                <li><a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename=rule.filepath_strict_name) }}">
+                                 {{ rule.name }}
+                                </a></li>
+                            {% endfor %}
+                              </ul>
+                          {% endif %}
+
                           <p>Outputs:</p>
                           {% if crack.start_date %}
                           <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename="output.txt") }}"

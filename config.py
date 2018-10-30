@@ -90,14 +90,14 @@ class Config(object):
     # list below will be displayed alphabetically after.
     RULES_SETUP = [
         # EXAMPLE
-        # {
-        #     # file relative path from DIR_LOCATIONS["rules"]
-        #     "file": "rule3.txt",
-        #     # name displayed in form
-        #     "name": "My Rule 3",
-        #     # is the file selected by default for each rule attack (optional, default is False)
-        #     "active": False
-        # },
+        {
+            # file relative path from DIR_LOCATIONS["rules"]
+            "file": "rule0_last.txt",
+            # name displayed in form
+            "name": "My Rule 3",
+            # is the file selected by default for each rule attack (optional, default is False)
+            "active": False
+        },
     ]
 
     """

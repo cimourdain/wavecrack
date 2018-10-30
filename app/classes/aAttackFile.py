@@ -20,8 +20,15 @@ class AbstractAttackFile(object):
             self.set_from_config(config)
 
     def set_from_filepath(self, filepath):
+        print("AbstractAttackFile :: set_from_filepath :: "+str(filepath))
         self.filepath = filepath
+
         self.set_name()
+        for cf in type(self).config:
+            print("check if "+str(cf["file"])+" == "+str(self.filepath))
+            if os.path.join(self.source_folder, cf["file"]) == self.filepath:
+                self.set_name(name=cf["name"])
+                break
 
     def set_from_config(self, config):
         self.filepath = config["file"]
@@ -29,9 +36,7 @@ class AbstractAttackFile(object):
         self.set_active(active=config["active"] if "active" in config else None)
 
     def set_name(self, name=None):
-
-        self.name = name if name else FilesHelper.remove_ext_from_filename(self.filepath)
-        print("set name to "+self.name)
+        self.name = name if name else FilesHelper.remove_ext_from_filename(os.path.split(self.filepath)[-1])
 
     def set_active(self, active=False):
         if isinstance(active, bool):
@@ -40,6 +45,10 @@ class AbstractAttackFile(object):
     @property
     def full_filepath(self):
         return os.path.join(self.source_folder, self.filepath)
+
+    @property
+    def filepath_strict_name(self):
+        return os.path.split(self.filepath)[-1]
 
     @classmethod
     def is_valid(cls, filename, folder=None):

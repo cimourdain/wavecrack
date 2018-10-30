@@ -12,6 +12,7 @@ from app import db
 from app.classes.crackCmdBuilder import CrackCmdBuilder
 from app.classes.cmd import Cmd
 from app.helpers.files import FilesHelper
+from app.ref.attack_modes import ATTACK_MODES
 
 
 class Crack(db.Model):
@@ -25,6 +26,9 @@ class Crack(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False, default="Unnamed crack")
     crack_request_id = db.Column(db.Integer, db.ForeignKey('cracks_requests.id'))
+    _attack_mode_code = db.Column(db.Integer, nullable=False)
+    _attack_file = db.Column(db.Text, nullable=True)
+    options = db.Column(db.Text, nullable=True)
     cmd = db.Column(db.Text, nullable=True)
     process_id = db.Column(db.Integer, nullable=True)
     start_date = db.Column(db.DateTime, nullable=True)
@@ -34,12 +38,14 @@ class Crack(db.Model):
 
     request = relationship("CrackRequest", back_populates="cracks")
 
-    def __init__(self, name):
+    def __init__(self, name, attack_mode, attack_file):
         """
         On init a crack request must be created with a name
         :param name: <str>
         """
         self.name = name
+        self.attack_mode = attack_mode if attack_mode else 0
+        self.attack_file = attack_file if attack_file else None
 
     # PROPERTIES
     @property
@@ -90,6 +96,40 @@ class Crack(db.Model):
     def nb_password_found(self):
         return FilesHelper.nb_lines_in_file(self.output_file_path)
 
+    @property
+    def attack_mode(self):
+        for am in ATTACK_MODES:
+            if self._attack_mode_code == am["code"]:
+                return am
+
+        return "Undefined"
+
+    @property
+    def attack_file(self):
+        return os.path.split(self._attack_file)[-1]
+
+    @property
+    def has_rules(self):
+        return self.request.has_rules
+
+    @property
+    def rules(self):
+        return self.request.rules
+
+    @attack_mode.setter
+    def attack_mode(self, attack_mode):
+        for am in ATTACK_MODES:
+            if attack_mode == am["code"] or attack_mode == am["description"]:
+                self._attack_mode_code = am["code"]
+
+    @attack_file.setter
+    def attack_file(self, attack_file):
+        app.logger.debug("Check if attack file exists : "+str(attack_file))
+        if attack_file and FilesHelper.file_exists(attack_file):
+            self._attack_file = attack_file
+        elif attack_file and not FilesHelper.file_exists(attack_file):
+            app.logger.warn("Invalid attack file on crack "+str(attack_file))
+
     # RECONSTUCTOR (called on every object load)
     @reconstructor
     def check_status(self):
@@ -103,14 +143,12 @@ class Crack(db.Model):
                 self.set_as_ended()
 
     # OTHER METHODS
-    def build_crack_cmd(self, attack_mode, attack_file, crack_options=None):
+    def build_crack_cmd(self, crack_options=None):
         """
         From crack and request, build and set the hashcat command to launch.
 
         Note: This method use the crackCmdBuilder object to build the command.
 
-        :param attack_mode: <int>
-        :param attack_file: <str>
         :param crack_options: <dict>
         :return:
         """
@@ -127,8 +165,8 @@ class Crack(db.Model):
         # init a CrackCmdBuilder instance
         new_crack_class = CrackCmdBuilder(
             source_crack=self,
-            attack_mode_code=attack_mode,
-            attack_files=attack_file,
+            attack_mode_code=self.attack_mode,
+            attack_files=self.attack_file,
             options=options
         )
 
@@ -219,3 +257,15 @@ class Crack(db.Model):
         if self.process_id:
             Cmd.kill(self.process_id)
             self.set_as_ended(end_status_mode="MANUAL")
+
+    def get_crack_file(self, filename):
+        app.logger.debug("Crack :: Check if "+str(filename)+" is "+str(self.attack_file))
+        if filename == self.attack_file:
+            return self._attack_file
+
+        app.logger.debug("Crack :: Check if " + str(filename) + " is in " + str(self.crack_folder))
+        for f in FilesHelper.get_available_files(self.crack_folder):
+            if f == filename:
+                return os.path.join(self.crack_folder, f)
+
+        return self.request.get_file(filename)

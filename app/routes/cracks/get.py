@@ -1,5 +1,8 @@
 # coding: utf8
 
+# standard imports
+import os
+
 # third party imports
 from flask import Blueprint, render_template, jsonify, request, flash, send_from_directory
 from flask_login import login_required, current_user
@@ -27,42 +30,14 @@ def get_crack(crack_id):
     return crack
 
 
-@cracks_get.route('/cracks/<crack_id>/output_file', methods=["GET"])
-@login_required
-def download_crack_outfile(crack_id):
-
+@cracks_get.route('/cracks/<crack_id>/file/<filename>', methods=["GET"])
+def download_crack_file(crack_id, filename):
     crack = get_crack(crack_id)
+    file_full_path = crack.get_crack_file(filename=filename)
 
-    folder_path, filename = FilesHelper.split_path(crack.output_file_path)
+    if not file_full_path:
+        flash("impossible to get file")
+        return render_template('pages/home.html', title="file not found")
+
+    folder_path, filename = FilesHelper.split_path(file_full_path)
     return send_from_directory(directory=folder_path, filename=filename)
-
-
-@cracks_get.route('/cracks/<crack_id>/potfile', methods=["GET"])
-@login_required
-def download_crack_potfile(crack_id):
-
-    crack = get_crack(crack_id)
-
-    folder_path, filename = FilesHelper.split_path(crack.potfile_path)
-    return send_from_directory(directory=folder_path, filename=filename)
-
-
-@cracks_get.route('/cracks/<crack_id>/cmd_output_file', methods=["GET"])
-@login_required
-def download_crack_cmd_outfile(crack_id):
-    crack = get_crack(crack_id)
-
-    folder_path, filename = FilesHelper.split_path(crack.output_file_path)
-
-    return send_from_directory(directory=folder_path, filename="cmd_output.txt")
-
-
-@cracks_get.route('/cracks/<crack_id>/cmd_error_file', methods=["GET"])
-@login_required
-def download_crack_cmd_errfile(crack_id):
-    crack = get_crack(crack_id)
-
-    folder_path, filename = FilesHelper.split_path(crack.output_file_path)
-
-    return send_from_directory(directory=folder_path, filename="cmd_err.txt")
-

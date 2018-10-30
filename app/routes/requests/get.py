@@ -91,52 +91,19 @@ def get_unique_request(request_id):
     )
 
 
-@requests_get.route('/requests/<request_id>/input_file', methods=["GET"])
+@requests_get.route('/requests/<request_id>/file/<filename>', methods=["GET"])
 @login_required
-def download_original_password_file(request_id):
-    """
-    Route to download crack request hash file
-
-    :param request_id:
-    :return:
-    """
+def download_request_file(request_id, filename):
     try:
         request = get_request(request_id)
     except Exception as _:
         flash("Error: request not found", "error")
         return render_template('pages/home.html', title="request not found")
 
-    folder_path, filename = FilesHelper.split_path(request.hashes_path)
-    return send_from_directory(directory=folder_path, filename=filename)
-
-
-@requests_get.route('/requests/<request_id>/output_file', methods=["GET"])
-@login_required
-def download_output_file(request_id):
-    """
-    Route to download request output file
-
-    :param request_id:
-    :return:
-    """
-    try:
-        request = get_request(request_id)
-    except Exception as _:
-        flash("Error: request not found", "error")
+    file_full_path = request.get_file(filename)
+    if not file_full_path:
+        flash("Error: File not found", "error")
         return render_template('pages/home.html', title="request not found")
 
-    folder_path, filename = FilesHelper.split_path(request.outfile_path)
-    return send_from_directory(directory=folder_path, filename=filename)
-
-
-@requests_get.route('/requests/<request_id>/mask', methods=["GET"])
-@login_required
-def download_mask_file(request_id):
-    try:
-        request = get_request(request_id)
-    except Exception as _:
-        flash("Error: request not found", "error")
-        return render_template('pages/home.html', title="request not found")
-
-    folder_path, filename = FilesHelper.split_path(request.mask_path)
+    folder_path, filename = FilesHelper.split_path(file_full_path)
     return send_from_directory(directory=folder_path, filename=filename)

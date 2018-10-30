@@ -166,7 +166,10 @@ class CrackRequest(db.Model):
         Check if rules_path property is not empty
         :return:
         """
-        return True if self.rules_path else False
+        for o in self.extra_options:
+            if o["option"] == "--rules-file":
+                return True
+        return False
 
     @property
     def rules(self):
@@ -175,8 +178,9 @@ class CrackRequest(db.Model):
         :return:
         """
         if self.has_rules:
-            for d in self.rules_path.split(','):
-                yield d
+            for o in self.extra_options:
+                if o["option"] == "--rules-file":
+                    yield o["value"]
 
     @property
     def extra_options(self):
@@ -416,7 +420,6 @@ class CrackRequest(db.Model):
 
         self._extra_options = json.dumps(current_options, indent=4)
 
-
     def prepare_cracks(self):
         """
         Create a Crack instance for each hashcat instance to launch + build hashcat command to launch
@@ -434,41 +437,43 @@ class CrackRequest(db.Model):
             for wordlist_file_path in self._dictionary_paths.split(','):
                 app.logger.debug("Create new dictionary attack")
                 _, dict_filename = FilesHelper.split_path(wordlist_file_path)
-                new_dict_crack = Crack("Dictionary: "+str(FilesHelper.remove_ext_from_filename(dict_filename)))
+                new_dict_crack = Crack(
+                    name="Dictionary: "+str(FilesHelper.remove_ext_from_filename(dict_filename)),
+                    attack_mode=0,
+                    attack_file=wordlist_file_path
+                )
                 db.session.add(new_dict_crack)
                 db.session.commit()
 
                 self.cracks.append(new_dict_crack)
-                new_dict_crack.build_crack_cmd(
-                    attack_mode=0,
-                    attack_file=wordlist_file_path
-                )
+                new_dict_crack.build_crack_cmd()
 
         # create mask crack if mask is defined
         if self.has_mask:
             app.logger.debug("Mask path is "+str(self.mask_path)+": create a mask attack")
-            new_mask_crack = Crack(name="Mask crack")
+            new_mask_crack = Crack(
+                name="Mask crack",
+                attack_mode=3,
+                attack_file=os.path.join(self.request_working_folder, "mask.hcmask")
+            )
             db.session.add(new_mask_crack)
             db.session.commit()
 
             self.cracks.append(new_mask_crack)
-            new_mask_crack.build_crack_cmd(
-                attack_mode=3,
-                attack_file=os.path.join(self.request_working_folder, "mask.hcmask"),
-            )
+            new_mask_crack.build_crack_cmd()
 
         # create bruteforce attack if required
         if self.bruteforce:
             app.logger.info("Create debug crack in request")
-            new_bf_crack = Crack(name="Bruteforce")
+            new_bf_crack = Crack(name="Bruteforce",
+                                 attack_mode=3,
+                                 attack_file=None
+                                 )
             db.session.add(new_bf_crack)
             db.session.commit()
 
             self.cracks.append(new_bf_crack)
-            new_bf_crack.build_crack_cmd(
-                attack_mode=3,
-                attack_file=None
-            )
+            new_bf_crack.build_crack_cmd()
 
         db.session.commit()
 
@@ -531,3 +536,21 @@ class CrackRequest(db.Model):
             crack.force_close()
 
         self.close_crack_request(mode="MANUAL")
+
+    def get_file(self, filename):
+        app.logger.debug("Request :: Check if " + str(filename) + " is in " + str(self.request_working_folder))
+        for f in FilesHelper.get_available_files(self.request_working_folder):
+            if f == filename:
+                return os.path.join(self.request_working_folder, f)
+
+        app.logger.debug("Request :: Check if " + str(filename) + " a dict file")
+        for f in self.dictionary_paths:
+            if os.path.split(f)[-1] == filename:
+                return f
+
+        app.logger.debug("Request :: Check if " + str(filename) + " a rule file")
+        for rf in self.rules:
+            if os.path.split(rf)[-1] == filename:
+                return rf
+
+        return None

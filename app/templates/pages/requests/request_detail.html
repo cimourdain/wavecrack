@@ -10,7 +10,7 @@
         </div>
         <div class="col-sm-4">
             <div>
-                <a href="{{ url_for('requests_get.download_original_password_file', request_id=request.id) }}">Hashes</a>
+                <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="hashes_original.txt") }}">Hashes</a>
                 {% if request.hashed_file_contains_usernames %}(contains usernames){% endif %}
             </div>
             <div>
@@ -21,7 +21,7 @@
             </div>
             {% if request.has_mask %}
             <div>
-                <a href="{{ url_for('requests_get.download_mask_file', request_id=request.id) }}"
+                <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="mask.hcmask") }}"
                              class="card-link">Mask
                           </a>
 
@@ -31,7 +31,7 @@
         <div class="col-sm-4">
             <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }} ({{ request.password_progress }}%)</div>
             <div>
-                <a href="{{ url_for('requests_get.download_output_file', request_id=request.id) }}">Output</a>
+                <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="output.txt") }}">Output</a>
             </div>
             {% if not request.is_finished %}
             <div>
@@ -92,7 +92,7 @@
                                   <p>End status: {{ crack.end_status_mode }}</p>
 
                               {% else %}
-                                <p>Status: running {% if current_user.is_admin %} <small>process {{ crack.process_id }}</small>{% endif %}</p>
+                                <p>Status: running</p>
 
                                 <div>
                                     <form action="{{ url_for('cracks_post.kill_crack', crack_id=crack.id) }}" method="POST">
@@ -108,15 +108,22 @@
 
                       </div>
                       <div class="col-sm-6">
-                         <p>Outputs:</p>
+                        {% if  crack.attack_file %}
+                         <p>
+                             <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename=crack.attack_file) }}">
+                                 Attack file
+                             </a>
+                         </p>
+                         {% endif %}
+                          <p>Outputs:</p>
                           {% if crack.start_date %}
-                          <a href="{{ url_for('cracks_get.download_crack_outfile', crack_id=crack.id) }}"
+                          <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename="output.txt") }}"
                              class="card-link">Output
                             </a><br />
-                            <a href="{{ url_for('cracks_get.download_crack_cmd_outfile', crack_id=crack.id) }}"
+                            <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename="cmd_output.txt") }}"
                              class="card-link">Hashcat output
                             </a><br />
-                            <a href="{{ url_for('cracks_get.download_crack_cmd_errfile', crack_id=crack.id) }}"
+                            <a href="{{ url_for('cracks_get.download_crack_file', crack_id=crack.id, filename="cmd_err.txt") }}"
                              class="card-link">Hashcat errors
                             </a>
                           {% endif %}

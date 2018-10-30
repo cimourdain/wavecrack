@@ -7,7 +7,7 @@
             <div>Launched by: {{ request.user.name }}</div>
             <div>Launch time : {{ request.start_date.strftime('%Y-%m-%d %H:%M:%S') }}</div>
             <div>Status: {{ request.status }}</div>
-        </div>
+        </div><!-- // request header left col-->
         <div class="col-sm-4">
             <div>
                 <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="hashes_original.txt") }}">Hashes</a>
@@ -15,36 +15,37 @@
             </div>
             <div>
                 Hashes type: {{ request.hashes_type_label }}
-            </div>
+            </div><!-- // request header  center col hashes-->
             <div>
                 Dictionaries: {% for d in request.dictionary_paths %}{{ d }}, {% endfor %}
-            </div>
+            </div><!-- // request header  center col dict-->
             {% if request.has_mask %}
             <div>
                 <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="mask.hcmask") }}"
                              class="card-link">Mask
                           </a>
 
-            </div>
-                {% if request.has_rules %}
-                    <div>
-                            <p>Rules:</p>
-                              <ul>
-                            {% for rule in request.rules %}
-                                <li><a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename=rule.filepath_strict_name) }}">
-                                 {{ rule.name }}
-                                </a></li>
-                            {% endfor %}
-                              </ul>
-                          {% endif %}
-                    </div>
-                {% endif %}
-        </div>
+            </div><!-- // request header  center col mask link-->
+            {% endif %}
+
+            {% if request.has_rules %}
+                <div><!-- // request header  center col start rules-->
+                    <p>Rules:</p>
+                      <ul>
+                        {% for rule in request.rules %}
+                            <li><a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename=rule.filepath_strict_name) }}">
+                             {{ rule.name }}
+                            </a></li>
+                        {% endfor %}
+                      </ul>
+                </div><!-- // request header  center col end rules-->
+            {% endif %}
+        </div><!-- // request header  center col-->
         <div class="col-sm-4">
             <div>Nb passwords found: {{ request.nb_password_found }}/{{ request.nb_password_to_find }} ({{ request.password_progress }}%)</div>
             <div>
                 <a href="{{ url_for('requests_get.download_request_file', request_id=request.id, filename="output.txt") }}">Output</a>
-            </div>
+            </div><!-- // request header  right col output link-->
             {% if not request.is_finished %}
             <div>
                 <form action="{{ url_for('requests_post.kill_all_cracks_in_request', request_id=request.id) }}" method="POST">
@@ -54,10 +55,10 @@
                 <form action="{{ url_for('requests_post.delete_request', request_id=request.id) }}" method="POST">
                     <button type="submit" class="btn btn-danger">Delete Request</button>
                 </form>
-            </div>
+            </div><!-- // request header  right col forms-->
             {% endif %}
-        </div>
-    </div>
+        </div><!-- // request header  right col-->
+    </div><!-- // request header row -->
     <h2>Cracks</h2>
     <div class="accordion" id="accordionExample">
     {% for crack in request.cracks %}

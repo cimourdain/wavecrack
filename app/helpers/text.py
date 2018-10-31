@@ -1,3 +1,5 @@
+import re
+
 
 class TextHelper(object):
     @staticmethod
@@ -12,6 +14,11 @@ class TextHelper(object):
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def check_email(email):
+        pattern = r"\"?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)\"?"
+        return re.match(pattern, email)
 
     @staticmethod
     def check_mask(masks):

@@ -105,9 +105,6 @@ class Config(object):
     Default values work, but can be adjusted to your needs
     """
 
-    # Authentication settings, choose between "None", "Basic" and "LDAP"
-    AUTH_TYPE = "None"
-
     # Detault users created by the flask deploy command (passwords are encrypted on user creation, see User model)
     DEFAULT_USERS = [
             {
@@ -133,10 +130,17 @@ class Config(object):
                 "email": "user2@user.com",
                 "password": "toto",
                 "admin": False
+            },
+            {
+                "name": "user_uk",
+                "email": "user2@user.co.uk",
+                "password": "toto",
+                "admin": False
             }
         ]
 
     # LDAP settings
+    ENABLE_LDAP = False
     LDAP_HOST = "1.1.1.1"
     LDAP_TLS = True
     LDAP_PORT = 636

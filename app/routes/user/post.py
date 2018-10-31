@@ -24,10 +24,10 @@ def login():
     # check login/password if form submitted
     if "login" in request.form and "password" in request.form:
         # find user with login matching either email or name
-        user = User.get_user(login=request.form["login"])
+        user = User.login(login=request.form["login"], password=request.form["password"])
 
         # check password
-        if user is not None and user.verify_password(request.form["password"]):
+        if user is not None:
 
             # remember user if checkbox activated
             remember_user = True if "remember_me" in request.form and request.form["remember_me"] in [1, "1"] else False

@@ -178,16 +178,28 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def is_submission():
-        # return request.form.get("confirm_btn", None) or request.form.get("submit_btn", None)
+        """
+        Validate that form was submitted
+        :return:
+        """
         return request.method == "POST"
 
     @staticmethod
     def is_confirmation():
-        return request.form.get("confirm_btn", None)
+        """
+        Check that form is submitted and confirmation button was clicked
+        :return:
+        """
+        return AddCrackRequestForm.is_submission() and request.form.get("confirm_btn", None)
 
     # custom validation method
     @staticmethod
     def validate_name(form):
+        """
+        Validate that request name is not empty
+        :param form:
+        :return:
+        """
         if not request.form.get('request_name', None):
             return False, "Request name required"
 
@@ -195,6 +207,11 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def validate_hashes(form=None):
+        """
+        Validate that hashes is not empty
+        :param form:
+        :return:
+        """
         if not AddCrackRequestForm.get_hashes(form):
             return False, "Hashes or hash file required"
 
@@ -202,6 +219,10 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def validate_hash_type_code():
+        """
+        Validate that provided hash type code is in ref list
+        :return:
+        """
         if not HashesHelper.validate_code(AddCrackRequestForm.get_hash_type_code()):
             return False, "Invalid hash code"
 
@@ -232,6 +253,10 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def validate_mask():
+        """
+        Check that mask format is respected
+        :return:
+        """
         mask = request.form.get('mask', None)
         if mask and not TextHelper.check_mask(mask):
             return False, "Empty or invalid mask"
@@ -239,27 +264,47 @@ class AddCrackRequestForm(FlaskForm):
         return True, ""
 
     @staticmethod
+    def validate_rules():
+        if AddCrackRequestForm.get_rules() and not AddCrackRequestForm.get_rules_files(only_submited=True):
+            return False, "To apply rules, select at least one rule in Options tab"
+        return True, ""
+
+
+    @staticmethod
     def validate_custom(form=None):
+        """
+        Validate that form contains at least:
+            - name
+            - hashes
+            - hashes type
+            - hash type code
+            - an attack
+        :param form:
+        :return:
+        """
+
         request_name_valid, name_message = AddCrackRequestForm.validate_name(form)
         hashes_valid, hashes_message = AddCrackRequestForm.validate_hashes(form)
         hashes_code_valid, hashes_code_message = AddCrackRequestForm.validate_hash_type_code()
         mask_valid, mask_message = AddCrackRequestForm.validate_mask()
-
         at_least_one_attack_selected, nb_attacks_message = AddCrackRequestForm.validate_one_attack_selected(form)
+        valid_rules, rules_error_msg = AddCrackRequestForm.validate_rules()
 
         messages = [
             name_message,
             hashes_message,
             hashes_code_message,
             nb_attacks_message,
-            mask_message
+            mask_message,
+            rules_error_msg
         ]
 
         if request_name_valid \
                 or not hashes_valid \
                 or not hashes_code_valid \
                 or not at_least_one_attack_selected \
-                or not mask_valid:
+                or not mask_valid\
+                or not valid_rules:
             return False, messages
 
         return True, []

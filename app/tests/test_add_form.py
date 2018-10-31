@@ -1,9 +1,6 @@
 # standard imports
 import pytest
 
-# third party imports
-from flask import url_for
-
 # local imports
 from app.tests import client
 from app.tests.decorators import login_required

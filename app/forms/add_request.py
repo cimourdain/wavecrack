@@ -186,6 +186,13 @@ class AddCrackRequestForm(FlaskForm):
 
     # custom validation method
     @staticmethod
+    def validate_name(form):
+        if not request.form.get('request_name', None):
+            return False, "Request name required"
+
+        return True, ""
+
+    @staticmethod
     def validate_hashes(form=None):
         if not AddCrackRequestForm.get_hashes(form):
             return False, "Hashes or hash file required"
@@ -219,6 +226,7 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def validate_custom(form=None):
+        request_name_valid, name_message = AddCrackRequestForm.validate_name(form)
         hashes_valid, hashes_message = AddCrackRequestForm.validate_hashes(form)
         hashes_code_valid, hashes_code_message = AddCrackRequestForm.validate_hash_type_code()
         mask_valid, mask_message = AddCrackRequestForm.validate_mask()
@@ -226,13 +234,15 @@ class AddCrackRequestForm(FlaskForm):
         at_least_one_attack_selected, nb_attacks_message = AddCrackRequestForm.validate_one_attack_selected(form)
 
         messages = [
+            name_message,
             hashes_message,
             hashes_code_message,
             nb_attacks_message,
             mask_message
         ]
 
-        if not hashes_valid \
+        if request_name_valid \
+                or not hashes_valid \
                 or not hashes_code_valid \
                 or not at_least_one_attack_selected \
                 or not mask_valid:

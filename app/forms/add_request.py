@@ -208,11 +208,19 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def validate_one_attack_selected(form=None):
-        if not AddCrackRequestForm.get_wordlists_files() \
+        """
+        method to check if an attack was selected, check if either one of :
+            - one dict selected
+            - keywords not empty
+            - mask defined
+            - bruteforce selected
+        :param form: current form
+        :return:
+        """
+        if not AddCrackRequestForm.get_wordlists_files(only_submited=True) \
                 and not AddCrackRequestForm.get_keywords(form) \
                 and not request.form.get('mask', None) \
                 and not request.form.get('bruteforce', None):
-
             return False, "Select at least one attack type"
         return True, ""
 

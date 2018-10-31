@@ -178,7 +178,8 @@ class AddCrackRequestForm(FlaskForm):
 
     @staticmethod
     def is_submission():
-        return request.form.get("confirm_btn", None) or request.form.get("submit_btn", None)
+        # return request.form.get("confirm_btn", None) or request.form.get("submit_btn", None)
+        return request.method == "POST"
 
     @staticmethod
     def is_confirmation():
@@ -222,6 +223,11 @@ class AddCrackRequestForm(FlaskForm):
                 and not request.form.get('mask', None) \
                 and not request.form.get('bruteforce', None):
             return False, "Select at least one attack type"
+        app.logger.debug("An attack type was selected")
+        if AddCrackRequestForm.get_wordlists_files(only_submited=True):
+            app.logger.debug("An dict attack was selected")
+            for f in AddCrackRequestForm.get_wordlists_files(only_submited=True):
+                app.logger.debug("Selected dict: "+str(f.filepath_strict_name))
         return True, ""
 
     @staticmethod

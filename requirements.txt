@@ -8,3 +8,5 @@ flask-login
 flask-wtf
 psutil
 decorator
+Faker
+beautifulsoup4

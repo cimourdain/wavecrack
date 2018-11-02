@@ -10,7 +10,7 @@ from wtforms import TextAreaField, FileField, SelectField, BooleanField, RadioFi
 from server import app
 from app.classes.Wordlist import Wordlist
 from app.classes.Rule import Rule
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.hashes_list import HASHS_CODES_LIST
 from app.helpers.forms import FormHelper
 from app.helpers.hashes import HashesHelper
 from app.helpers.text import TextHelper
@@ -26,7 +26,7 @@ def get_durations_as_tuple():
 
 def get_hashes_list_as_tuples():
     rst = []
-    for h in HASHS_LIST:
+    for h in HASHS_CODES_LIST:
         rst.append((h["code"], h["name"]))
     return rst
 
@@ -259,6 +259,7 @@ class AddCrackRequestForm(FlaskForm):
         """
         mask = request.form.get('mask', None)
         if mask and not TextHelper.check_mask(mask):
+            app.logger.debug("mask is invalid")
             return False, "Empty or invalid mask"
 
         return True, ""

@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 # local imports
 from server import app, celery
 from app import db
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.hashes_list import HASHS_CODES_LIST
 from app.classes.Wordlist import Wordlist
 from app.helpers.files import FilesHelper
 from app.models.cracks.entity import Crack
@@ -70,7 +70,7 @@ class CrackRequest(db.Model):
         The method search in ref HASH_LIST for the label
         :return: <str>
         """
-        for h in HASHS_LIST:
+        for h in HASHS_CODES_LIST:
             if int(h["code"]) == int(self.hashes_type_code):
                 return h["name"]
         return ""
@@ -303,7 +303,7 @@ class CrackRequest(db.Model):
         setter of _hashes_type_code hybrid property.
         Checks that hashes type code exists in reference HASH_LIST
         """
-        for h in HASHS_LIST:
+        for h in HASHS_CODES_LIST:
             if int(h["code"]) == int(code):
                 self._hashes_type_code = int(code)
 

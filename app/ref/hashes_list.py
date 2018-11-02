@@ -1,4 +1,4 @@
-HASHS_LIST = [
+HASHS_CODES_LIST = [
 	{
 		"code": "14100",
 		"name": "3DES (PT = $salt, key = $pass)",

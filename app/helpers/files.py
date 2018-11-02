@@ -2,8 +2,6 @@ from shutil import copyfile, rmtree
 import os
 import uuid
 
-from server import app
-
 
 class FilesHelper(object):
     @staticmethod
@@ -132,7 +130,7 @@ class FilesHelper(object):
         copyfile(source, target)
 
     @staticmethod
-    def remove_found_hashes_from_hashes_file(hashes_file, found_hashes_file):
+    def remove_found_hashes_from_hashes_file(hashes_file, found_hashes_file, tmp_folder):
         """
         Method used to remove found hashes in the original hash file (to prevent searching for them on the next crack)
 
@@ -140,7 +138,6 @@ class FilesHelper(object):
         :param found_hashes_file: <str> file absolute path
         :return:
         """
-        tmp_folder = app.config["DIR_LOCATIONS"]["tmp"]
         # duplicate hashes file
         tmp_dir_path = os.path.join(tmp_folder, str(uuid.uuid4()))
         os.mkdir(tmp_dir_path)

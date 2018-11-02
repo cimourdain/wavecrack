@@ -1,6 +1,7 @@
 # coding: utf8
 
 # standard imports
+from random import randint
 from StringIO import StringIO
 
 # third party imports
@@ -9,8 +10,10 @@ from faker import Faker
 import bs4 as BeautifulSoup
 
 # local imports
-from app.tests import client
+from app.tests import client, app
 from app.tests.decorators import login_required
+from app.helpers.files import FilesHelper
+from app.ref.hashes_list import HASHS_CODES_LIST
 
 fake = Faker()
 
@@ -20,23 +23,18 @@ class TestAddRequestForm(object):
 
     form_url = '/add'
 
-    @staticmethod
-    def response_contains_missing_name_error(response_txt, expected=True):
-        assert ('Request name required' in response_txt) == expected, \
-            "No Error for missing name in form in add request form" if expected else \
-            "Error for missing name found in form in add request form"
+    MISSING_NAME_MESSAGE = 'Request name required'
+    MISSING_HASH_MESSAGE = 'Hashes or hash file required'
+    MISSING_ATTACK_MESSAGE = "Select at least one attack type"
+    INVALID_MASK_MESSAGE = "Empty or invalid mask"
+    INVALID_HASH_CODE_MESSAGE = "Invalid hash code"
+    MISSING_RULE_FILE_MESSAGE = "To apply rules, select at least one rule in Options tab"
 
     @staticmethod
-    def response_contains_missing_hash_error(response_txt, expected=True):
-        assert ('Hashes or hash file required' in response_txt) == expected, \
-            "No Error for missing hash in add request form" if expected else \
-            "Error for missing hash found in add request form"
-
-    @staticmethod
-    def response_contains_missing_attack_error(response_txt, expected=True):
-        assert ("Select at least one attack type" in response_txt) == expected, \
-            "No Error for missing hash in add request form" if expected else \
-            "Error for missing hash found in add request form"
+    def check_message_in_response(response_txt, message, expected=True):
+        assert (message in response_txt) == expected, \
+            "Message \""+str(message) + "\" not found in response" if expected else \
+            "Message \""+str(message) + "\" found in response"
 
     @login_required()
     def test_form_is_active(self, client):
@@ -63,9 +61,18 @@ class TestAddRequestForm(object):
         response = client.post(TestAddRequestForm.form_url, follow_redirects=True)
         response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
 
-        TestAddRequestForm.response_contains_missing_name_error(response_txt)
-        TestAddRequestForm.response_contains_missing_hash_error(response_txt)
-        TestAddRequestForm.response_contains_missing_attack_error(response_txt)
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_NAME_MESSAGE
+        )
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_HASH_MESSAGE
+        )
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_ATTACK_MESSAGE
+        )
 
     @login_required()
     def test_valid_name(self, client):
@@ -83,7 +90,11 @@ class TestAddRequestForm(object):
             }
         )
         response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
-        TestAddRequestForm.response_contains_missing_name_error(response_txt, expected=False)
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_NAME_MESSAGE,
+            expected=False
+        )
 
         # check that input content matches new name
         soup = BeautifulSoup.BeautifulSoup(response_txt, 'html.parser')
@@ -107,7 +118,11 @@ class TestAddRequestForm(object):
             }
         )
         response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
-        TestAddRequestForm.response_contains_missing_hash_error(response_txt, expected=False)
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_HASH_MESSAGE,
+            expected=False
+        )
 
         # check that input content matches new name
         soup = BeautifulSoup.BeautifulSoup(response_txt, 'html.parser')
@@ -131,7 +146,11 @@ class TestAddRequestForm(object):
             }
         )
         response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
-        TestAddRequestForm.response_contains_missing_hash_error(response_txt, expected=False)
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_HASH_MESSAGE,
+            expected=False
+        )
 
         # check that input content matches new name
         soup = BeautifulSoup.BeautifulSoup(response_txt, 'html.parser')
@@ -139,3 +158,178 @@ class TestAddRequestForm(object):
         assert name_input, "hashes textarea not found"
         assert name_input.getText() == file_content, "Form hashes does not match input value"
 
+    @login_required()
+    def test_invalid_hash_code(self, client):
+        # get invalid hash code
+        hash_codes_ref_list = [int(c["code"]) for c in HASHS_CODES_LIST]
+        hash_code = hash_codes_ref_list[0]
+        while hash_code in hash_codes_ref_list:
+            hash_code = randint(min(hash_codes_ref_list), max(hash_codes_ref_list))
+
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "hash_type": hash_code,
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt,
+            message=TestAddRequestForm.INVALID_HASH_CODE_MESSAGE,
+            expected=True
+        )
+
+    @login_required()
+    def test_valid_dict_attack(self, client):
+        """
+        Test that when dicts are selected, no error is raised
+        :param client:
+        :return:
+        """
+        dicts = []
+        for f in FilesHelper.get_available_files(app.config["DIR_LOCATIONS"]["wordlists"]):
+            dicts.append(f)
+        assert dicts, "No dictionary found in "+str(app.config["DIR_LOCATIONS"]["wordlists"])
+
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "wordlist_files": dicts,
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt,
+            message=TestAddRequestForm.MISSING_ATTACK_MESSAGE,
+            expected=False
+        )
+
+    @login_required()
+    def test_valid_dict_attack(self, client):
+        """
+        Test that when dicts are selected, no error is raised
+        :param client:
+        :return:
+        """
+        dicts = []
+        for f in FilesHelper.get_available_files(app.config["DIR_LOCATIONS"]["wordlists"]):
+            dicts.append(f)
+        assert dicts, "No dictionary found in " + str(app.config["DIR_LOCATIONS"]["wordlists"])
+
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "wordlist_files": dicts,
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_ATTACK_MESSAGE,
+            expected=False
+        )
+
+    @login_required()
+    def test_invalid_mask_attack(self, client):
+        """
+        Test that when mask are selected, no error is raised
+        :param client:
+        :return:
+        """
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "mask": "toto?ztiti",
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.INVALID_MASK_MESSAGE,
+            expected=True
+        )
+
+    @login_required()
+    def test_valid_mask_attack(self, client):
+        """
+        Test that when mask are selected, no error is raised
+        :param client:
+        :return:
+        """
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "mask": fake.text().encode('utf-8') + "?u?l?d?h?H?s?a?b",
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_ATTACK_MESSAGE,
+            expected=False
+        )
+
+    @login_required()
+    def test_bruteforce_attack(self, client):
+        """
+        Test that when bruteforce are selected, no error is raised
+        :param client:
+        :return:
+        """
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "bruteforce": "y",
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_ATTACK_MESSAGE,
+            expected=False
+        )
+
+    @login_required()
+    def test_rules_without_file_selected(self, client):
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "rules": "y",
+                "rules_files": []
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_RULE_FILE_MESSAGE,
+            expected=True
+        )
+
+    @login_required()
+    def test_rules_with_file_selected(self, client):
+        rules_files = []
+        for f in FilesHelper.get_available_files(app.config["DIR_LOCATIONS"]["rules"]):
+            rules_files.append(f)
+        assert rules_files, "No rule file found in " + str(app.config["DIR_LOCATIONS"]["rules"])
+
+        response = client.post(
+            TestAddRequestForm.form_url,
+            follow_redirects=True,
+            data={
+                "rules": "y",
+                "rules_files": rules_files
+            }
+        )
+        response_txt = response.get_data(as_text=True).encode('ascii', 'ignore')
+        TestAddRequestForm.check_message_in_response(
+            response_txt=response_txt,
+            message=TestAddRequestForm.MISSING_RULE_FILE_MESSAGE,
+            expected=False
+        )

@@ -238,7 +238,8 @@ class Crack(db.Model):
             ))
             FilesHelper.remove_found_hashes_from_hashes_file(
                 hashes_file=self.request.hashes_path,
-                found_hashes_file=self.output_file_path
+                found_hashes_file=self.output_file_path,
+                tmp_folder=app.config["DIR_LOCATIONS"]["tmp"]
             )
 
         self.end_date = datetime.now()

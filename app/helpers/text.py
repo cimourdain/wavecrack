@@ -33,8 +33,13 @@ class TextHelper(object):
             start = 0
             while start < len(mask):
                 mark_position = mask.find("?", start)
+
                 if mark_position != -1:
+                    print("TextHelper :: check_mask :: ? found in position " + str(mark_position) + " in string " + str(
+                        mask[:start]))
+                    print("TextHelper :: check_mask :: check if next char ("+mask[mark_position + 1]+") is valid")
                     if mask[mark_position + 1] not in ["l", "u", "d", "h", "H", "s", "a", "b"]:
+                        print("TextHelper :: check_mask :: "+mask[mark_position + 1]+" is not valid")
                         return False
                     start = mark_position + 1
                 else:

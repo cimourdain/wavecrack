@@ -1,9 +1,9 @@
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.hashes_list import HASHS_CODES_LIST
 from app.helpers.text import TextHelper
 
 
 class HashesHelper(object):
-    HASHS_LIST = HASHS_LIST
+    HASHS_CODES_LIST = HASHS_CODES_LIST
 
     @staticmethod
     def validate_code(code):
@@ -11,7 +11,7 @@ class HashesHelper(object):
             return False
 
         code = int(code)
-        for h in HASHS_LIST:
+        for h in HASHS_CODES_LIST:
             if int(h['code']) == code:
                 return True
         return False

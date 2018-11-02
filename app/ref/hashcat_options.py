@@ -1,5 +1,5 @@
 # coding: utf8
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.hashes_list import HASHS_CODES_LIST
 from app.classes.Rule import Rule
 
 """
@@ -45,7 +45,7 @@ HASHCAT_OPTIONS = {
         "--hash-type": {
                 "short": "-m",
                 "type": "Num",
-                "values": HASHS_LIST,
+                "values": HASHS_CODES_LIST,
                 "description": "Hash-type, see references below",
                 "example": "-m 1000",
         },

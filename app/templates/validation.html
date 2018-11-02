@@ -17,7 +17,7 @@
       <h3> Selected hash type</h3>
       <div class="hashlist">
         <select name="hashtype" form="hashform" readonly >
-          {% for hash in HASHS_LIST %}
+          {% for hash in HASHS_CODES_LIST %}
             <option value="{{ hash[0] }}" {% if hash[0] == hashtype_selected %}SELECTED{% else %}disabled{% endif %}>{{ hash[1] }}</option>
           {% endfor %}
         </select>

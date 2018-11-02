@@ -4,11 +4,12 @@ import pytest
 # local imports
 from app import create_app, db, register_routes
 
+app = create_app('testing')
+
 
 @pytest.fixture
 def client():
     # build app
-    app = create_app('testing')
     register_routes(app)
 
     # enter context

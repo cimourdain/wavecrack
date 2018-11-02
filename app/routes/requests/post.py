@@ -8,7 +8,7 @@ from flask_login import login_required
 # local imports
 from server import app, db
 from app.forms.add_request import AddCrackRequestForm
-from app.ref.hashes_list import HASHS_LIST
+from app.ref.hashes_list import HASHS_CODES_LIST
 from app.helpers.files import FilesHelper
 from flask_login import current_user
 
@@ -72,7 +72,7 @@ def render_add_page(form, confirmation=False):
         title="Add new crack request" if not confirmation else "Confirm new crack request",
         form=form,
         separator=app.config["HASHLIST_FILE_SEPARATOR"],
-        hashes_list=HASHS_LIST,  # used to populate javascript function
+        hashes_list=HASHS_CODES_LIST,  # used to populate javascript function
         max_len=app.config["MAX_CONTENT_LENGTH"],
         wordlist_files_list=form.get_wordlists_files(),
         rules_files_list=form.get_rules_files(),

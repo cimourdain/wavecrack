@@ -119,11 +119,6 @@ class AddCrackRequestForm(FlaskForm):
             form_rules_files = request.form.getlist(form_field, None)
             updated_list = []
             for o in obj_list:
-                app.logger.debug("Check if {} is in {}: {}".format(
-                    o.filepath,
-                    str(form_rules_files),
-                    str(True if o.filepath in form_rules_files or o.filepath == form_rules_files else False)
-                ))
                 o.set_active(active=(True if o.filepath in form_rules_files else False))
                 if not only_submited or (only_submited and o.active):
                     updated_list.append(o)
@@ -201,6 +196,7 @@ class AddCrackRequestForm(FlaskForm):
         :return:
         """
         if not request.form.get('request_name', None):
+            app.logger.debug("validate_name :: Empty request name")
             return False, "Request name required"
 
         return True, ""
@@ -213,6 +209,7 @@ class AddCrackRequestForm(FlaskForm):
         :return:
         """
         if not AddCrackRequestForm.get_hashes(form):
+            app.logger.debug("validate_hashes :: Empty request hashes")
             return False, "Hashes or hash file required"
 
         return True, ""
@@ -224,6 +221,7 @@ class AddCrackRequestForm(FlaskForm):
         :return:
         """
         if not HashesHelper.validate_code(AddCrackRequestForm.get_hash_type_code()):
+            app.logger.debug("validate_hash_type_code :: Invalid hash code")
             return False, "Invalid hash code"
 
         return True, ""
@@ -243,12 +241,9 @@ class AddCrackRequestForm(FlaskForm):
                 and not AddCrackRequestForm.get_keywords(form) \
                 and not request.form.get('mask', None) \
                 and not request.form.get('bruteforce', None):
+            app.logger.debug("validate_hash_type_code :: Missing attack type")
             return False, "Select at least one attack type"
-        app.logger.debug("An attack type was selected")
-        if AddCrackRequestForm.get_wordlists_files(only_submited=True):
-            app.logger.debug("An dict attack was selected")
-            for f in AddCrackRequestForm.get_wordlists_files(only_submited=True):
-                app.logger.debug("Selected dict: "+str(f.filepath_strict_name))
+
         return True, ""
 
     @staticmethod
@@ -259,7 +254,7 @@ class AddCrackRequestForm(FlaskForm):
         """
         mask = request.form.get('mask', None)
         if mask and not TextHelper.check_mask(mask):
-            app.logger.debug("mask is invalid")
+            app.logger.debug("validate_mask :: mask is invalid")
             return False, "Empty or invalid mask"
 
         return True, ""
@@ -267,9 +262,9 @@ class AddCrackRequestForm(FlaskForm):
     @staticmethod
     def validate_rules():
         if AddCrackRequestForm.get_rules() and not AddCrackRequestForm.get_rules_files(only_submited=True):
+            app.logger.debug("validate_rules :: Invalid rules")
             return False, "To apply rules, select at least one rule in Options tab"
         return True, ""
-
 
     @staticmethod
     def validate_custom(form=None):
@@ -283,7 +278,7 @@ class AddCrackRequestForm(FlaskForm):
         :param form:
         :return:
         """
-
+        app.logger.debug("validate_custom :: Check form ")
         request_name_valid, name_message = AddCrackRequestForm.validate_name(form)
         hashes_valid, hashes_message = AddCrackRequestForm.validate_hashes(form)
         hashes_code_valid, hashes_code_message = AddCrackRequestForm.validate_hash_type_code()
@@ -299,13 +294,14 @@ class AddCrackRequestForm(FlaskForm):
             mask_message,
             rules_error_msg
         ]
-
-        if request_name_valid \
+        app.logger.debug("validate_custom :: messages "+str(messages))
+        if not request_name_valid \
                 or not hashes_valid \
                 or not hashes_code_valid \
                 or not at_least_one_attack_selected \
                 or not mask_valid\
                 or not valid_rules:
+            app.logger.debug("validate_custom :: Invalid form")
             return False, messages
 
         return True, []

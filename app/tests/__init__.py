@@ -1,11 +1,15 @@
+import os
+
 # third party import
 import pytest
 
 # local imports
 from app import create_app, db, register_routes
 
-app = create_app('testing')
+#app = create_app('testing')
 
+os.environ["FLASK_CONFIG"] = "testing"
+from server import app
 
 @pytest.fixture
 def client():

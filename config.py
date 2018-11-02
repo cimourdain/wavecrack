@@ -194,6 +194,11 @@ class TestingConfig(Config):
 
     SQLALCHEMY_DATABASE_URI = 'sqlite:////' + os.path.join(BASE_DIR, 'app', 'tests', 'data.sqlite')
 
+    CELERY_ALWAYS_EAGER = True
+
+    DIR_LOCATIONS = Config.DIR_LOCATIONS
+    DIR_LOCATIONS["hashcat_outputs"] = "app/tests/outputs/"
+
 
 class ProductionConfig(Config):
     # no default users created on prod environnement

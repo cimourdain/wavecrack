@@ -73,6 +73,14 @@ class FilesHelper(object):
         return os.path.isdir(dir_path)
 
     @staticmethod
+    def replace_file_content(file_path, new_content):
+        f = open(file_path, "w+")
+        f.write(new_content)
+        f.close()
+        os.chmod(file_path, 0o777)
+        return file_path
+
+    @staticmethod
     def create_new_file(file_path, file_name, content):
         """
         Create new file with content
@@ -84,11 +92,7 @@ class FilesHelper(object):
         """
         new_file_name = os.path.join(file_path, file_name)
 
-        f = open(new_file_name, "w+")
-        f.write(content)
-        f.close()
-        os.chmod(new_file_name, 0o777)
-        return new_file_name
+        return FilesHelper.replace_file_content(new_file_name, content)
 
     @staticmethod
     def get_file_content(file_path):
